@@ -29,4 +29,4 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: ${{ env.IMAGE_NAME }}
+          tags: regprotocolsfds.azurecr.io/harmonyapi:${{ github.sha }}
