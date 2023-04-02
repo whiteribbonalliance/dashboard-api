@@ -8,9 +8,9 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 80
 
 ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
