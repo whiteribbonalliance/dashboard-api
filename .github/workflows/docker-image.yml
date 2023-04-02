@@ -30,3 +30,25 @@ jobs:
           build-args: |
             version=${{ steps.tag.outputs.tag }}
           tags: regprotocolsfds.azurecr.io/harmonyapi:${{ github.sha }}
+
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Lowercase the repo name
+        run: echo harmonyapi>>${GITHUB_ENV}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@0b651ed7546ecfc75024011f76944cb9b381ef1e
+        with:
+          app-name: wellcomeharmonyapi
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: regprotocolsfds.azurecr.io/harmonyapi:${{ github.sha }}
