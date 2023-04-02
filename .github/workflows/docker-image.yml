@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Lowercase the repo name
-        run: echo harmonyapi>>${GITHUB_ENV}
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
