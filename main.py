@@ -8,7 +8,10 @@ from routers.info_router import router as info_router
 from routers.text_router import router as text_router
 
 description = """
-Documentation for Harmony API
+Documentation for Harmony API.
+
+Harmony is a tool using AI which allows you to compare items from questionnaires and identify similar content.
+You can try Harmony at <a href="https://app.harmonydata.org">app.harmonydata.org</a> and you can read our blog at <a href="https://harmonydata.org/blog/">harmonydata.org/blog/</a>.
 """
 
 
@@ -18,6 +21,14 @@ def configure_app():
         description=description,
         version=settings.VERSION,
         docs_url="/docs",
+        contact={
+            "name": "Thomas Wood",
+            "url": "https://fastdatascience.com",
+        },
+        license_info={
+            "name": "MIT License",
+            "url": "https://opensource.org/license/mit/",
+        },
     )
 
     app.add_middleware(
