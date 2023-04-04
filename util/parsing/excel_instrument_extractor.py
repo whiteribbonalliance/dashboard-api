@@ -79,9 +79,14 @@ def xlsx_to_instruments(file: RawFile) -> List[Instrument]:
 
         questions = []
         for idx in range(len(df_questions)):
+            o = df_questions.options.iloc[idx]
+            if type(o) is str:
+                options = o.split("/")
+            else:
+                options = []
             question = Question(question_no=str(df_questions.question_no.iloc[idx]), question_intro="blah",
                                 question_text=str(df_questions.question.iloc[idx]),
-                                options=str(df_questions.options.iloc[idx]), source_page=0)
+                                options=options, source_page=0)
             questions.append(question)
 
         language = "en"
