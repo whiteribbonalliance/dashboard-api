@@ -16,14 +16,18 @@ def convert_texts_to_vector(texts: list):
     embeddings = model.encode(list(texts))
     return [embeddings[i] for i in range(embeddings.shape[0])]
 
-def match_instruments(instruments: List[Instrument], parameters : MatchParameters):
+def match_instruments(instruments: List[Instrument], parameters : MatchParameters) -> tuple:
     texts = []
     negated_texts = []
     instrument_ids = []
     question_indices = []
 
+    all_questions = []
+
     for instrument in instruments:
         for question_idx, question in enumerate(instrument.questions):
+            question.instrument_id = instrument.instrument_id
+            all_questions.append(question)
             texts.append(question.question_text)
             #negated = negate(question.question_text, instrument.language) # TODO
             negated = question.question_text
@@ -47,4 +51,4 @@ def match_instruments(instruments: List[Instrument], parameters : MatchParameter
     similarity_max = np.max([pairwise_similarity, pairwise_similarity_neg_mean], axis=0)
     similarity_with_polarity = similarity_max * similarity_polarity
 
-    return similarity_with_polarity
+    return all_questions, similarity_with_polarity

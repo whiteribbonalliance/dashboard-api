@@ -10,8 +10,8 @@ DEFAULT_MODEL = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 
 
 class RawFile(BaseModel):
-    file_id: str = Field(description="Unique identifier for the file (UUID-4)")
-    file_name: str = Field(description="The name of the input file")
+    file_id: str = Field(None, description="Unique identifier for the file (UUID-4)")
+    file_name: str = Field("Untitled file", description="The name of the input file")
     file_type: FileType = Field(description="The file type (pdf, xlsx, txt)")
     content: str = Field(description="The raw file contents")
 
@@ -27,11 +27,12 @@ class RawFile(BaseModel):
 
 
 class Question(BaseModel):
-    question_no: str = Field(description="Number of the question")
-    question_intro: str = Field(description="Introductory text applying to the question")
+    question_no: str = Field(None, description="Number of the question")
+    question_intro: str = Field(None, description="Introductory text applying to the question")
     question_text: str = Field(description="Text of the question")
-    options: List[str] = Field(description="The possible answer options")
-    source_page: int = Field(description="The page of the PDF on which the question was located, zero-indexed")
+    options: List[str] = Field([], description="The possible answer options")
+    source_page: int = Field(0, description="The page of the PDF on which the question was located, zero-indexed")
+    instrument_id: str = Field(None, description="Unique identifier for the instrument (UUID-4)")
 
     class Config:
         schema_extra = {
@@ -46,13 +47,14 @@ class Question(BaseModel):
 
 
 class Instrument(BaseModel):
-    file_id: str = Field(description="Unique identifier for the file (UUID-4)")
-    instrument_id: str = Field(description="Unique identifier for the instrument (UUID-4)")
-    instrument_name: str = Field(description="Human-readable name of the instrument")
-    file_name: str = Field(description="The name of the input file")
-    file_type: FileType = Field(description="The file type (pdf, xlsx, txt)")
-    file_section: str = Field(description="The sub-section of the file, e.g. Excel tab")
-    language: Language = Field(description="The ISO 639-2 (alpha-2) encoding of the instrument language")
+    file_id: str = Field(None, description="Unique identifier for the file (UUID-4)")
+    instrument_id: str = Field(None, description="Unique identifier for the instrument (UUID-4)")
+    instrument_name: str = Field("Untitled instrument", description="Human-readable name of the instrument")
+    file_name: str = Field("Untitled file", description="The name of the input file")
+    file_type: FileType = Field(None, description="The file type (pdf, xlsx, txt)")
+    file_section: str = Field(None, description="The sub-section of the file, e.g. Excel tab")
+    language: Language = Field(Language.English,
+                               description="The ISO 639-2 (alpha-2) encoding of the instrument language")
     questions: List[Question] = Field(description="the items inside the instrument")
 
     class Config:
@@ -69,7 +71,7 @@ class Instrument(BaseModel):
                                "question_intro": "Over the last two weeks, how often have you been bothered by the following problems?",
                                "question_text": "Feeling nervous, anxious, or on edge",
                                "options": ["Not at all", "Several days", "More than half the days",
-                                             "Nearly every day"],
+                                           "Nearly every day"],
                                "source_page": 0
                                }]
             }
@@ -77,8 +79,8 @@ class Instrument(BaseModel):
 
 
 class MatchParameters(BaseModel):
-    framework: str = Field(description="The framework to use for matching")
-    model: str = Field(description="Model")
+    framework: str = Field(DEFAULT_FRAMEWORK, description="The framework to use for matching")
+    model: str = Field(DEFAULT_MODEL, description="Model")
 
     class Config:
         schema_extra = {
@@ -89,9 +91,12 @@ class MatchParameters(BaseModel):
         }
 
 
+DEFAULT_MATCH_PARAMETERS = MatchParameters(framework=DEFAULT_FRAMEWORK, model=DEFAULT_MODEL)
+
+
 class MatchBody(BaseModel):
     instruments: List[Instrument] = Field(description="Instruments to harmonise")
-    parameters: MatchParameters = Field(description="Parameters on how to match")
+    parameters: MatchParameters = Field(DEFAULT_MATCH_PARAMETERS, description="Parameters on how to match")
 
     class Config:
         schema_extra = {
@@ -108,14 +113,14 @@ class MatchBody(BaseModel):
                                    "question_intro": "Over the last two weeks, how often have you been bothered by the following problems?",
                                    "question_text": "Feeling nervous, anxious, or on edge",
                                    "options": ["Not at all", "Several days", "More than half the days",
-                                                 "Nearly every day"],
+                                               "Nearly every day"],
                                    "source_page": 0
                                    },
                                   {"question_no": "2",
                                    "question_intro": "Over the last two weeks, how often have you been bothered by the following problems?",
                                    "question_text": "Not being able to stop or control worrying",
                                    "options": ["Not at all", "Several days", "More than half the days",
-                                                 "Nearly every day"],
+                                               "Nearly every day"],
                                    "source_page": 0
                                    }
 
@@ -133,14 +138,14 @@ class MatchBody(BaseModel):
                                        "question_intro": "Durante as últimas 2 semanas, com que freqüência você foi incomodado/a pelos problemas abaixo?",
                                        "question_text": "Sentir-se nervoso/a, ansioso/a ou muito tenso/a",
                                        "options": ["Nenhuma vez", "Vários dias", "Mais da metade dos dias",
-                                                     "Quase todos os dias"],
+                                                   "Quase todos os dias"],
                                        "source_page": 0
                                        },
                                       {"question_no": "2",
                                        "question_intro": "Durante as últimas 2 semanas, com que freqüência você foi incomodado/a pelos problemas abaixo?",
                                        "question_text": " Não ser capaz de impedir ou de controlar as preocupações",
                                        "options": ["Nenhuma vez", "Vários dias", "Mais da metade dos dias",
-                                                     "Quase todos os dias"],
+                                                   "Quase todos os dias"],
                                        "source_page": 0
                                        }
 

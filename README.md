@@ -2,17 +2,25 @@
 
 API for Harmony.
 
-Harmony is a tool using AI and natural language processing, which allows you to compare items from questionnaires and identify similar content.
-
-You can try Harmony at https://app.harmonydata.org and you can read our blog at https://harmonydata.org/blog/.
+Harmony is a tool using AI and natural language processing, which allows you to compare items from questionnaires and
+identify similar content.
 
 The API is live at https://api.harmonydata.org and you can try the docs at https://api.harmonydata.org/docs
 
+You can try Harmony at https://app.harmonydata.org and you can read our blog at https://harmonydata.org/blog/.
+
+Contact: Thomas Wood, thomas@fastdatascience.com, https://fastdatascience.com
+
 ## Harmonising Mental Health Data
 
-Do you need to compare questionnaire data across studies? Do you want to find the best match for a set of items? Are there are different versions of the same questionnaire floating around and you want to make sure how compatible they are? Are the questionnaires written in different languages that you would like to compare?
+Do you need to compare questionnaire data across studies? Do you want to find the best match for a set of items? Are
+there are different versions of the same questionnaire floating around and you want to make sure how compatible they
+are? Are the questionnaires written in different languages that you would like to compare?
 
-Harmony is a data harmonisation project that uses Natural Language Processing to help researchers make better use of existing data from different studies by supporting them with the harmonisation of various measures and items used in different studies. Harmony is a collaboration project between the University of Ulster, University College London, the Universidade Federal de Santa Maria in Brazil, and Fast Data Science Ltd.
+Harmony is a data harmonisation project that uses Natural Language Processing to help researchers make better use of
+existing data from different studies by supporting them with the harmonisation of various measures and items used in
+different studies. Harmony is a collaboration project between the University of Ulster, University College London, the
+Universidade Federal de Santa Maria in Brazil, and Fast Data Science Ltd.
 
 ## API Reference
 
@@ -20,22 +28,21 @@ Harmony is a data harmonisation project that uses Natural Language Processing to
 
 API Version: 2.
 
-CONTACT
-
-NAME: Thomas Wood, thomas@fastdatascience.com
-
-URL: https://fastdatascience.com
+There is an interactive version of the API docs available at https://api.harmonydata.org/docs. Please also refer to the
+PDF at [docs/API reference.pdf](docs/API reference.pdf).
 
 ## INDEX
 
-- 1. HEALTH CHECK
+-
+    1. HEALTH CHECK
 - 1.1 GET /health-check
-- 2. INFO
+-
+    2. INFO
 - 2.1 GET /info/version
-- 3. TEXT
+-
+    3. TEXT
 - 3.1 POST /text/parse
 - 3.2 POST /text/match
-
 
 ## API
 
@@ -50,11 +57,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 undefined
@@ -71,11 +80,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 undefined
@@ -107,11 +118,13 @@ The file type (pdf, xlsx, txt)
 content* string The raw file contents
 }]
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 [{
@@ -149,9 +162,11 @@ source_page* integer The page of the PDF on which the question was located, zero
 }]
 }]
 ```
+
 ```
 STATUS CODE - 422: Validation Error
 ```
+
 ```
 RESPONSE MODEL - application/json
 {
@@ -168,6 +183,7 @@ type* string
 }]
 }
 ```
+
 ## 3.2 POST /text/match
 
 Match
@@ -211,18 +227,22 @@ source_page* integer The page of the PDF on which the question was located, zero
 }]
 }]
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 [undefined]
 ```
+
 ```
 STATUS CODE - 422: Validation Error
 ```
+
 ```
 RESPONSE MODEL - application/json
 {

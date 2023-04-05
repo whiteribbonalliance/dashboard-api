@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 from typing import List
 
@@ -5,11 +6,9 @@ from fastapi import APIRouter
 from fastapi import Body
 
 from schemas.requests.text import RawFile, Instrument, MatchBody
-from util.parsing.files_to_instruments import convert_files_to_instruments
+from schemas.responses.text import MatchResponse
 from util.matching.matcher import match_instruments
-
-
-
+from util.parsing.files_to_instruments import convert_files_to_instruments
 
 router = APIRouter(prefix="/text")
 
@@ -72,19 +71,33 @@ def parse_instruments(files: Annotated[List[RawFile], Body(examples={
 
     """
 
+    for file in files:
+        if file.file_id is None:
+            file.file_id = uuid.uuid4().hex
+
     return convert_files_to_instruments(files)
 
 
 @router.post(
     path="/match"
 )
-def match(match_body: MatchBody) -> list:
+def match(match_body: MatchBody) -> MatchResponse:
     """
     Match instruments
 
     """
-    matches = match_instruments(match_body.instruments, match_body.parameters)
+
+    # Assign any missing IDs
+    for instrument in match_body.instruments:
+        if instrument.file_id is None:
+            instrument.file_id = uuid.uuid4().hex
+        if instrument.instrument_id is None:
+            instrument.instrument_id = uuid.uuid4().hex
+
+    questions, matches = match_instruments(match_body.instruments, match_body.parameters)
 
     matches_jsonifiable = matches.tolist()
 
-    return matches_jsonifiable
+    response = MatchResponse(questions=questions, matches=matches_jsonifiable)
+
+    return response
