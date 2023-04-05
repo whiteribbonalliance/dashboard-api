@@ -29,7 +29,7 @@ Universidade Federal de Santa Maria in Brazil, and Fast Data Science Ltd.
 API Version: 2.
 
 There is an interactive version of the API docs available at https://api.harmonydata.org/docs. Please also refer to the
-PDF at [docs/API reference.pdf](/docs/API reference.pdf).
+PDF at [/docs/API reference.pdf](/docs/API reference.pdf).
 
 ## INDEX
 
