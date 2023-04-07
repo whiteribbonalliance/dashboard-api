@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
     
 env:
-  IMAGE_NAME: harmonyapi
+  IMAGE_NAME: wwwapi
 
 jobs:
 
