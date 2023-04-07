@@ -24,6 +24,7 @@ jobs:
         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
         service_account: 'deft-stratum-290216@appspot.gserviceaccount.com'
         project_id: deft-stratum-290216
+        export_default_credentials: true
 
 
 #    - name: Log into registry
