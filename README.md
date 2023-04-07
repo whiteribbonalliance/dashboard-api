@@ -11,3 +11,5 @@ This API is built automatically by Github actions.
 The Docker container is pushed to Google Container Registry.
 
 Then it is deployed to Google App Engine using a Flex environment (see `app.yaml`).
+
+See [/docs/docs.pdf](/docs/docs.pdf).
