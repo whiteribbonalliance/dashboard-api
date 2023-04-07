@@ -5,9 +5,8 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     # General app config
-    VERSION = "2.0"
-    APP_TITLE = "Harmony API"
-    TIKA_ENDPOINT = os.getenv("TIKA_ENDPOINT", "")
+    VERSION = "1.0"
+    APP_TITLE = "What Women Want API"
 
 
 class DevSettings(Settings):

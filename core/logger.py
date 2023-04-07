@@ -6,7 +6,7 @@ LOG_FORMAT = '%(asctime)-15s.%(msecs)d %(levelname)-5s --- [%(threadName)15s]' \
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT,
                     datefmt=LOG_DATE_FORMAT)
-BASE_LOGGER_NAME = 'harmony-api'
+BASE_LOGGER_NAME = 'www-api'
 
 
 def override_basic_config():
