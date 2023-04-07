@@ -1,9 +1,6 @@
-from typing import List, Dict
+from typing import Dict
 
 from pydantic import BaseModel, Field
-
-from schemas.enums.file_types import FileType
-from schemas.enums.languages import Language
 
 
 class CampaignResponse(BaseModel):
@@ -18,4 +15,5 @@ class CampaignResponse(BaseModel):
     respondent_gender: str = Field(None, description="The gender of the respondent")
     respondent_country_code: str = Field(description="The alpha-2 country code of the respondent")
     respondent_region_code: str = Field(None, description="The standardized sub-country region of the respondent")
+    free_text_response: str = Field(description="The main free-text response of the campaign")
     respondent_custom_fields: Dict[str, str] = Field({}, description="Any campaign-specific fields")
