@@ -28,7 +28,7 @@ class ProdSettings(Settings):
     # TODO change
     SERVER_HOST = "0.0.0.0"
     DEBUG = False
-    PORT = 80
+    PORT = 8080
     RELOAD = False
     CORS = {
         "origins": [
