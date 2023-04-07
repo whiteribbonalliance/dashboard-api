@@ -9,6 +9,7 @@ RUN pip install --upgrade pip \
 COPY . .
 
 EXPOSE 80
+EXPOSE 8080
 
 ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
