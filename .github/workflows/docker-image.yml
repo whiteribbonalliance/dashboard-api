@@ -22,7 +22,7 @@ jobs:
       uses: 'google-github-actions/auth@v0.4.1'
       with:
         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-    - uses: google-github-actions/setup-gcloud@master
+    - uses: google-github-actions/auth@master
       with:
         project_id: deft-stratum-290216
         export_default_credentials: true
