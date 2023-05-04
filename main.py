@@ -34,8 +34,8 @@ def configure_app():
 
     # Include routers
     app.include_router(health_check_router, tags=["Health Check"])
-    app.include_router(text_router, tags=['Text'])
-    app.include_router(info_router, tags=['Info'])
+    app.include_router(text_router, tags=["Text"])
+    app.include_router(info_router, tags=["Info"])
 
     return app, settings
 
@@ -43,9 +43,4 @@ def configure_app():
 app, settings = configure_app()
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host=settings.SERVER_HOST,
-        port=settings.PORT,
-        reload=settings.RELOAD
-    )
+    uvicorn.run("main:app", host=settings.SERVER_HOST, port=settings.PORT, reload=settings.RELOAD)
