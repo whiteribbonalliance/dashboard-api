@@ -40,4 +40,4 @@ For access to the logs, please contact Thomas Wood at thomas@fastdatascience.com
 
 Screenshot of the logging
 
-![Newrelic](images/newrelic.png)
+![Newrelic](newrelic.png)
