@@ -14,6 +14,10 @@ Then it is deployed to Google App Engine using a Flex environment (see `app.yaml
 
 See [/docs/docs.pdf](/docs/docs.pdf).
 
+# Legacy imports of Excel or imports from Textit
+
+Please run the script in https://github.com/whiteribbonalliance/etl
+
 ## Efficiency
 
 Survey responses data is submitted to BigQuery in batches bu the background thread each N seconds.
