@@ -6,7 +6,7 @@ This API is used for retrieving campaign responses from BigQuery to display in a
 
 ## Where is the URL?
 
-https://www-dashboard-api-dot-deft-stratum-290216.uc.r.appspot.com/docs
+https://www-dashboard-api-dot-deft-stratum-290216.uc.r.appspot.com/
 
 ## Continuous integration
 
