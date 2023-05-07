@@ -1,6 +1,12 @@
 # What Women Want API
 
-Where is the URL?
+## What does this API do?
+
+This API is used for recording campaign responses for What Women Want. Any front end (web, chatbot, Android, Whatsapp, Textit) can connect to this API when a response or responses are received.
+
+This API saves everything in BigQuery so that the dashboards can retrieve the data.
+
+## Where is the URL?
 
 https://www-api-dot-deft-stratum-290216.uc.r.appspot.com/docs
 
