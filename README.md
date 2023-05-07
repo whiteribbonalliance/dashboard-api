@@ -1,10 +1,8 @@
-# What Women Want API
+# What Women Want dashboard API
 
 ## What does this API do?
 
-This API is used for recording campaign responses for What Women Want. Any front end (web, chatbot, Android, Whatsapp, Textit) can connect to this API when a response or responses are received.
-
-This API saves everything in BigQuery so that the dashboards can retrieve the data.
+This API is used for retrieving campaign responses from BigQuery to display in a dashboard.
 
 ## Where is the URL?
 
