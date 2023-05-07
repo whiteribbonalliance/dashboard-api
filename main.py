@@ -8,7 +8,7 @@ from routers.info_router import router as info_router
 from routers.text_router import router as text_router
 
 description = """
-Documentation for What Women Want API.
+What Women Want Dashboard API.
 """
 
 
