@@ -1,4 +1,4 @@
-# What Women Want dashboard API
+# What Women Want Dashboard API
 
 ## What does this API do?
 
@@ -10,7 +10,7 @@ https://www-dashboard-api-dot-deft-stratum-290216.uc.r.appspot.com/docs
 
 ## Continuous integration
 
-This API is built automatically by Github actions.
+This API is built automatically by GitHub actions.
 
 The Docker container is pushed to Google Container Registry.
 
