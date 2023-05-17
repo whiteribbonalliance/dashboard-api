@@ -41,7 +41,11 @@ class NewRelicFormatter(Formatter):
 
     def format(self, record):
         message = record.getMessage()
-        attributes = {key: value for key, value in record.__dict__.items() if key not in ("args", "message", "msg")}
+        attributes = {
+            key: value
+            for key, value in record.__dict__.items()
+            if key not in ("args", "message", "msg")
+        }
         attributes["PROJECT_NAME"] = PROJECT_NAME
         attributes["SERVICE_NAME"] = SERVICE_NAME
         payload = {
@@ -59,7 +63,6 @@ class NewRelicFormatter(Formatter):
 
 
 def init_custom_logger(logger: object, level: int = logging.INFO):
-
     # newrelic for centralized loggin
     handler = NewRelicHandler()
     formatter = NewRelicFormatter()

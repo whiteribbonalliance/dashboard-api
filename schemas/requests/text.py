@@ -8,4 +8,6 @@ class FilterOptions(BaseModel):
         description="Unique identifier for the campaign",
     )
 
-    respondent_country_code: str = Field(None, description="The alpha-2 country code of the respondent")
+    respondent_country_code: str = Field(
+        None, description="The alpha-2 country code of the respondent"
+    )

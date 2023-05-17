@@ -43,4 +43,9 @@ def configure_app():
 app, settings = configure_app()
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=settings.SERVER_HOST, port=settings.PORT, reload=settings.RELOAD)
+    uvicorn.run(
+        "main:app",
+        host=settings.SERVER_HOST,
+        port=settings.PORT,
+        reload=settings.RELOAD,
+    )

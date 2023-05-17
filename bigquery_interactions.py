@@ -56,7 +56,12 @@ FULL_RESPONSES_SCHEMA = [
 ]
 
 
-def data_to_bigquery(data_lines: list, schema: list, table_name: str = BIGQUERY_TABLE_NAME, delay: float = 0.1):
+def data_to_bigquery(
+    data_lines: list,
+    schema: list,
+    table_name: str = BIGQUERY_TABLE_NAME,
+    delay: float = 0.1,
+):
     """Submits a list of JSON records into BigQuery"""
 
     job_config = bigquery.LoadJobConfig(
@@ -64,7 +69,9 @@ def data_to_bigquery(data_lines: list, schema: list, table_name: str = BIGQUERY_
     )
 
     try:
-        job = bigquery_client.load_table_from_json(json_rows=data_lines, destination=table_name, job_config=job_config)
+        job = bigquery_client.load_table_from_json(
+            json_rows=data_lines, destination=table_name, job_config=job_config
+        )
     except Exception as e:
         logger.error("BigQuery saving error: %s, job.errors=%s", e, job.errors)
         return
