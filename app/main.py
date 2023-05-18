@@ -3,15 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.settings import settings
+from app.routers.campaign_data_router import router as campaign_data_router
 from app.routers.health_check_router import router as health_check_router
 from app.routers.info_router import router as info_router
-from app.routers.text_router import router as text_router
-from app.enums.campaigns import Campaigns
-
-# TODO: TEST
-from app.utils.data_loader import get_campaign_df
-df = get_campaign_df(campaign=Campaigns.what_young_people_want.value)
-print(df)
 
 description = """
 What Women Want Dashboard API.
@@ -36,8 +30,8 @@ app.add_middleware(
     allow_headers=settings.CORS["allow_headers"],
 )
 
+app.include_router(campaign_data_router, tags=["Campaign Data"])
 app.include_router(health_check_router, tags=["Health Check"])
-app.include_router(text_router, tags=["Text"])
 app.include_router(info_router, tags=["Info"])
 
 if __name__ == "__main__":

@@ -31,7 +31,9 @@ def get_campaign_df(campaign: str) -> DataFrame:
     df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
 
     # Set canonical_country column
-    df_responses["canonical_country"] = df_responses.alpha2country.map(COUNTRY_ALPHA_2_TO_NAME)
+    df_responses["canonical_country"] = df_responses.alpha2country.map(
+        COUNTRY_ALPHA_2_TO_NAME
+    )
 
     # Remove all countries not present in the data from the countries list.
     config.countries_list = df_responses["alpha2country"].unique().tolist()
@@ -67,16 +69,21 @@ def get_campaign_df(campaign: str) -> DataFrame:
     if campaign == "pmn01a":
         # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
         _map = {"ENVIRONMENT": "SAFETY"}
-        df_responses["canonical_code"] = df_responses["canonical_code"].apply(lambda x: _map.get(x, x))
+        df_responses["canonical_code"] = df_responses["canonical_code"].apply(
+            lambda x: _map.get(x, x)
+        )
 
     df_responses["canonical_code"] = df_responses["canonical_code"].apply(
-        lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x)
+        lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
+    )
 
     df_responses["top_level"] = df_responses.canonical_code.apply(
         lambda x: get_top_level(campaign=campaign, leaf_categories=x)
     )
 
-    df_responses["age_str"] = df_responses["age"].apply(lambda x: "N/A" if x == 0 else x)
+    df_responses["age_str"] = df_responses["age"].apply(
+        lambda x: "N/A" if x == 0 else x
+    )
 
     unique_locations = df_responses[["canonical_country", "Region"]].drop_duplicates()
     for idx in range(len(unique_locations)):
@@ -101,7 +108,9 @@ def get_campaign_df(campaign: str) -> DataFrame:
 
     # Only include ages 10-24 for pmnch
     if campaign == Campaigns.what_young_people_want:
-        df_responses = df_responses.query("age == '10-14' | age == '15-19' | age == '20-24'")
+        df_responses = df_responses.query(
+            "age == '10-14' | age == '15-19' | age == '20-24'"
+        )
 
     return df_responses
 

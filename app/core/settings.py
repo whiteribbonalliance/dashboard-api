@@ -42,7 +42,7 @@ class ProdSettings(Settings):
 
 
 env = os.getenv("STAGE")
-if env == "prod":
-    settings = ProdSettings()
-else:
+if env == "dev":
     settings = DevSettings()
+else:
+    settings = ProdSettings()
