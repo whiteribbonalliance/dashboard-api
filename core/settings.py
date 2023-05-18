@@ -40,13 +40,8 @@ class ProdSettings(Settings):
     }
 
 
-def get_settings():
-    env = os.getenv("STAGE", "dev")
-    settings_type = {
-        "dev": DevSettings(),
-        "prod": ProdSettings(),
-    }
-    return settings_type[env]
-
-
-settings: Settings = get_settings()
+env = os.getenv("STAGE")
+if env == "prod":
+    settings = ProdSettings()
+else:
+    settings = DevSettings()

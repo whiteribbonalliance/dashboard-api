@@ -11,36 +11,28 @@ description = """
 What Women Want Dashboard API.
 """
 
+app = FastAPI(
+    title=settings.APP_TITLE,
+    description=description,
+    version=settings.VERSION,
+    docs_url="/docs",
+    contact={
+        "name": "Thomas Wood",
+        "url": "https://fastdatascience.com",
+    },
+)
 
-def configure_app():
-    app = FastAPI(
-        title=settings.APP_TITLE,
-        description=description,
-        version=settings.VERSION,
-        docs_url="/docs",
-        contact={
-            "name": "Thomas Wood",
-            "url": "https://fastdatascience.com",
-        },
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS["origins"],
+    allow_credentials=settings.CORS["allow_credentials"],
+    allow_methods=settings.CORS["allow_methods"],
+    allow_headers=settings.CORS["allow_headers"],
+)
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.CORS["origins"],
-        allow_credentials=settings.CORS["allow_credentials"],
-        allow_methods=settings.CORS["allow_methods"],
-        allow_headers=settings.CORS["allow_headers"],
-    )
-
-    # Include routers
-    app.include_router(health_check_router, tags=["Health Check"])
-    app.include_router(text_router, tags=["Text"])
-    app.include_router(info_router, tags=["Info"])
-
-    return app, settings
-
-
-app, settings = configure_app()
+app.include_router(health_check_router, tags=["Health Check"])
+app.include_router(text_router, tags=["Text"])
+app.include_router(info_router, tags=["Info"])
 
 if __name__ == "__main__":
     uvicorn.run(
