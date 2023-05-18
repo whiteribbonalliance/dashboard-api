@@ -10,8 +10,9 @@ from time import sleep
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
 from google.oauth2 import service_account
+from pandas import DataFrame
 
-from logginglib import init_custom_logger
+from app.logginglib import init_custom_logger
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -56,10 +57,10 @@ FULL_RESPONSES_SCHEMA = [
 
 
 def data_to_bigquery(
-    data_lines: list,
-    schema: list,
-    table_name: str = BIGQUERY_TABLE_NAME,
-    delay: float = 0.1,
+        data_lines: list,
+        schema: list,
+        table_name: str = BIGQUERY_TABLE_NAME,
+        delay: float = 0.1,
 ):
     """Submits a list of JSON records into BigQuery"""
 
@@ -92,3 +93,37 @@ def data_to_bigquery(
     else:
         logger.info("Submitted %d line(s) to BigQuery", len(data_lines))
         return True
+
+
+def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
+    """
+    Get the dataframe of a campaign from BigQuery
+
+    :param campaign: The campaign
+    """
+
+    query_job = bigquery_client.query(
+        f"""
+       SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as raw_response,
+       respondent_country_code as alpha2country,
+       response_nlu_category AS canonical_code,
+       response_lemmatized_text as lemmatized,
+       respondent_region_name as Region,
+       coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
+       INITCAP(respondent_gender) as gender,
+       JSON_VALUE(respondent_additional_fields.profession) as professional_title,
+       FROM deft-stratum-290216.wra_prod.responses
+       WHERE campaign = '{campaign}'
+       AND response_original_text is not null
+       AND (respondent_age > 14 OR respondent_age is null)
+       AND respondent_country_code is not null
+       AND response_nlu_category is not null
+       AND response_lemmatized_text is not null
+       AND LENGTH(response_original_text) > 3
+       """
+    )
+
+    results = query_job.result()
+    df_responses = results.to_dataframe()
+
+    return df_responses

@@ -6,6 +6,12 @@ from app.core.settings import settings
 from app.routers.health_check_router import router as health_check_router
 from app.routers.info_router import router as info_router
 from app.routers.text_router import router as text_router
+from app.enums.campaigns import Campaigns
+
+# TODO: TEST
+from app.utils.data_loader import get_campaign_df
+df = get_campaign_df(campaign=Campaigns.what_young_people_want.value)
+print(df)
 
 description = """
 What Women Want Dashboard API.

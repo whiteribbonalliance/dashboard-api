@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Language(str, Enum):
+class Languages(str, Enum):
     German: str = "de"
     Greek: str = "el"
     English: str = "en"

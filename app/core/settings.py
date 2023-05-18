@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
 
 class DevSettings(Settings):
+    # Development app config
     SERVER_HOST = "0.0.0.0"
     DEBUG = True
     PORT = 8000
@@ -25,7 +26,7 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    # TODO change
+    # Production app config
     SERVER_HOST = "0.0.0.0"
     DEBUG = False
     PORT = 8080
