@@ -3,9 +3,9 @@ from typing import List
 
 from fastapi import APIRouter
 
-from logginglib import init_custom_logger
-from schemas.requests.text import FilterOptions
-from schemas.responses.text import FilterResponse
+from app.logginglib import init_custom_logger
+from app.schemas.requests.text import FilterOptions
+from app.schemas.responses.text import FilterResponse
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

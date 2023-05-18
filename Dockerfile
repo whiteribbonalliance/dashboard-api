@@ -14,4 +14,4 @@ EXPOSE 8080
 ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

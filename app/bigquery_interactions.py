@@ -5,17 +5,16 @@
 # ----------------------------------------------------------------------------------------------------------------------------
 
 import logging
+from time import sleep
+
+from google.cloud import bigquery
+from google.cloud.bigquery import SchemaField
+from google.oauth2 import service_account
+
 from logginglib import init_custom_logger
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
-
-
-from google.cloud.bigquery import SchemaField
-from google.oauth2 import service_account
-from google.cloud import bigquery
-from time import sleep
-import os
 
 BQ_KEY_PATH = "credentials.json"
 credentials = service_account.Credentials.from_service_account_file(

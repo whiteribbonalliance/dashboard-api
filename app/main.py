@@ -2,10 +2,10 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.settings import settings
-from routers.health_check_router import router as health_check_router
-from routers.info_router import router as info_router
-from routers.text_router import router as text_router
+from app.core.settings import settings
+from app.routers.health_check_router import router as health_check_router
+from app.routers.info_router import router as info_router
+from app.routers.text_router import router as text_router
 
 description = """
 What Women Want Dashboard API.

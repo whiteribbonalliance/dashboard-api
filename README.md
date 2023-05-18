@@ -15,3 +15,19 @@ This API is built automatically by GitHub actions.
 The Docker container is pushed to Google Container Registry.
 
 Then it is deployed to Google App Engine using a Flex environment (see `app.yaml`).
+
+## Development
+
+### install
+
+Set the value for the environment variable `STAGE` as `dev`.
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run
+
+```bash
+uvicorn app.main:app --reload
+```
