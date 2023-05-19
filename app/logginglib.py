@@ -62,8 +62,8 @@ class NewRelicFormatter(Formatter):
 # ----------------------------------------------------------------------------------------------------------------------------
 
 
-def init_custom_logger(logger: object, level: int = logging.INFO):
-    # newrelic for centralized loggin
+def init_custom_logger(logger, level: int = logging.INFO):
+    # newrelic for centralized logging
     handler = NewRelicHandler()
     formatter = NewRelicFormatter()
     handler.setFormatter(formatter)

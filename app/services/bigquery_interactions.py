@@ -1,12 +1,9 @@
 """Partially copied from ETL/bigquery_importers.py"""
 
-# ----------------------------------------------------------------------------------------------------------------------------
-# LOGGING
-# ----------------------------------------------------------------------------------------------------------------------------
-
 import logging
 
-from google.cloud.bigquery import Client
+from google.cloud import bigquery
+from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
 
@@ -18,7 +15,7 @@ init_custom_logger(logger)
 table_name = "wra_prod.responses"
 
 
-def get_bigquery_client() -> Client:
+def get_bigquery_client() -> bigquery.Client:
     """Get BigQuery client"""
 
     credentials = service_account.Credentials.from_service_account_file(
@@ -26,10 +23,21 @@ def get_bigquery_client() -> Client:
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 
-    return Client(
+    return bigquery.Client(
         credentials=credentials,
         project=credentials.project_id,
     )
+
+
+def get_bigquery_storage_client() -> bigquery_storage.BigQueryReadClient:
+    """Get BigQuery storage client"""
+
+    credentials = service_account.Credentials.from_service_account_file(
+        filename="credentials.json",
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+
+    return bigquery_storage.BigQueryReadClient(credentials=credentials)
 
 
 def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
@@ -39,9 +47,12 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
     :param campaign: The campaign
     """
 
-    client = get_bigquery_client()
+    bigquery_client = get_bigquery_client()
 
-    query_job = client.query(
+    # Use BigQuery Storage client for faster results in dataframe
+    bigquery_storage_client = get_bigquery_storage_client()
+
+    query_job = bigquery_client.query(
         f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as raw_response,
         respondent_country_code as alpha2country,
@@ -51,7 +62,7 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         INITCAP(respondent_gender) as gender,
         JSON_VALUE(respondent_additional_fields.profession) as professional_title,
-        FROM deft-stratum-290216.wra_prod.responses
+        FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign}'
         AND response_original_text is not null
         AND (respondent_age > 14 OR respondent_age is null)
@@ -63,6 +74,7 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
     )
 
     results = query_job.result()
-    df_responses = results.to_dataframe()
+
+    df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     return df_responses

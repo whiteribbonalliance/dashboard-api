@@ -6,6 +6,11 @@ from app.enums.campaigns import Campaigns
 from app.services.bigquery_interactions import get_campaign_df_from_bigquery
 from app.utils.code_hierarchy import get_mapping_to_top_level
 
+# Campaign dataframes
+df_wra03a = None
+df_pmn01a = None
+df_midwife = None
+
 
 def get_campaign_df(campaign: str) -> DataFrame:
     """
@@ -14,29 +19,14 @@ def get_campaign_df(campaign: str) -> DataFrame:
     :param campaign: The campaign
     """
 
-    # Get the campaign config
-    config = get_campaign_config(campaign)
+    def get_top_level(leaf_categories):
+        mapping_to_top_level = get_mapping_to_top_level(campaign=campaign)
+        categories = leaf_categories.split("/")
+        top_levels = sorted(
+            set([mapping_to_top_level.get(cat, cat) for cat in categories])
+        )
 
-    country_to_regions = {}
-    genders = []
-    professions = []
-    countries = []
-
-    column_ids = [col["id"] for col in config.columns_to_display_in_excerpt]
-
-    # Get the dataframe from BigQuery
-    df_responses = get_campaign_df_from_bigquery(campaign=campaign)
-
-    # Set tokenized column
-    df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
-
-    # Set canonical_country column
-    df_responses["canonical_country"] = df_responses.alpha2country.map(
-        COUNTRY_ALPHA_2_TO_NAME
-    )
-
-    # Remove all countries not present in the data from the countries list.
-    config.countries_list = df_responses["alpha2country"].unique().tolist()
+        return "/".join(top_levels)
 
     def get_age_bucket(age):
         if age is None:
@@ -61,6 +51,30 @@ def get_campaign_df(campaign: str) -> DataFrame:
             return "15-19"
         return "N/A"
 
+    config = get_campaign_config(campaign)
+
+    column_ids = [col["id"] for col in config.columns_to_display_in_excerpt]
+
+    # Get the dataframe from BigQuery
+    df_responses = get_campaign_df_from_bigquery(campaign=campaign)
+
+    # Set tokenized column
+    df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
+
+    # Set canonical_country column
+    df_responses["canonical_country"] = df_responses.alpha2country.map(
+        COUNTRY_ALPHA_2_TO_NAME
+    )
+
+    # Remove all countries not present in the data from the countries list
+    alpha2countries_from_df = df_responses["alpha2country"].unique().tolist()
+    new_countries_list = []
+    for alpha2code, country_name, demonym in config.countries_list:
+        if alpha2code not in alpha2countries_from_df:
+            continue
+        new_countries_list.append((alpha2code, country_name, demonym))
+    config.countries_list = new_countries_list
+
     df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 
     # Remove the UNCODABLE responses
@@ -78,31 +92,43 @@ def get_campaign_df(campaign: str) -> DataFrame:
     )
 
     df_responses["top_level"] = df_responses.canonical_code.apply(
-        lambda x: get_top_level(campaign=campaign, leaf_categories=x)
+        lambda x: get_top_level(leaf_categories=x)
     )
 
     df_responses["age_str"] = df_responses["age"].apply(
         lambda x: "N/A" if x == 0 else x
     )
 
-    unique_locations = df_responses[["canonical_country", "Region"]].drop_duplicates()
-    for idx in range(len(unique_locations)):
-        loc = unique_locations.canonical_country.iloc[idx]
-        reg = unique_locations.Region.iloc[idx]
-        if loc not in country_to_regions:
-            country_to_regions[loc] = []
-        country_to_regions[loc].append(reg)
+    # Set country to regions dict
+    country_to_regions = {}
+    unique_canonical_country_region = df_responses[
+        ["canonical_country", "Region"]
+    ].drop_duplicates()
+    for idx in range(len(unique_canonical_country_region)):
+        country = unique_canonical_country_region.canonical_country.iloc[idx]
+        region = unique_canonical_country_region.Region.iloc[idx]
+        if country not in country_to_regions:
+            country_to_regions[country] = []
+        if region:
+            country_to_regions[country].append(region)
+    config.country_to_regions = country_to_regions
 
-    # Set gender
+    # Set genders
+    genders = []
     if "gender" in column_ids:
         for gender in df_responses.gender.value_counts().index:
             genders.append(gender)
+    config.genders = genders
 
     # Set professions
+    professions = []
     if "professional_title" in column_ids:
         for professional_title in df_responses.professional_title.value_counts().index:
             professions.append(professional_title)
+    config.professions = professions
 
+    # Set countries
+    countries = []
     for country in df_responses.canonical_country.value_counts().index:
         countries.append(country)
 
@@ -115,9 +141,17 @@ def get_campaign_df(campaign: str) -> DataFrame:
     return df_responses
 
 
-def get_top_level(campaign: str, leaf_categories):
-    mapping_to_top_level = get_mapping_to_top_level(campaign=campaign)
-    categories = leaf_categories.split("/")
-    top_levels = sorted(set([mapping_to_top_level.get(cat, cat) for cat in categories]))
+def load_campaigns_dataframes():
+    """Load campaign dataframes"""
 
-    return "/".join(top_levels)
+    print("Loading data for campaign wra03a...")
+    global df_wra03a
+    df_wra03a = get_campaign_df(campaign="wra03a")
+
+    print("Loading data for campaign pmn01a...")
+    global df_pmn01a
+    df_pmn01a = get_campaign_df(campaign="pmn01a")
+
+    print("Loading data for campaign midwife...")
+    global df_midwife
+    df_midwife = get_campaign_df(campaign="midwife")

@@ -1,1 +1,0 @@
-from app.schemas.responses.campaign_data import CampaignDataResponse
