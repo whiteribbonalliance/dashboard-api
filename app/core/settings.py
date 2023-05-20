@@ -5,7 +5,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     # General app config
-    VERSION = "1.0"
+    VERSION = "1.0.0"
     APP_TITLE = "What Women Want API"
 
 

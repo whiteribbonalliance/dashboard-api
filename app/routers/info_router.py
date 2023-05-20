@@ -1,10 +1,11 @@
-import os
+from fastapi import APIRouter, status
 
-from fastapi import APIRouter
+from app.core.settings import settings
+from app.enums.api_prefix import ApiPrefix
 
-router = APIRouter(prefix="/info")
+router = APIRouter(prefix=f"/{ApiPrefix.v1}/info")
 
 
-@router.get(path="/version")
+@router.get(path="/version", status_code=status.HTTP_200_OK)
 def show_version():
-    return {"version_id": os.environ.get("COMMIT_ID", "Unknown")}
+    return {"version": settings.VERSION}

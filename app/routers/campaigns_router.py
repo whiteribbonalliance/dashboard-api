@@ -6,12 +6,10 @@ from app.constants import CAMPAIGNS_LIST
 from app.enums.api_prefix import ApiPrefix
 from app.exceptions import ResourceNotFoundHTTPException
 from app.logginglib import init_custom_logger
-from app.schemas.campaign import (
-    CampaignDataRequest,
-    CampaignDataResponse,
-    CampaignFilterOptionsResponse,
-    CampaignCountryRegionsResponse,
-)
+from app.schemas.campaign import CampaignRequest, CampaignResponse
+from app.schemas.country import CountryResponse
+from app.schemas.filter_options import FilterOptionsResponse
+from app.utils import code_hierarchy
 from app.utils import countries_filter
 
 logger = logging.getLogger(__name__)
@@ -21,50 +19,53 @@ router = APIRouter(prefix=f"/{ApiPrefix.v1}/campaigns")
 
 
 @router.post(
-    path="/{campaign}/data",
-    response_model=CampaignDataResponse,
+    path="/{campaign}",
+    response_model=CampaignResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_campaign_data(campaign: str, campaign_data_req: CampaignDataRequest):
-    """Get campaign data"""
+def get_campaign(campaign: str, campaign_req: CampaignRequest):
+    """Get campaign"""
 
-    check_if_campaign_exists(campaign)
+    verify_campaign(campaign)
 
-    return CampaignDataResponse(data="123")
+    return CampaignResponse(data="123")
 
 
 @router.get(
     path="/{campaign}/filter-options",
-    response_model=CampaignFilterOptionsResponse,
+    response_model=FilterOptionsResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_campaign_filter_options(campaign: str):
-    """Get campaign filter options"""
+def get_filter_options(campaign: str):
+    """Get filter options"""
 
-    check_if_campaign_exists(campaign)
+    verify_campaign(campaign)
 
     countries = countries_filter.get_unique_countries(campaign=campaign)
+    response_topics = code_hierarchy.get_response_topics(campaign=campaign)
 
-    return CampaignFilterOptionsResponse(countries=countries)
+    return FilterOptionsResponse(countries=countries, response_topics=response_topics)
 
 
 @router.get(
-    path="/{campaign}/countries/{country}/regions",
-    response_model=CampaignCountryRegionsResponse,
+    path="/{campaign}/countries/{country_alpha2_code}",
+    response_model=CountryResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_country_regions(campaign: str, country: str):
-    """Get country regions"""
+def get_country_regions(campaign: str, country_alpha2_code: str):
+    """Get country"""
 
-    check_if_campaign_exists(campaign=campaign)
-    check_if_country_exists_in_campaign(campaign=campaign, country=country)
+    verify_campaign(campaign=campaign)
+    verify_country(campaign=campaign, country_alpha2_code=country_alpha2_code)
 
-    regions = countries_filter.get_country_regions(campaign=campaign, country=country)
+    regions = countries_filter.get_country_regions(
+        campaign=campaign, country_alpha2_code=country_alpha2_code
+    )
 
-    return CampaignCountryRegionsResponse(regions=regions)
+    return CountryResponse(regions=regions)
 
 
-def check_if_campaign_exists(campaign: str):
+def verify_campaign(campaign: str):
     """
     Check if campaign exists, If not, raise an exception
 
@@ -74,15 +75,19 @@ def check_if_campaign_exists(campaign: str):
     if campaign.lower() not in [c.lower() for c in CAMPAIGNS_LIST]:
         raise ResourceNotFoundHTTPException("Campaign not found")
 
+    return True
 
-def check_if_country_exists_in_campaign(campaign: str, country: str):
+
+def verify_country(campaign: str, country_alpha2_code: str):
     """
     Check if country exists in campaign, If not, raise an exception
 
     :param campaign: The campaign
-    :param country: The country
+    :param country_alpha2_code: The country's alpha2 code
     """
 
     countries = countries_filter.get_unique_countries(campaign=campaign)
-    if country.lower() not in [c.lower() for c in countries]:
+    if country_alpha2_code.lower() not in [c.get("value").lower() for c in countries]:
         raise ResourceNotFoundHTTPException("Country not found")
+
+    return True

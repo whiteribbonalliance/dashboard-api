@@ -102,15 +102,15 @@ def get_campaign_df(campaign: str) -> DataFrame:
     # Set country to regions dict
     country_to_regions = {}
     unique_canonical_country_region = df_responses[
-        ["canonical_country", "Region"]
+        ["alpha2country", "canonical_country", "Region"]
     ].drop_duplicates()
     for idx in range(len(unique_canonical_country_region)):
-        country = unique_canonical_country_region.canonical_country.iloc[idx]
+        country_alpha2_code = unique_canonical_country_region.alpha2country.iloc[idx]
         region = unique_canonical_country_region.Region.iloc[idx]
-        if country not in country_to_regions:
-            country_to_regions[country] = []
+        if country_alpha2_code not in country_to_regions:
+            country_to_regions[country_alpha2_code] = []
         if region:
-            country_to_regions[country].append(region)
+            country_to_regions[country_alpha2_code].append(region)
     config.country_to_regions = country_to_regions
 
     # Set genders
@@ -144,14 +144,14 @@ def get_campaign_df(campaign: str) -> DataFrame:
 def load_campaigns_dataframes():
     """Load campaign dataframes"""
 
-    print("Loading data for campaign wra03a...")
+    # print("Loading data for campaign wra03a...")
     global df_wra03a
     df_wra03a = get_campaign_df(campaign="wra03a")
 
-    print("Loading data for campaign pmn01a...")
+    # print("Loading data for campaign pmn01a...")
     global df_pmn01a
     df_pmn01a = get_campaign_df(campaign="pmn01a")
 
-    print("Loading data for campaign midwife...")
+    # print("Loading data for campaign midwife...")
     global df_midwife
     df_midwife = get_campaign_df(campaign="midwife")

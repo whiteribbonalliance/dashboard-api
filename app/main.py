@@ -35,7 +35,11 @@ app.include_router(campaigns_router, tags=["Campaigns"])
 app.include_router(health_check_router, tags=["Health Check"])
 app.include_router(info_router, tags=["Info"])
 
-load_campaigns_dataframes()
+
+@app.on_event("startup")
+def startup_event():
+    load_campaigns_dataframes()
+
 
 if __name__ == "__main__":
     uvicorn.run(

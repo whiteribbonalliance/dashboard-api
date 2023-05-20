@@ -49,7 +49,7 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
 
     bigquery_client = get_bigquery_client()
 
-    # Use BigQuery Storage client for faster results in dataframe
+    # Use BigQuery Storage client for faster results to dataframe
     bigquery_storage_client = get_bigquery_storage_client()
 
     query_job = bigquery_client.query(

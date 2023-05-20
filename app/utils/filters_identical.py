@@ -1,9 +1,7 @@
-from app.schemas.filter_options import FilterOptions
+from app.schemas.filter import Filter
 
 
-def get_filters_identical(
-    filter_options_1: FilterOptions, filter_options_2: FilterOptions
-):
+def check_if_filters_are_identical(filter_options_1: Filter, filter_options_2: Filter):
     """
     Find out if both sets of filters are identical.
     If both filters are identical then we should not display dual graphs.
