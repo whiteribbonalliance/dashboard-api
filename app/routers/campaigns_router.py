@@ -1,6 +1,7 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 
 from app.constants import CAMPAIGNS_LIST
 from app.enums.api_prefix import ApiPrefix
@@ -18,15 +19,24 @@ init_custom_logger(logger)
 router = APIRouter(prefix=f"/{ApiPrefix.v1}/campaigns")
 
 
+async def common_parameters(campaign: str):
+    verify_campaign(campaign=campaign)
+
+    return {"campaign": campaign}
+
+
 @router.post(
     path="/{campaign}",
     response_model=CampaignResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_campaign(campaign: str, campaign_req: CampaignRequest):
+async def read_campaign(
+    commons: Annotated[dict, Depends(common_parameters)],
+    campaign_req: CampaignRequest,
+):
     """Get campaign"""
 
-    verify_campaign(campaign)
+    campaign = commons.get("campaign")
 
     return CampaignResponse(data="123")
 
@@ -36,10 +46,10 @@ def get_campaign(campaign: str, campaign_req: CampaignRequest):
     response_model=FilterOptionsResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_filter_options(campaign: str):
+async def read_filter_options(commons: Annotated[dict, Depends(common_parameters)]):
     """Get filter options"""
 
-    verify_campaign(campaign)
+    campaign = commons.get("campaign")
 
     countries = countries_filter.get_unique_countries(campaign=campaign)
     response_topics = code_hierarchy.get_response_topics(campaign=campaign)
@@ -52,10 +62,14 @@ def get_filter_options(campaign: str):
     response_model=CountryResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_country_regions(campaign: str, country_alpha2_code: str):
+async def read_country_regions(
+    commons: Annotated[dict, Depends(common_parameters)],
+    country_alpha2_code: str,
+):
     """Get country"""
 
-    verify_campaign(campaign=campaign)
+    campaign = commons.get("campaign")
+
     verify_country(campaign=campaign, country_alpha2_code=country_alpha2_code)
 
     regions = countries_filter.get_country_regions(
