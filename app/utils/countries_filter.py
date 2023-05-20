@@ -14,12 +14,15 @@ def get_unique_countries(campaign: str) -> list[dict]:
     return unique_countries
 
 
-def get_country_regions(campaign: str, country_alpha2_code: str) -> list[str]:
+def get_country_regions(campaign: str, country_alpha2_code: str) -> list[dict]:
     """Get country regions"""
 
     config = get_campaign_config(campaign=campaign)
 
-    regions = config.country_to_regions.get(country_alpha2_code)
+    regions = [
+        {"value": region, "label": region}
+        for region in config.country_to_regions.get(country_alpha2_code)
+    ]
     if regions:
         return regions
 
