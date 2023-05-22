@@ -14,3 +14,9 @@ class FilterOptions(BaseModel):
     age_buckets: list[str] = Field(
         default=[], description="All unique respondents age buckets"
     )
+
+    genders: list[str] = Field(default=[], description="All unique respondents genders")
+
+    professions: list[str] = Field(
+        default=[], description="All unique respondents professions"
+    )

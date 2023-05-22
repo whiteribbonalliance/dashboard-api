@@ -64,3 +64,23 @@ def get_age_buckets(campaign: str) -> list[str]:
     age_buckets = databank.age_buckets
 
     return age_buckets
+
+
+def get_genders(campaign: str) -> list[str]:
+    """Get genders"""
+
+    databank = get_campaign_databank(campaign=campaign)
+
+    genders = databank.genders
+
+    return genders
+
+
+def get_professions(campaign: str) -> list[str]:
+    """Get professions"""
+
+    databank = get_campaign_databank(campaign=campaign)
+
+    professions = databank.professions
+
+    return professions
