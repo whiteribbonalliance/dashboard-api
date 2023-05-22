@@ -2,7 +2,8 @@
 
 import json
 
-from pandas import DataFrame
+import numpy as np
+import pandas as pd
 
 from app.databank import get_campaign_databank
 from app.enums.campaigns import Campaigns
@@ -11,7 +12,7 @@ from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 
 
-def load_campaign_dataframe(campaign: str) -> DataFrame:
+def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
     """
     Get the dataframe of a campaign
 
@@ -75,11 +76,31 @@ def load_campaign_dataframe(campaign: str) -> DataFrame:
         lambda x: countries_data[x]["name"]
     )
 
+    def filter_ages_10_to_24(age: str):
+        """Return age if between 10 and 24, else nan"""
+
+        if isinstance(age, str):
+            if age.isnumeric():
+                age_int = int(age)
+                if 10 <= age_int <= 24:
+                    return age
+
+        return np.nan
+
+    # Only keep ages 10-24 for pmnch
+    if campaign == Campaigns.what_young_people_want:
+        df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
+        df_responses = df_responses[df_responses["age"].notna()]
+
     # Add age_bucket column
     df_responses["age_bucket"] = df_responses["age"].apply(get_age_bucket)
 
     # Set age buckets
     databank.age_buckets = df_responses["age_bucket"].unique().tolist()
+    databank.age_buckets = [
+        age_bucket for age_bucket in databank.age_buckets if age_bucket is not None
+    ]
+    databank.age_buckets.sort()
 
     # Remove the UNCODABLE responses
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
@@ -147,12 +168,6 @@ def load_campaign_dataframe(campaign: str) -> DataFrame:
         ):
             professions.append(professional_title)
     databank.professions = professions
-
-    # Only include ages 10-24 for pmnch
-    if campaign == Campaigns.what_young_people_want:
-        df_responses = df_responses.query(
-            "age == '10-14' | age == '15-19' | age == '20-24'"
-        )
 
     # Set dataframe
     databank.dataframe = df_responses
