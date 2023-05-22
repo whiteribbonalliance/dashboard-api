@@ -31,7 +31,8 @@ def check_if_filters_are_identical(
         filter_options_1.country == filter_options_2.country
         and filter_options_1.region == filter_options_2.region
         and filter_options_1.response_topic == filter_options_2.response_topic
-        and filter_options_1.match_categories == filter_options_2.match_categories
+        and filter_options_1.only_show_responses_categories
+        == filter_options_2.only_show_responses_categories
         and filter_options_1.age == filter_options_2.age
         and filter_options_1.gender == filter_options_2.gender
         and filter_options_1.profession == filter_options_2.profession

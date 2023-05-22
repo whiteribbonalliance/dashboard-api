@@ -12,6 +12,8 @@ class Filter(BaseModel):
         default=None, description="The profession of the respondent"
     )
     response_topic: str = Field(default=None, description="The response topic")
-    match_categories: bool = Field(default=None, description="Match categories or not")
+    only_show_responses_categories: bool = Field(
+        default=None, description="Show responses from categories or any"
+    )
     keyword_filter: str = Field(default=None, description="Filter by keyword")
     keyword_exclude: str = Field(default=None, description="Keyword to exclude")

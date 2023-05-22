@@ -54,8 +54,11 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
 
     countries = data_reader.get_countries_list(campaign=campaign)
     response_topics = data_reader.get_response_topics(campaign=campaign)
+    age_buckets = data_reader.get_age_buckets(campaign=campaign)
 
-    return FilterOptions(countries=countries, response_topics=response_topics)
+    return FilterOptions(
+        countries=countries, response_topics=response_topics, age_buckets=age_buckets
+    )
 
 
 @router.get(

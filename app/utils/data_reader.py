@@ -54,3 +54,13 @@ def get_response_topics(campaign: str) -> list[ResponseTopic]:
             response_topics.append(ResponseTopic(code=code, name=name))
 
     return response_topics
+
+
+def get_age_buckets(campaign: str) -> list[str]:
+    """Get age buckets"""
+
+    databank = get_campaign_databank(campaign=campaign)
+
+    age_buckets = databank.age_buckets
+
+    return age_buckets

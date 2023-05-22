@@ -11,3 +11,6 @@ class FilterOptions(BaseModel):
     response_topics: list[ResponseTopic] = Field(
         default=[], description="All respondents response topics"
     )
+    age_buckets: list[str] = Field(
+        default=[], description="All unique respondents age buckets"
+    )

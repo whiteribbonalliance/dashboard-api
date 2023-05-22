@@ -75,8 +75,11 @@ def load_campaign_dataframe(campaign: str) -> DataFrame:
         lambda x: countries_data[x]["name"]
     )
 
-    # Edit age column
-    df_responses["age"] = df_responses["age"].apply(get_age_bucket)
+    # Add age_bucket column
+    df_responses["age_bucket"] = df_responses["age"].apply(get_age_bucket)
+
+    # Set age buckets
+    databank.age_buckets = df_responses["age_bucket"].unique().tolist()
 
     # Remove the UNCODABLE responses
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
@@ -96,11 +99,6 @@ def load_campaign_dataframe(campaign: str) -> DataFrame:
     # Add top_level column
     df_responses["top_level"] = df_responses["canonical_code"].apply(
         lambda x: get_top_level(leaf_categories=x)
-    )
-
-    # Add age_str column
-    df_responses["age_str"] = df_responses["age"].apply(
-        lambda x: "N/A" if x == 0 else x
     )
 
     # Create countries
@@ -169,7 +167,7 @@ def load_all_campaigns_dataframes():
     load_campaign_dataframe(campaign="wra03a")
 
     # print("Loading data for campaign pmn01a...")
-    # load_campaign_dataframe(campaign="pmn01a")
+    load_campaign_dataframe(campaign="pmn01a")
 
     # print("Loading data for campaign midwife...")
-    # load_campaign_dataframe(campaign="midwife")
+    load_campaign_dataframe(campaign="midwife")
