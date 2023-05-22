@@ -7,11 +7,10 @@ from app.constants import CAMPAIGNS_LIST
 from app.enums.api_prefix import ApiPrefix
 from app.exceptions import ResourceNotFoundHTTPException
 from app.logginglib import init_custom_logger
-from app.schemas.campaign import CampaignRequest, CampaignResponse
-from app.schemas.country import CountryResponse
-from app.schemas.filter_options import FilterOptionsResponse
-from app.utils import code_hierarchy
-from app.utils import countries_filter
+from app.schemas.campaign import CampaignRequest, Campaign
+from app.schemas.country import Country
+from app.schemas.filter_options import FilterOptions
+from app.utils import data_reader
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -20,6 +19,8 @@ router = APIRouter(prefix=f"/{ApiPrefix.v1}/campaigns")
 
 
 async def common_parameters(campaign: str):
+    """Verify a campaign and return the common parameter"""
+
     verify_campaign(campaign=campaign)
 
     return {"campaign": campaign}
@@ -27,56 +28,54 @@ async def common_parameters(campaign: str):
 
 @router.post(
     path="/{campaign}",
-    response_model=CampaignResponse,
+    response_model=Campaign,
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
     commons: Annotated[dict, Depends(common_parameters)],
     campaign_req: CampaignRequest,
 ):
-    """Get campaign"""
+    """Read campaign"""
 
     campaign = commons.get("campaign")
 
-    return CampaignResponse(data="123")
+    return Campaign(data="123")
 
 
 @router.get(
     path="/{campaign}/filter-options",
-    response_model=FilterOptionsResponse,
+    response_model=FilterOptions,
     status_code=status.HTTP_200_OK,
 )
 async def read_filter_options(commons: Annotated[dict, Depends(common_parameters)]):
-    """Get filter options"""
+    """Read filter options"""
 
     campaign = commons.get("campaign")
 
-    countries = countries_filter.get_unique_countries(campaign=campaign)
-    response_topics = code_hierarchy.get_response_topics(campaign=campaign)
+    countries = data_reader.get_countries_list(campaign=campaign)
+    response_topics = data_reader.get_response_topics(campaign=campaign)
 
-    return FilterOptionsResponse(countries=countries, response_topics=response_topics)
+    return FilterOptions(countries=countries, response_topics=response_topics)
 
 
 @router.get(
     path="/{campaign}/countries/{country_alpha2_code}",
-    response_model=CountryResponse,
+    response_model=Country,
     status_code=status.HTTP_200_OK,
 )
-async def read_country_regions(
+async def read_country(
     commons: Annotated[dict, Depends(common_parameters)],
     country_alpha2_code: str,
 ):
-    """Get country"""
+    """Read country"""
 
     campaign = commons.get("campaign")
-
     verify_country(campaign=campaign, country_alpha2_code=country_alpha2_code)
 
-    regions = countries_filter.get_country_regions(
-        campaign=campaign, country_alpha2_code=country_alpha2_code
-    )
+    countries = data_reader.get_countries_dict(campaign=campaign)
+    country = countries.get(country_alpha2_code)
 
-    return CountryResponse(regions=regions)
+    return country
 
 
 def verify_campaign(campaign: str):
@@ -100,8 +99,9 @@ def verify_country(campaign: str, country_alpha2_code: str):
     :param country_alpha2_code: The country's alpha2 code
     """
 
-    countries = countries_filter.get_unique_countries(campaign=campaign)
-    if country_alpha2_code.lower() not in [c.get("value").lower() for c in countries]:
+    countries = data_reader.get_countries_dict(campaign=campaign)
+    country = countries.get(country_alpha2_code)
+    if not country:
         raise ResourceNotFoundHTTPException("Country not found")
 
     return True

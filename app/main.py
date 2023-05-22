@@ -6,7 +6,7 @@ from app.core.settings import settings
 from app.routers.campaigns_router import router as campaigns_router
 from app.routers.health_check_router import router as health_check_router
 from app.routers.info_router import router as info_router
-from app.utils.data_loader import load_campaigns_dataframes
+from app.utils import data_loader
 
 description = """
 What Women Want Dashboard API.
@@ -38,7 +38,7 @@ app.include_router(info_router, tags=["Info"])
 
 @app.on_event("startup")
 def startup_event():
-    load_campaigns_dataframes()
+    data_loader.load_all_campaigns_dataframes()
 
 
 if __name__ == "__main__":

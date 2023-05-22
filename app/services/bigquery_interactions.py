@@ -1,4 +1,4 @@
-"""Partially copied from ETL/bigquery_importers.py"""
+"""Fetch campaign data from BigQuery"""
 
 import logging
 

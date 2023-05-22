@@ -1,7 +1,9 @@
 from app.schemas.filter import Filter
 
 
-def check_if_filters_are_identical(filter_options_1: Filter, filter_options_2: Filter):
+def check_if_filters_are_identical(
+    filter_options_1: Filter, filter_options_2: Filter
+) -> bool:
     """
     Find out if both sets of filters are identical.
     If both filters are identical then we should not display dual graphs.
@@ -16,8 +18,8 @@ def check_if_filters_are_identical(filter_options_1: Filter, filter_options_2: F
     filter_options_1.region = flatten(filter_options_1.region)
     filter_options_2.region = flatten(filter_options_2.region)
 
-    filter_options_1.topic = flatten(filter_options_1.topic)
-    filter_options_2.topic = flatten(filter_options_2.topic)
+    filter_options_1.response_topic = flatten(filter_options_1.response_topic)
+    filter_options_2.response_topic = flatten(filter_options_2.response_topic)
 
     filter_options_1.gender = flatten(filter_options_1.gender)
     filter_options_2.gender = flatten(filter_options_2.gender)
@@ -28,7 +30,7 @@ def check_if_filters_are_identical(filter_options_1: Filter, filter_options_2: F
     return (
         filter_options_1.country == filter_options_2.country
         and filter_options_1.region == filter_options_2.region
-        and filter_options_1.topic == filter_options_2.topic
+        and filter_options_1.response_topic == filter_options_2.response_topic
         and filter_options_1.match_categories == filter_options_2.match_categories
         and filter_options_1.age == filter_options_2.age
         and filter_options_1.gender == filter_options_2.gender

@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 
 
-class CountryResponse(BaseModel):
-    regions: list[dict] = Field([], description="The regions of the country")
+class Country(BaseModel):
+    alpha2_code: str = Field(description="The Country's alpha2 code")
+    name: str = Field(description="The country's name")
+    demonym: str = Field(description="The country's demonym")
+    regions: list[str] = Field([], description="The country's region")

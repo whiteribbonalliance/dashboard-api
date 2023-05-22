@@ -1,37 +1,29 @@
-from app.config import get_campaign_config
+from app.databank import get_campaign_databank
 
 
 def get_mapping_to_description(campaign: str) -> dict:
-    config = get_campaign_config(campaign)
+    """Get mapping to description"""
 
-    hierarchy = config.category_hierarchy
+    databank = get_campaign_databank(campaign=campaign)
+
+    hierarchy = databank.category_hierarchy
     mapping_to_description = {}
     for top_level, leaves in hierarchy.items():
         for code, name in leaves.items():
             mapping_to_description[code] = name
 
-    return hierarchy
+    return mapping_to_description
 
 
 def get_mapping_to_top_level(campaign: str) -> dict:
-    config = get_campaign_config(campaign)
+    """Get mapping to top level"""
 
-    hierarchy = config.category_hierarchy
+    databank = get_campaign_databank(campaign=campaign)
+
+    hierarchy = databank.category_hierarchy
     mapping_to_top_level = {}
     for top_level, leaves in hierarchy.items():
         for code, name in leaves.items():
             mapping_to_top_level[code] = top_level
 
-    return hierarchy
-
-
-def get_response_topics(campaign: str) -> list[dict]:
-    config = get_campaign_config(campaign)
-
-    hierarchy = config.category_hierarchy
-    response_topics = []
-    for top_level, leaves in hierarchy.items():
-        for code, name in leaves.items():
-            response_topics.append({"value": code, "label": name})
-
-    return response_topics
+    return mapping_to_top_level

@@ -2,12 +2,16 @@ from pydantic import BaseModel, Field
 
 
 class Filter(BaseModel):
-    country: str = Field(None, description="The alpha-2 country code of the respondent")
-    region: str = Field(None, description="The region of the respondent")
-    age: str = Field(None, description="The age of the respondent")
-    gender: str = Field(None, description="The gender of the respondent")
-    profession: str = Field(None, description="The profession of the respondent")
-    topic: str = Field(None, description="The topic")
-    match_categories: bool = Field(None, description="Match categories or not")
-    keyword_filter: str = Field(None, description="Filter by keyword")
-    keyword_exclude: str = Field(None, description="Keyword to exclude")
+    country: str = Field(
+        default=None, description="The alpha-2 country code of the respondent"
+    )
+    region: str = Field(default=None, description="The region of the respondent")
+    age: str = Field(default=None, description="The age of the respondent")
+    gender: str = Field(default=None, description="The gender of the respondent")
+    profession: str = Field(
+        default=None, description="The profession of the respondent"
+    )
+    response_topic: str = Field(default=None, description="The response topic")
+    match_categories: bool = Field(default=None, description="Match categories or not")
+    keyword_filter: str = Field(default=None, description="Filter by keyword")
+    keyword_exclude: str = Field(default=None, description="Keyword to exclude")
