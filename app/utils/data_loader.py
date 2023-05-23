@@ -167,7 +167,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     professions = []
     if "professional_title" in column_ids:
         for professional_title in (
-                df_responses["professional_title"].value_counts().index
+            df_responses["professional_title"].value_counts().index
         ):
             professions.append(professional_title)
     databank.professions = professions

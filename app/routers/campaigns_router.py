@@ -25,7 +25,7 @@ async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
 
     campaign_code_verified = verify_campaign(campaign=campaign)
 
-    return {"campaign": campaign_code_verified}
+    return {"campaign_code": campaign_code_verified}
 
 
 @router.post(
@@ -34,12 +34,12 @@ async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-        commons: Annotated[dict, Depends(common_parameters)],
-        campaign_req: CampaignRequest,
+    commons: Annotated[dict, Depends(common_parameters)],
+    campaign_req: CampaignRequest,
 ):
     """Read campaign"""
 
-    campaign_code = commons.get("campaign")
+    campaign_code = commons.get("campaign_code")
 
     return Campaign(data="123")
 
@@ -52,7 +52,7 @@ async def read_campaign(
 async def read_filter_options(commons: Annotated[dict, Depends(common_parameters)]):
     """Read filter options"""
 
-    campaign_code: CampaignCode = commons.get("campaign")
+    campaign_code: CampaignCode = commons.get("campaign_code")
 
     data_reader = DataReader(campaign_code=campaign_code)
 
@@ -77,12 +77,12 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
     status_code=status.HTTP_200_OK,
 )
 async def read_country(
-        commons: Annotated[dict, Depends(common_parameters)],
-        country_alpha2_code: str,
+    commons: Annotated[dict, Depends(common_parameters)],
+    country_alpha2_code: str,
 ):
     """Read country"""
 
-    campaign_code: CampaignCode = commons.get("campaign")
+    campaign_code: CampaignCode = commons.get("campaign_code")
     verify_country(campaign_code=campaign_code, country_alpha2_code=country_alpha2_code)
 
     data_reader = DataReader(campaign_code=campaign_code)
