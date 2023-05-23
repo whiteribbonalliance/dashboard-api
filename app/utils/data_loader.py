@@ -1,29 +1,33 @@
 """Requests the dataframe of a campaign from BigQuery and stores the data into the databank"""
 
 import json
+import logging
 
 import numpy as np
-import pandas as pd
 
 from app.databank import get_campaign_databank
-from app.enums.campaigns import Campaigns
+from app.enums.campaign_code import CampaignCode
+from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 
+logger = logging.getLogger(__name__)
+init_custom_logger(logger)
 
-def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
+
+def load_campaign_data(campaign_code: CampaignCode):
     """
-    Get the dataframe of a campaign
+    Load campaign data
 
-    :param campaign: The campaign
+    :param campaign_code: The campaign code
     """
 
-    databank = get_campaign_databank(campaign=campaign)
+    databank = get_campaign_databank(campaign_code=campaign_code)
 
-    def get_top_level(leaf_categories):
+    def get_top_level(leaf_categories: str) -> str:
         mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
-            campaign=campaign
+            campaign_code=campaign_code
         )
         categories = leaf_categories.split("/")
         top_levels = sorted(
@@ -32,7 +36,7 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
 
         return "/".join(top_levels)
 
-    def get_age_bucket(age: str | int | None):
+    def get_age_bucket(age: str | int | None) -> str | None:
         """Add age to a specific age bucket e.g. 30 -> '25-34'"""
 
         if age is None:
@@ -42,6 +46,7 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
             if age.isnumeric():
                 age = int(age)
             else:
+                # Non-numeric e.g. 'prefer not to say'
                 return age
 
         if age >= 55:
@@ -59,9 +64,20 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
 
         return "N/A"
 
+    def filter_ages_10_to_24(age: str) -> str:
+        """Return age if between 10 and 24, else nan"""
+
+        if isinstance(age, str):
+            if age.isnumeric():
+                age_int = int(age)
+                if 10 <= age_int <= 24:
+                    return age
+
+        return np.nan
+
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
-        campaign=campaign
+        campaign=campaign_code
     )
 
     # Add tokenized column
@@ -76,19 +92,8 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
         lambda x: countries_data[x]["name"]
     )
 
-    def filter_ages_10_to_24(age: str):
-        """Return age if between 10 and 24, else nan"""
-
-        if isinstance(age, str):
-            if age.isnumeric():
-                age_int = int(age)
-                if 10 <= age_int <= 24:
-                    return age
-
-        return np.nan
-
     # Only keep ages 10-24 for pmnch
-    if campaign == Campaigns.what_young_people_want:
+    if campaign_code == CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
@@ -106,21 +111,19 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
 
     # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
-    if campaign == "pmn01a":
+    if campaign_code == "pmn01a":
         _map = {"ENVIRONMENT": "SAFETY"}
         df_responses["canonical_code"] = df_responses["canonical_code"].apply(
             lambda x: _map.get(x, x)
         )
 
-    # Rename OTHERQUESTIONABLE to NOTRELATED
+    # Rename canonical_code OTHERQUESTIONABLE to NOTRELATED
     df_responses["canonical_code"] = df_responses["canonical_code"].apply(
         lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
     )
 
     # Add top_level column
-    df_responses["top_level"] = df_responses["canonical_code"].apply(
-        lambda x: get_top_level(leaf_categories=x)
-    )
+    df_responses["top_level"] = df_responses["canonical_code"].apply(get_top_level)
 
     # Create countries
     countries = {}
@@ -129,7 +132,7 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
         alpha2_code = countries_alpha2_codes["alpha2country"].iloc[idx]
         country = countries_data.get(alpha2_code)
         if not country:
-            # TODO: Log this
+            logger.warning("Could not find country in countries_data.json")
             continue
         countries[alpha2_code] = Country(
             alpha2_code=alpha2_code,
@@ -164,7 +167,7 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
     professions = []
     if "professional_title" in column_ids:
         for professional_title in (
-            df_responses["professional_title"].value_counts().index
+                df_responses["professional_title"].value_counts().index
         ):
             professions.append(professional_title)
     databank.professions = professions
@@ -172,17 +175,17 @@ def load_campaign_dataframe(campaign: str) -> pd.DataFrame:
     # Set dataframe
     databank.dataframe = df_responses
 
-    return df_responses
 
+def load_all_campaigns_data():
+    """Load all campaigns data"""
 
-def load_all_campaigns_dataframes():
-    """Load all campaigns dataframes"""
+    print(f"Loading data for campaign {CampaignCode.what_women_want}...")
+    load_campaign_data(campaign_code=CampaignCode.what_women_want)
 
-    # print("Loading data for campaign wra03a...")
-    load_campaign_dataframe(campaign="wra03a")
+    print(f"Loading data for campaign {CampaignCode.what_young_people_want}...")
+    load_campaign_data(campaign_code=CampaignCode.what_young_people_want)
 
-    # print("Loading data for campaign pmn01a...")
-    load_campaign_dataframe(campaign="pmn01a")
+    print(f"Loading data for campaign {CampaignCode.midwives_voices}...")
+    load_campaign_data(campaign_code=CampaignCode.midwives_voices)
 
-    # print("Loading data for campaign midwife...")
-    load_campaign_dataframe(campaign="midwife")
+    print("Loading campaigns data complete.")

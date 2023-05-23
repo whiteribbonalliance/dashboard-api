@@ -38,7 +38,7 @@ app.include_router(info_router, tags=["Info"])
 
 @app.on_event("startup")
 def startup_event():
-    data_loader.load_all_campaigns_dataframes()
+    data_loader.load_all_campaigns_data()
 
 
 if __name__ == "__main__":

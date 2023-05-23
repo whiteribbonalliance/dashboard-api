@@ -1,7 +1,7 @@
-from app.enums.campaigns import Campaigns
+from app.enums.campaign_code import CampaignCode
 
 CAMPAIGNS_LIST = [
-    Campaigns.what_women_want.value,
-    Campaigns.what_young_people_want.value,
-    Campaigns.midwives_voices.value,
+    CampaignCode.what_women_want.value,
+    CampaignCode.what_young_people_want.value,
+    CampaignCode.midwives_voices.value,
 ]

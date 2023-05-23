@@ -3,84 +3,69 @@ Reads data from a databank
 """
 
 from app.databank import get_campaign_databank
+from app.enums.campaign_code import CampaignCode
 from app.schemas.country import Country
 from app.schemas.response_topic import ResponseTopic
 
 
-def get_countries_list(campaign: str) -> list[Country]:
-    """Get countries list"""
+class DataReader:
+    def __init__(self, campaign_code: CampaignCode):
+        self.__databank = get_campaign_databank(campaign_code=campaign_code)
 
-    databank = get_campaign_databank(campaign=campaign)
+    def get_countries_list(self) -> list[Country]:
+        """Get countries list"""
 
-    countries = databank.countries
+        countries = self.__databank.countries
 
-    return list(countries.values())
+        return list(countries.values())
 
+    def get_countries_dict(self) -> dict[str, Country]:
+        """Get countries dict"""
 
-def get_countries_dict(campaign: str) -> dict[str, Country]:
-    """Get countries dict"""
+        countries = self.__databank.countries
+        if countries:
+            return countries
 
-    databank = get_campaign_databank(campaign=campaign)
+        return {}
 
-    countries = databank.countries
-    if countries:
-        return countries
+    def get_country_regions(self, country_alpha2_code: str) -> list[str]:
+        """Get country regions"""
 
-    return {}
+        countries = self.__databank.countries
+        country = countries.get(country_alpha2_code)
+        if country:
+            return country.regions
 
+        return []
 
-def get_country_regions(campaign: str, country_alpha2_code: str) -> list[str]:
-    """Get country regions"""
+    def get_response_topics(self) -> list[ResponseTopic]:
+        """Get response topics"""
 
-    databank = get_campaign_databank(campaign=campaign)
+        hierarchy = self.__databank.category_hierarchy
+        response_topics = []
+        for top_level, leaves in hierarchy.items():
+            for code, name in leaves.items():
+                response_topics.append(ResponseTopic(code=code, name=name))
 
-    countries = databank.countries
-    country = countries.get(country_alpha2_code)
-    if country:
-        return country.regions
+        return response_topics
 
-    return []
+    def get_age_buckets(self) -> list[str]:
+        """Get age buckets"""
 
+        age_buckets = self.__databank.age_buckets
 
-def get_response_topics(campaign: str) -> list[ResponseTopic]:
-    """Get response topics"""
+        return age_buckets
 
-    databank = get_campaign_databank(campaign=campaign)
+    def get_genders(self) -> list[str]:
+        """Get genders"""
 
-    hierarchy = databank.category_hierarchy
-    response_topics = []
-    for top_level, leaves in hierarchy.items():
-        for code, name in leaves.items():
-            response_topics.append(ResponseTopic(code=code, name=name))
+        genders = self.__databank.genders
 
-    return response_topics
+        return genders
 
+    def get_professions(self) -> list[str]:
+        """Get professions"""
 
-def get_age_buckets(campaign: str) -> list[str]:
-    """Get age buckets"""
+        professions = self.__databank.professions
 
-    databank = get_campaign_databank(campaign=campaign)
-
-    age_buckets = databank.age_buckets
-
-    return age_buckets
-
-
-def get_genders(campaign: str) -> list[str]:
-    """Get genders"""
-
-    databank = get_campaign_databank(campaign=campaign)
-
-    genders = databank.genders
-
-    return genders
-
-
-def get_professions(campaign: str) -> list[str]:
-    """Get professions"""
-
-    databank = get_campaign_databank(campaign=campaign)
-
-    professions = databank.professions
-
-    return professions
+        return professions
