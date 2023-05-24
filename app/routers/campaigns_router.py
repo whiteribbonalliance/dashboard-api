@@ -34,8 +34,8 @@ async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-    commons: Annotated[dict, Depends(common_parameters)],
-    campaign_req: CampaignRequest,
+        commons: Annotated[dict, Depends(common_parameters)],
+        campaign_req: CampaignRequest,
 ):
     """Read campaign"""
 
@@ -56,18 +56,41 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
 
     data_reader = DataReader(campaign_code=campaign_code)
 
+    # Country options
     countries = data_reader.get_countries_list()
+    country_options = [
+        {"value": country.alpha2_code, "label": country.name} for country in countries
+    ]
+
+    # Response topic options
     response_topics = data_reader.get_response_topics()
+    response_topic_options = [
+        {"value": response_topic.code, "label": response_topic.name}
+        for response_topic in response_topics
+    ]
+
+    # Age bucket options
     age_buckets = data_reader.get_age_buckets()
+    age_bucket_options = [
+        {"value": age_bucket, "label": age_bucket} for age_bucket in age_buckets
+    ]
+
+    # Gender options
     genders = data_reader.get_genders()
+    gender_options = [{"value": gender, "label": gender} for gender in genders]
+
+    # Profession options
     professions = data_reader.get_professions()
+    profession_options = [
+        {"value": profession, "label": profession} for profession in professions
+    ]
 
     return FilterOptions(
-        countries=countries,
-        response_topics=response_topics,
-        age_buckets=age_buckets,
-        genders=genders,
-        professions=professions,
+        countries=country_options,
+        response_topics=response_topic_options,
+        age_buckets=age_bucket_options,
+        genders=gender_options,
+        professions=profession_options,
     )
 
 
@@ -77,8 +100,8 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
     status_code=status.HTTP_200_OK,
 )
 async def read_country(
-    commons: Annotated[dict, Depends(common_parameters)],
-    country_alpha2_code: str,
+        commons: Annotated[dict, Depends(common_parameters)],
+        country_alpha2_code: str,
 ):
     """Read country"""
 

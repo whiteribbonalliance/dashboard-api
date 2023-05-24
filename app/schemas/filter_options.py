@@ -1,22 +1,19 @@
 from pydantic import BaseModel, Field
 
-from app.schemas.country import Country
-from app.schemas.response_topic import ResponseTopic
-
 
 class FilterOptions(BaseModel):
-    countries: list[Country] = Field(
+    countries: list[dict[str, str]] = Field(
         default=[], description="All respondents countries"
     )
-    response_topics: list[ResponseTopic] = Field(
+    response_topics: list[dict[str, str]] = Field(
         default=[], description="All respondents response topics"
     )
-    age_buckets: list[str] = Field(
+    age_buckets: list[dict[str, str]] = Field(
         default=[], description="All unique respondents age buckets"
     )
-
-    genders: list[str] = Field(default=[], description="All unique respondents genders")
-
-    professions: list[str] = Field(
+    genders: list[dict[str, str]] = Field(
+        default=[], description="All unique respondents genders"
+    )
+    professions: list[dict[str, str]] = Field(
         default=[], description="All unique respondents professions"
     )
