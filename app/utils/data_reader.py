@@ -69,3 +69,23 @@ class DataReader:
         professions = self.__databank.professions
 
         return professions
+
+    def get_only_responses_from_categories_options(self) -> list[dict[str, str]]:
+        """Get only responses from categories options"""
+
+        only_responses_from_categories_options = (
+            self.__databank.only_responses_from_categories_options
+        )
+
+        return only_responses_from_categories_options
+
+    def get_only_multi_word_phrases_containing_filter_term_options(
+        self,
+    ) -> list[dict[str, str]]:
+        """Get only multi-word phrases containing filter term options"""
+
+        only_multi_word_phrases_containing_filter_term_options = (
+            self.__databank.only_multi_word_phrases_containing_filter_term_options
+        )
+
+        return only_multi_word_phrases_containing_filter_term_options

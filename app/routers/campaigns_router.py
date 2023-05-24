@@ -34,8 +34,8 @@ async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-        commons: Annotated[dict, Depends(common_parameters)],
-        campaign_req: CampaignRequest,
+    commons: Annotated[dict, Depends(common_parameters)],
+    campaign_req: CampaignRequest,
 ):
     """Read campaign"""
 
@@ -85,12 +85,24 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         {"value": profession, "label": profession} for profession in professions
     ]
 
+    # Only responses from categories options
+    only_responses_from_categories_options = (
+        data_reader.get_only_responses_from_categories_options()
+    )
+
+    # Only multi-word phrases containing filter term options
+    only_multi_word_phrases_containing_filter_term_options = (
+        data_reader.get_only_multi_word_phrases_containing_filter_term_options()
+    )
+
     return FilterOptions(
         countries=country_options,
         response_topics=response_topic_options,
         age_buckets=age_bucket_options,
         genders=gender_options,
         professions=profession_options,
+        only_responses_from_categories=only_responses_from_categories_options,
+        only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
     )
 
 
@@ -100,8 +112,8 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
     status_code=status.HTTP_200_OK,
 )
 async def read_country(
-        commons: Annotated[dict, Depends(common_parameters)],
-        country_alpha2_code: str,
+    commons: Annotated[dict, Depends(common_parameters)],
+    country_alpha2_code: str,
 ):
     """Read country"""
 
