@@ -1,6 +1,5 @@
 """Requests the dataframe of a campaign from BigQuery and stores the data into the databank"""
 
-import json
 import logging
 
 import numpy as np
@@ -11,6 +10,7 @@ from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
+from app.utils import countries_data_loader
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -83,9 +83,8 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Add tokenized column
     df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
 
-    # Load countries_data.json
-    with open("countries_data.json", "r") as countries_data:
-        countries_data = json.loads(countries_data.read())
+    # Get countries data
+    countries_data = countries_data_loader.get_countries_data_list()
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
@@ -142,11 +141,11 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Add regions to countries
     unique_canonical_country_region = df_responses[
-        ["alpha2country", "Region"]
+        ["alpha2country", "region"]
     ].drop_duplicates()
     for idx in range(len(unique_canonical_country_region)):
         alpha2_code = unique_canonical_country_region["alpha2country"].iloc[idx]
-        region = unique_canonical_country_region["Region"].iloc[idx]
+        region = unique_canonical_country_region["region"].iloc[idx]
         if region:
             countries[alpha2_code].regions.append(region)
 

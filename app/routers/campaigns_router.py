@@ -19,6 +19,9 @@ init_custom_logger(logger)
 router = APIRouter(prefix=f"/{ApiPrefix.v1}/campaigns")
 
 
+# TODO: Cache responses for as long as data has not been reloaded from BigQuery
+
+
 async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
     """Verify a campaign and return the common parameter"""
 
@@ -40,9 +43,11 @@ async def read_campaign(
 
     campaign_code = commons.get("campaign_code")
 
-    data_reader = DataReader(campaign_code=campaign_code)
-
-    # TODO: apply filter
+    data_reader = DataReader(
+        campaign_code=campaign_code,
+        filter_1=campaign_req.filter_1,
+        filter_2=campaign_req.filter_2,
+    )
 
     responses_sample = {
         "columns": data_reader.get_responses_sample_columns(),

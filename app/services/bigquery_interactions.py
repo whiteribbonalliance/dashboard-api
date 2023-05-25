@@ -58,7 +58,7 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
         respondent_country_code as alpha2country,
         response_nlu_category AS canonical_code,
         response_lemmatized_text as lemmatized,
-        respondent_region_name as Region,
+        respondent_region_name as region,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         INITCAP(respondent_gender) as gender,
         JSON_VALUE(respondent_additional_fields.profession) as professional_title,

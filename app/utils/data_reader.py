@@ -2,17 +2,41 @@
 Reads data from a databank
 """
 
+import inflect
+from pandas import DataFrame
+
 from app.databank import get_campaign_databank
 from app.enums.campaign_code import CampaignCode
 from app.schemas.country import Country
+from app.schemas.filter import Filter
 from app.schemas.response_topic import ResponseTopic
 from app.utils import code_hierarchy
+from app.utils import filters
+
+inflect_engine = inflect.engine()
 
 
 class DataReader:
-    def __init__(self, campaign_code: CampaignCode):
+    def __init__(
+        self,
+        campaign_code: CampaignCode,
+        filter_1: Filter = None,
+        filter_2: Filter = None,
+    ):
         self.__campaign_code = campaign_code
         self.__databank = get_campaign_databank(campaign_code=campaign_code)
+        self.__filter_1 = filter_1
+        self.__filter_2 = filter_2
+
+    def get_dataframe_filtered(self, _filter: Filter) -> DataFrame:
+        """Get dataframe filtered"""
+
+        dataframe_copy = self.__databank.dataframe.copy()
+        dataframe_filtered = filters.apply_filters(
+            df_copy=dataframe_copy, _filter=_filter
+        )
+
+        return dataframe_filtered
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -120,7 +144,18 @@ class DataReader:
 
         df = self.__databank.dataframe
 
-        df = df.sample(n=1000, random_state=1)
+        # Apply filter to dataframe
+        if self.__filter_1:
+            df, description = filters.apply_filters(
+                campaign_code=self.__campaign_code, df=df, _filter=self.__filter_1
+            )
+
+        # Get a sample of 1000
+        n_sample = 1000
+        if len(df.index) > 0:
+            if len(df.index) < n_sample:
+                n_sample = len(df.index)
+            df = df.sample(n=n_sample, random_state=1)
 
         df["description"] = df["canonical_code"].apply(get_all_descriptions)
 
@@ -129,3 +164,19 @@ class DataReader:
         responses_sample_data = df[column_ids].to_dict("records")
 
         return responses_sample_data
+
+    def get_respondent_noun_singular(self):
+        """Get respondent noun singular"""
+
+        respondent_noun = self.__databank.respondent_noun
+
+        return respondent_noun
+
+    def get_respondent_noun_plural(self):
+        """Get respondent noun plural"""
+
+        respondent_noun = self.__databank.respondent_noun
+
+        respondent_noun_plural = inflect_engine.plural(respondent_noun)
+
+        return respondent_noun_plural
