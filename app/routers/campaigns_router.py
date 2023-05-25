@@ -62,6 +62,14 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         {"value": country.alpha2_code, "label": country.name} for country in countries
     ]
 
+    # Region options
+    region_options = []
+    for country in countries:
+        for region in country.regions:
+            region_options.append(
+                {"value": f"{country.alpha2_code}:{region}", "label": region}
+            )
+
     # Response topic options
     response_topics = data_reader.get_response_topics()
     response_topic_options = [
@@ -97,6 +105,7 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
 
     return FilterOptions(
         countries=country_options,
+        regions=region_options,
         response_topics=response_topic_options,
         age_buckets=age_bucket_options,
         genders=gender_options,

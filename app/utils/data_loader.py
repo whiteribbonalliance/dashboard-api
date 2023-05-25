@@ -176,6 +176,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     databank.dataframe = df_responses
 
 
+# TODO: Task schedule to run every 12 hours
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
