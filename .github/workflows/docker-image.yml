@@ -1,4 +1,5 @@
-name: Docker Image CI
+name: Build and deploy dashboard API (FastAPI) to Google App Engine using gcloud CLI
+
 
 on:
   push:
