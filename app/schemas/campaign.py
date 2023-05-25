@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Campaign(BaseModel):
-    data: str = Field(description="Test data")
+    responses_sample: dict

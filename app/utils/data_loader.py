@@ -153,8 +153,8 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set countries
     databank.countries = countries
 
-    # Get column ids
-    column_ids = [col["id"] for col in databank.excerpt_columns]
+    # Get responses sample column ids
+    column_ids = [col["id"] for col in databank.responses_sample_columns]
 
     # Set genders
     genders = []

@@ -6,10 +6,12 @@ from app.databank import get_campaign_databank
 from app.enums.campaign_code import CampaignCode
 from app.schemas.country import Country
 from app.schemas.response_topic import ResponseTopic
+from app.utils import code_hierarchy
 
 
 class DataReader:
     def __init__(self, campaign_code: CampaignCode):
+        self.__campaign_code = campaign_code
         self.__databank = get_campaign_databank(campaign_code=campaign_code)
 
     def get_countries_list(self) -> list[Country]:
@@ -89,3 +91,41 @@ class DataReader:
         )
 
         return only_multi_word_phrases_containing_filter_term_options
+
+    def get_responses_sample_columns(self) -> list[dict[str, str]]:
+        """Get responses sample columns"""
+
+        responses_sample_columns = self.__databank.responses_sample_columns
+
+        return responses_sample_columns
+
+    def get_responses_sample_data(self):
+        """Get responses data sample"""
+
+        def get_all_descriptions(code: str):
+            """Get all descriptions"""
+
+            mapping_to_description = code_hierarchy.get_mapping_to_description(
+                campaign_code=self.__campaign_code
+            )
+
+            return mapping_to_description.get(
+                code,
+                " / ".join(
+                    sorted(
+                        set([mapping_to_description.get(x, x) for x in code.split("/")])
+                    )
+                ),
+            )
+
+        df = self.__databank.dataframe
+
+        df = df.sample(n=1000, random_state=1)
+
+        df["description"] = df["canonical_code"].apply(get_all_descriptions)
+
+        column_ids = [col["id"] for col in self.get_responses_sample_columns()]
+
+        responses_sample_data = df[column_ids].to_dict("records")
+
+        return responses_sample_data

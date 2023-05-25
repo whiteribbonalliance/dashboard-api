@@ -10,7 +10,6 @@ from app.http_exceptions import ResourceNotFoundHTTPException
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.country import Country
 from app.schemas.filter_options import FilterOptions
 from app.utils.data_reader import DataReader
 
@@ -41,7 +40,16 @@ async def read_campaign(
 
     campaign_code = commons.get("campaign_code")
 
-    return Campaign(data="123")
+    data_reader = DataReader(campaign_code=campaign_code)
+
+    # TODO: apply filter
+
+    responses_sample = {
+        "columns": data_reader.get_responses_sample_columns(),
+        "data": data_reader.get_responses_sample_data(),
+    }
+
+    return Campaign(responses_sample=responses_sample)
 
 
 @router.get(
@@ -113,28 +121,6 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         only_responses_from_categories=only_responses_from_categories_options,
         only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
     )
-
-
-@router.get(
-    path="/{campaign}/countries/{country_alpha2_code}",
-    response_model=Country,
-    status_code=status.HTTP_200_OK,
-)
-async def read_country(
-    commons: Annotated[dict, Depends(common_parameters)],
-    country_alpha2_code: str,
-):
-    """Read country"""
-
-    campaign_code: CampaignCode = commons.get("campaign_code")
-    verify_country(campaign_code=campaign_code, country_alpha2_code=country_alpha2_code)
-
-    data_reader = DataReader(campaign_code=campaign_code)
-
-    countries = data_reader.get_countries_dict()
-    country = countries.get(country_alpha2_code)
-
-    return country
 
 
 def verify_campaign(campaign: str) -> CampaignCode:
