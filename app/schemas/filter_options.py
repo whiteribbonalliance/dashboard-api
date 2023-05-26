@@ -11,8 +11,8 @@ class FilterOptions(BaseModel):
     response_topics: list[dict[str, str]] = Field(
         default=[], description="Options for respondents response topics"
     )
-    age_buckets: list[dict[str, str]] = Field(
-        default=[], description="Options for unique respondents age buckets"
+    ages: list[dict[str, str]] = Field(
+        default=[], description="Options for unique respondents ages"
     )
     genders: list[dict[str, str]] = Field(
         default=[], description="Options for respondents genders"

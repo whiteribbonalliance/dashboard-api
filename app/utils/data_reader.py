@@ -75,12 +75,12 @@ class DataReader:
 
         return response_topics
 
-    def get_age_buckets(self) -> list[str]:
-        """Get age buckets"""
+    def get_ages(self) -> list[str]:
+        """Get ages"""
 
-        age_buckets = self.__databank.age_buckets
+        ages = self.__databank.ages
 
-        return age_buckets
+        return ages
 
     def get_genders(self) -> list[str]:
         """Get genders"""
@@ -146,7 +146,7 @@ class DataReader:
 
         # Apply filter to dataframe
         if self.__filter_1:
-            df, description = filters.apply_filters(df=df, _filter=self.__filter_1)
+            df = filters.apply_filters(df=df, _filter=self.__filter_1)
 
         # Get a sample of 1000
         n_sample = 1000

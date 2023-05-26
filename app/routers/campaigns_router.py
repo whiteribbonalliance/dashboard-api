@@ -91,11 +91,9 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         for response_topic in response_topics
     ]
 
-    # Age bucket options
-    age_buckets = data_reader.get_age_buckets()
-    age_bucket_options = [
-        {"value": age_bucket, "label": age_bucket} for age_bucket in age_buckets
-    ]
+    # Ages options
+    ages = data_reader.get_ages()
+    ages = [{"value": age, "label": age} for age in ages]
 
     # Gender options
     genders = data_reader.get_genders()
@@ -121,7 +119,7 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         countries=country_options,
         country_regions=country_regions_options,
         response_topics=response_topic_options,
-        age_buckets=age_bucket_options,
+        ages=ages,
         genders=gender_options,
         professions=profession_options,
         only_responses_from_categories=only_responses_from_categories_options,

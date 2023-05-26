@@ -22,7 +22,7 @@ def apply_filters(df: DataFrame, _filter: Filter) -> DataFrame:
     professions = _filter.professions
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
-    age_buckets = _filter.age_buckets
+    ages = _filter.ages
     only_multi_word_phrases_containing_filter_term = (
         _filter.only_multi_word_phrases_containing_filter_term
     )
@@ -78,9 +78,9 @@ def apply_filters(df: DataFrame, _filter: Filter) -> DataFrame:
             ~df_copy["lemmatized"].str.contains(text_exclude_re, regex=True)
         ]
 
-    # Filter age buckets
-    if len(age_buckets) > 0:
-        df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
+    # Filter ages
+    if len(ages) > 0:
+        df_copy = df_copy[df_copy["age"].isin(ages)]
 
     return df_copy
 
@@ -97,7 +97,7 @@ def generate_description_of_filter(
     professions = _filter.professions
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
-    age_buckets = _filter.age_buckets
+    ages = _filter.ages
     only_responses_from_categories = _filter.only_responses_from_categories
 
     data_readerr = data_reader.DataReader(campaign_code=campaign_code)
@@ -151,10 +151,8 @@ def generate_description_of_filter(
     if len(regions) > 0:
         description += " in " + join_list_comma_or(regions)
 
-    if age_buckets is not None and len(age_buckets) > 0:
-        description += generate_age_description(
-            campaign_code=campaign_code, age_buckets=age_buckets
-        )
+    if ages is not None and len(ages) > 0:
+        description += generate_age_description(campaign_code=campaign_code, ages=ages)
 
     mapping_to_description = code_hierarchy.get_mapping_to_description(
         campaign_code=campaign_code
@@ -230,7 +228,7 @@ def check_if_filters_are_identical(
         == filter_options_2.only_responses_from_categories
         and filter_options_1.only_multi_word_phrases_containing_filter_term
         == filter_options_2.only_multi_word_phrases_containing_filter_term
-        and filter_options_1.age_buckets == filter_options_2.age_buckets
+        and filter_options_1.ages == filter_options_2.ages
         and filter_options_1.gender == filter_options_2.gender
         and filter_options_1.profession == filter_options_2.profession
         and filter_options_1.keyword_filter == filter_options_2.keyword_filter
@@ -258,27 +256,21 @@ def join_list_comma_or(listed) -> str:
     return "{} or {}".format(", ".join(listed[:-1]), listed[-1])
 
 
-def generate_age_description(
-    campaign_code: CampaignCode, age_buckets: list[str]
-) -> str:
+def generate_age_description(campaign_code: CampaignCode, ages: list[str]) -> str:
     """Generate age description"""
 
     data_readerr = data_reader.DataReader(campaign_code=campaign_code)
 
-    age_buckets_from_databank = data_readerr.get_age_buckets()
+    ages_from_databank = data_readerr.get_ages()
 
-    if (
-        age_buckets is None
-        or len(age_buckets) == 0
-        or set(age_buckets) == set(age_buckets_from_databank)
-    ):
+    if ages is None or len(ages) == 0 or set(ages) == set(ages_from_databank):
         return ""
-    if len(age_buckets) == 1 and age_buckets[0] == "prefer not to say":
+    if len(ages) == 1 and ages[0] == "prefer not to say":
         return " who did not give their age"
 
-    groups = " or ".join([a for a in sorted(age_buckets) if a != "prefer not to say"])
+    groups = " or ".join([a for a in sorted(ages) if a != "prefer not to say"])
 
-    if "prefer not to say" in age_buckets:
+    if "prefer not to say" in ages:
         groups += " or who did not give their age"
 
     groups = re.sub("-19 or 20|-24 or 25|-34 or 35|-44 or 45|-54 or 55", "", groups)

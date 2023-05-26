@@ -11,6 +11,7 @@ from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 from app.utils import countries_data_loader
+from app.enums.campaign_code import CampaignCode
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -96,15 +97,14 @@ def load_campaign_data(campaign_code: CampaignCode):
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
-    # Add age_bucket column
-    df_responses["age_bucket"] = df_responses["age"].apply(get_age_bucket)
+    # Modify ages into age buckets (skip if pmnch)
+    if campaign_code != CampaignCode.what_young_people_want:
+        df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 
-    # Set age buckets
-    databank.age_buckets = df_responses["age_bucket"].unique().tolist()
-    databank.age_buckets = [
-        age_bucket for age_bucket in databank.age_buckets if age_bucket is not None
-    ]
-    databank.age_buckets.sort()
+    # Set ages
+    databank.ages = df_responses["age"].unique().tolist()
+    databank.ages = [age for age in databank.ages if age is not None]
+    databank.ages.sort()
 
     # Remove the UNCODABLE responses
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
