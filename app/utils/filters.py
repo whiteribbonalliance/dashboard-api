@@ -7,12 +7,11 @@ from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
 from app.utils import countries_data_loader
-from app.utils import data_reader
 
 inflect_engine = inflect.engine()
 
 
-def apply_filters(df: DataFrame, _filter: Filter) -> DataFrame:
+def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = _filter.countries
@@ -88,7 +87,9 @@ def apply_filters(df: DataFrame, _filter: Filter) -> DataFrame:
 def generate_description_of_filter(
     campaign_code: CampaignCode,
     _filter: Filter,
-    num_results,
+    num_results: int,
+    respondent_noun_singular: str,
+    respondent_noun_plural: str,
 ):
     countries = _filter.countries
     regions = _filter.regions
@@ -100,15 +101,7 @@ def generate_description_of_filter(
     ages = _filter.ages
     only_responses_from_categories = _filter.only_responses_from_categories
 
-    data_readerr = data_reader.DataReader(campaign_code=campaign_code)
-
-    professions_from_databank = data_readerr.get_professions()
-    genders_from_databank = data_readerr.get_genders()
-
-    respondent_noun_singular = data_readerr.get_respondent_noun_singular()
-    respondent_noun_plural = data_readerr.get_respondent_noun_plural()
-
-    if len(professions) == 0 or set(professions) == set(professions_from_databank):
+    if len(professions) == 0:
         if num_results == 1:
             women = respondent_noun_singular
         else:
@@ -137,11 +130,7 @@ def generate_description_of_filter(
             description = ""
     else:
         description = women
-    if (
-        genders is not None
-        and len(genders) > 0
-        and set(genders) != set(genders_from_databank)
-    ):
+    if genders is not None and len(genders) > 0:
         stated_genders = [gender for gender in genders if gender != "prefer not to say"]
         if len(stated_genders) > 0:
             description = join_list_comma_or(stated_genders) + " " + description
@@ -152,7 +141,7 @@ def generate_description_of_filter(
         description += " in " + join_list_comma_or(regions)
 
     if ages is not None and len(ages) > 0:
-        description += generate_age_description(campaign_code=campaign_code, ages=ages)
+        description += generate_age_description(ages=ages)
 
     mapping_to_description = code_hierarchy.get_mapping_to_description(
         campaign_code=campaign_code
@@ -256,14 +245,10 @@ def join_list_comma_or(listed) -> str:
     return "{} or {}".format(", ".join(listed[:-1]), listed[-1])
 
 
-def generate_age_description(campaign_code: CampaignCode, ages: list[str]) -> str:
+def generate_age_description(ages: list[str]) -> str:
     """Generate age description"""
 
-    data_readerr = data_reader.DataReader(campaign_code=campaign_code)
-
-    ages_from_databank = data_readerr.get_ages()
-
-    if ages is None or len(ages) == 0 or set(ages) == set(ages_from_databank):
+    if ages is None or len(ages) == 0:
         return ""
     if len(ages) == 1 and ages[0] == "prefer not to say":
         return " who did not give their age"

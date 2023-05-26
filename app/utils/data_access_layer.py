@@ -16,7 +16,7 @@ from app.utils import filters
 inflect_engine = inflect.engine()
 
 
-class DataReader:
+class DataAccessLayer:
     def __init__(
         self,
         campaign_code: CampaignCode,
@@ -31,12 +31,11 @@ class DataReader:
     def get_dataframe_filtered(self, _filter: Filter) -> DataFrame:
         """Get dataframe filtered"""
 
-        dataframe_copy = self.__databank.dataframe.copy()
-        dataframe_filtered, description = filters.apply_filters(
-            df=dataframe_copy, _filter=_filter
-        )
+        df_copy = self.__databank.dataframe.copy()
 
-        return dataframe_filtered
+        df_copy_filtered = filters.apply_filter_to_df(df=df_copy, _filter=_filter)
+
+        return df_copy_filtered
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -142,24 +141,24 @@ class DataReader:
                 ),
             )
 
-        df = self.__databank.dataframe
+        df_copy = self.__databank.dataframe.copy()
 
         # Apply filter to dataframe
         if self.__filter_1:
-            df = filters.apply_filters(df=df, _filter=self.__filter_1)
+            df_copy = filters.apply_filter_to_df(df=df_copy, _filter=self.__filter_1)
 
         # Get a sample of 1000
         n_sample = 1000
-        if len(df.index) > 0:
-            if len(df.index) < n_sample:
-                n_sample = len(df.index)
-            df = df.sample(n=n_sample, random_state=1)
+        if len(df_copy.index) > 0:
+            if len(df_copy.index) < n_sample:
+                n_sample = len(df_copy.index)
+            df_copy = df_copy.sample(n=n_sample, random_state=1)
 
-        df["description"] = df["canonical_code"].apply(get_all_descriptions)
+        df_copy["description"] = df_copy["canonical_code"].apply(get_all_descriptions)
 
         column_ids = [col["id"] for col in self.get_responses_sample_columns()]
 
-        responses_sample_data = df[column_ids].to_dict("records")
+        responses_sample_data = df_copy[column_ids].to_dict("records")
 
         return responses_sample_data
 

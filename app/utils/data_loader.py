@@ -5,7 +5,6 @@ import logging
 import numpy as np
 
 from app.databank import get_campaign_databank
-from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services import bigquery_interactions
