@@ -78,7 +78,7 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
-        campaign=campaign_code
+        campaign_code=campaign_code
     )
 
     # Add tokenized column
@@ -92,12 +92,12 @@ def load_campaign_data(campaign_code: CampaignCode):
         lambda x: countries_data[x]["name"]
     )
 
-    # Only keep ages 10-24 for pmnch
+    # Only keep ages 10-24 for PMNCH
     if campaign_code == CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
-    # Modify ages into age buckets (skip if pmnch)
+    # Modify ages into age buckets (skip if PMNCH)
     if campaign_code != CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 

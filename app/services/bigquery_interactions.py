@@ -7,6 +7,7 @@ from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
 
+from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 
 logger = logging.getLogger(__name__)
@@ -40,17 +41,23 @@ def get_bigquery_storage_client() -> bigquery_storage.BigQueryReadClient:
     return bigquery_storage.BigQueryReadClient(credentials=credentials)
 
 
-def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
+def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     """
     Get the dataframe of a campaign from BigQuery
 
-    :param campaign: The campaign
+    :param campaign_code: The campaign code
     """
 
     bigquery_client = get_bigquery_client()
 
     # Use BigQuery Storage client for faster results to dataframe
     bigquery_storage_client = get_bigquery_storage_client()
+
+    # PMNCH has a different minimum age
+    if campaign_code == CampaignCode.what_young_people_want:
+        min_age = "10"
+    else:
+        min_age = "15"
 
     query_job = bigquery_client.query(
         f"""
@@ -63,9 +70,9 @@ def get_campaign_df_from_bigquery(campaign: str) -> DataFrame:
         INITCAP(respondent_gender) as gender,
         JSON_VALUE(respondent_additional_fields.profession) as professional_title,
         FROM deft-stratum-290216.{table_name}
-        WHERE campaign = '{campaign}'
+        WHERE campaign = '{campaign_code}'
         AND response_original_text is not null
-        AND (respondent_age > 14 OR respondent_age is null)
+        AND (respondent_age >= {min_age} OR respondent_age is null)
         AND respondent_country_code is not null
         AND response_nlu_category is not null
         AND response_lemmatized_text is not null
