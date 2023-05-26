@@ -5,8 +5,8 @@ class FilterOptions(BaseModel):
     countries: list[dict[str, str]] = Field(
         default=[], description="Options for respondents countries"
     )
-    regions: list[dict[str, str]] = Field(
-        default=[], description="Options for respondents regions"
+    country_regions: list[dict[str, list | str]] = Field(
+        default=[], description="Options for respondents country's regions"
     )
     response_topics: list[dict[str, str]] = Field(
         default=[], description="Options for respondents response topics"

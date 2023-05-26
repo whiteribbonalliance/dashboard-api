@@ -12,7 +12,7 @@ from app.utils import data_reader
 inflect_engine = inflect.engine()
 
 
-def apply_filters(campaign_code: CampaignCode, df: DataFrame, _filter: Filter) -> tuple:
+def apply_filters(df: DataFrame, _filter: Filter) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = _filter.countries
@@ -82,11 +82,7 @@ def apply_filters(campaign_code: CampaignCode, df: DataFrame, _filter: Filter) -
     if len(age_buckets) > 0:
         df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
-    description = generate_description_of_filter(
-        campaign_code=campaign_code, _filter=_filter, num_results=len(df_copy)
-    )
-
-    return df_copy, description
+    return df_copy
 
 
 def generate_description_of_filter(

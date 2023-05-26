@@ -49,6 +49,7 @@ async def read_campaign(
         filter_2=campaign_req.filter_2,
     )
 
+    # Only filter 1 should be applied
     responses_sample = {
         "columns": data_reader.get_responses_sample_columns(),
         "data": data_reader.get_responses_sample_data(),
@@ -75,13 +76,13 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
         {"value": country.alpha2_code, "label": country.name} for country in countries
     ]
 
-    # Region options
-    region_options = []
+    # Country regions options
+    country_regions_options = []
     for country in countries:
+        regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
         for region in country.regions:
-            region_options.append(
-                {"value": f"{country.alpha2_code}:{region}", "label": region}
-            )
+            regions_options["options"].append({"value": region, "label": region})
+        country_regions_options.append(regions_options)
 
     # Response topic options
     response_topics = data_reader.get_response_topics()
@@ -118,7 +119,7 @@ async def read_filter_options(commons: Annotated[dict, Depends(common_parameters
 
     return FilterOptions(
         countries=country_options,
-        regions=region_options,
+        country_regions=country_regions_options,
         response_topics=response_topic_options,
         age_buckets=age_bucket_options,
         genders=gender_options,
@@ -144,21 +145,3 @@ def verify_campaign(campaign: str) -> CampaignCode:
         return CampaignCode.what_young_people_want
     if campaign == CampaignCode.midwives_voices:
         return CampaignCode.midwives_voices
-
-
-def verify_country(campaign_code: CampaignCode, country_alpha2_code: str):
-    """
-    Check if country exists in campaign, If not, raise an exception
-
-    :param campaign_code: The campaign
-    :param country_alpha2_code: The country's alpha2 code
-    """
-
-    data_reader = DataReader(campaign_code=campaign_code)
-
-    countries = data_reader.get_countries_dict()
-    country = countries.get(country_alpha2_code)
-    if not country:
-        raise ResourceNotFoundHTTPException("Country not found")
-
-    return True

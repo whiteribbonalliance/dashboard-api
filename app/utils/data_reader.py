@@ -32,8 +32,8 @@ class DataReader:
         """Get dataframe filtered"""
 
         dataframe_copy = self.__databank.dataframe.copy()
-        dataframe_filtered = filters.apply_filters(
-            df_copy=dataframe_copy, _filter=_filter
+        dataframe_filtered, description = filters.apply_filters(
+            df=dataframe_copy, _filter=_filter
         )
 
         return dataframe_filtered
@@ -146,9 +146,7 @@ class DataReader:
 
         # Apply filter to dataframe
         if self.__filter_1:
-            df, description = filters.apply_filters(
-                campaign_code=self.__campaign_code, df=df, _filter=self.__filter_1
-            )
+            df, description = filters.apply_filters(df=df, _filter=self.__filter_1)
 
         # Get a sample of 1000
         n_sample = 1000
