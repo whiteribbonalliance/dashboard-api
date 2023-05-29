@@ -33,18 +33,28 @@ class DataAccessLayer:
 
         # Apply filter 1
         if self.__filter_1:
-            self.__df_1 = self.__get_dataframe_filtered(_filter=self.__filter_1)
+            self.__df_1 = self.__apply_filter_to_df(_filter=self.__filter_1)
         else:
             self.__df_1 = self.__databank.dataframe.copy()
 
         # Apply filter 2
         if self.__filter_2:
-            self.__df_2 = self.__get_dataframe_filtered(_filter=self.__filter_2)
+            self.__df_2 = self.__apply_filter_to_df(_filter=self.__filter_2)
         else:
             self.__df_2 = self.__databank.dataframe.copy()
 
-    def __get_dataframe_filtered(self, _filter: Filter) -> pd.DataFrame:
-        """Get dataframe filtered"""
+    def __get_df_1_copy(self) -> pd.DataFrame:
+        """Get dataframe 1 copy"""
+
+        return self.__df_1.copy()
+
+    def __get_df_2_copy(self) -> pd.DataFrame:
+        """Get dataframe 2 copy"""
+
+        return self.__df_2.copy()
+
+    def __apply_filter_to_df(self, _filter: Filter) -> pd.DataFrame:
+        """Apply filter to df"""
 
         df_copy = self.__databank.dataframe.copy()
 
@@ -153,7 +163,7 @@ class DataAccessLayer:
 
         return respondent_noun_plural
 
-    def get_responses_sample_data(self):
+    def get_responses_sample_data(self) -> dict[str, list[dict[str, str]]]:
         """Get responses sample data"""
 
         def get_all_descriptions(code: str):
@@ -172,37 +182,42 @@ class DataAccessLayer:
                 ),
             )
 
+        # Get copy to not modify original
+        df_1_copy = self.__get_df_1_copy()
+
         # Get a sample of 1000
         n_sample = 1000
-        if len(self.__df_1.index) > 0:
-            if len(self.__df_1.index) < n_sample:
-                n_sample = len(self.__df_1.index)
-            self.__df_1 = self.__df_1.sample(n=n_sample, random_state=1)
+        if len(df_1_copy.index) > 0:
+            if len(df_1_copy.index) < n_sample:
+                n_sample = len(df_1_copy.index)
+            df_1_copy = df_1_copy.sample(n=n_sample, random_state=1)
 
-        self.__df_1["description"] = self.__df_1["canonical_code"].apply(
+        df_1_copy["description"] = df_1_copy["canonical_code"].apply(
             get_all_descriptions
         )
 
         column_ids = [col["id"] for col in self.get_responses_sample_columns()]
 
-        responses_sample_data = self.__df_1[column_ids].to_dict("records")
+        responses_sample_data = df_1_copy[column_ids].to_dict("records")
 
         return responses_sample_data
 
-    def get_responses_breakdown_data(self):
+    def get_responses_breakdown_data(self) -> list[dict]:
         """Get responses breakdown data"""
+
+        # Get copy to not modify original
+        df_1_copy = self.__get_df_1_copy()
 
         # Count occurrence of responses
         counter = Counter()
-        for canonical_code in self.__df_1["canonical_code"]:
+        for canonical_code in df_1_copy["canonical_code"]:
             for code in canonical_code.split("/"):
-                if code != "OTHERNONDETERMINABLE":
-                    counter[code] += 1
+                counter[code] += 1
 
         if len(counter) > 0:
             # Create dataframe with items from counter
             df = pd.DataFrame(
-                sorted(counter.items(), key=operator.itemgetter(1), reverse=False)
+                sorted(counter.items(), key=operator.itemgetter(1), reverse=True)
             )
 
             # Set column names

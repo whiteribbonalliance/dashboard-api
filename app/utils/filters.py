@@ -66,12 +66,12 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
         df_copy = df_copy[df_copy["professional_title"].isin(professions)]
 
     # Filter keyword
-    if keyword_filter != "":
+    if keyword_filter:
         text_re = r"\b" + re.escape(keyword_filter)
         df_copy = df_copy[df_copy["lemmatized"].str.contains(text_re, regex=True)]
 
     # Filter keyword exclude
-    if keyword_exclude != "":
+    if keyword_exclude:
         text_exclude_re = r"\b" + re.escape(keyword_exclude)
         df_copy = df_copy[
             ~df_copy["lemmatized"].str.contains(text_exclude_re, regex=True)
