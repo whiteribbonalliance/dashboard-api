@@ -2,10 +2,13 @@
 Reads data from a databank
 """
 
-import inflect
-from pandas import DataFrame
+import operator
+from collections import Counter
 
-from app.databank import get_campaign_databank
+import inflect
+import pandas as pd
+
+from app import databank
 from app.enums.campaign_code import CampaignCode
 from app.schemas.country import Country
 from app.schemas.filter import Filter
@@ -24,11 +27,23 @@ class DataAccessLayer:
         filter_2: Filter = None,
     ):
         self.__campaign_code = campaign_code
-        self.__databank = get_campaign_databank(campaign_code=campaign_code)
+        self.__databank = databank.get_campaign_databank(campaign_code=campaign_code)
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
 
-    def get_dataframe_filtered(self, _filter: Filter) -> DataFrame:
+        # Apply filter 1
+        if self.__filter_1:
+            self.__df_1 = self.__get_dataframe_filtered(_filter=self.__filter_1)
+        else:
+            self.__df_1 = self.__databank.dataframe.copy()
+
+        # Apply filter 2
+        if self.__filter_2:
+            self.__df_2 = self.__get_dataframe_filtered(_filter=self.__filter_2)
+        else:
+            self.__df_2 = self.__databank.dataframe.copy()
+
+    def __get_dataframe_filtered(self, _filter: Filter) -> pd.DataFrame:
         """Get dataframe filtered"""
 
         df_copy = self.__databank.dataframe.copy()
@@ -122,8 +137,24 @@ class DataAccessLayer:
 
         return responses_sample_columns
 
+    def get_respondent_noun_singular(self):
+        """Get respondent noun singular"""
+
+        respondent_noun = self.__databank.respondent_noun
+
+        return respondent_noun
+
+    def get_respondent_noun_plural(self):
+        """Get respondent noun plural"""
+
+        respondent_noun = self.__databank.respondent_noun
+
+        respondent_noun_plural = inflect_engine.plural(respondent_noun)
+
+        return respondent_noun_plural
+
     def get_responses_sample_data(self):
-        """Get responses data sample"""
+        """Get responses sample data"""
 
         def get_all_descriptions(code: str):
             """Get all descriptions"""
@@ -141,39 +172,65 @@ class DataAccessLayer:
                 ),
             )
 
-        df_copy = self.__databank.dataframe.copy()
-
-        # Apply filter to dataframe
-        if self.__filter_1:
-            df_copy = filters.apply_filter_to_df(df=df_copy, _filter=self.__filter_1)
-
         # Get a sample of 1000
         n_sample = 1000
-        if len(df_copy.index) > 0:
-            if len(df_copy.index) < n_sample:
-                n_sample = len(df_copy.index)
-            df_copy = df_copy.sample(n=n_sample, random_state=1)
+        if len(self.__df_1.index) > 0:
+            if len(self.__df_1.index) < n_sample:
+                n_sample = len(self.__df_1.index)
+            self.__df_1 = self.__df_1.sample(n=n_sample, random_state=1)
 
-        df_copy["description"] = df_copy["canonical_code"].apply(get_all_descriptions)
+        self.__df_1["description"] = self.__df_1["canonical_code"].apply(
+            get_all_descriptions
+        )
 
         column_ids = [col["id"] for col in self.get_responses_sample_columns()]
 
-        responses_sample_data = df_copy[column_ids].to_dict("records")
+        responses_sample_data = self.__df_1[column_ids].to_dict("records")
 
         return responses_sample_data
 
-    def get_respondent_noun_singular(self):
-        """Get respondent noun singular"""
+    def get_responses_breakdown_data(self):
+        """Get responses breakdown data"""
 
-        respondent_noun = self.__databank.respondent_noun
+        # Count occurrence of responses
+        counter = Counter()
+        for canonical_code in self.__df_1["canonical_code"]:
+            for code in canonical_code.split("/"):
+                if code != "OTHERNONDETERMINABLE":
+                    counter[code] += 1
 
-        return respondent_noun
+        if len(counter) > 0:
+            # Create dataframe with items from counter
+            df = pd.DataFrame(
+                sorted(counter.items(), key=operator.itemgetter(1), reverse=False)
+            )
 
-    def get_respondent_noun_plural(self):
-        """Get respondent noun plural"""
+            # Set column names
+            df.columns = ["label", "count"]
 
-        respondent_noun = self.__databank.respondent_noun
+            # Set description column
+            df["description"] = df["label"].map(
+                code_hierarchy.get_mapping_to_description(
+                    campaign_code=self.__campaign_code
+                )
+            )
 
-        respondent_noun_plural = inflect_engine.plural(respondent_noun)
+            # Set top level column
+            # df["top_level"] = df["label"].map(
+            #     code_hierarchy.get_mapping_to_top_level(campaign_code=self.__campaign_code))
 
-        return respondent_noun_plural
+            # Drop label column
+            df = df.drop(["label"], axis=1)
+
+            # Drop rows with nan values
+            df = df.dropna()
+
+            # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
+            if self.__campaign_code == CampaignCode.what_young_people_want:
+                n_rows_keep = 5
+                df = df.sort_values(by="count", ascending=False)
+                df = df.head(n_rows_keep)
+        else:
+            df = pd.DataFrame()
+
+        return df.to_dict(orient="records")

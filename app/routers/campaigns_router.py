@@ -23,7 +23,7 @@ router = APIRouter(prefix=f"/{ApiPrefix.v1}/campaigns")
 
 
 async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
-    """Verify a campaign and return the common parameter"""
+    """Verify the campaign and return the common parameter"""
 
     campaign_code_verified = verify_campaign(campaign=campaign)
 
@@ -49,13 +49,18 @@ async def read_campaign(
         filter_2=campaign_req.filter_2,
     )
 
-    # Only filter 1 should be applied
+    # Only filter 1 will be applied
     responses_sample = {
         "columns": dal.get_responses_sample_columns(),
         "data": dal.get_responses_sample_data(),
     }
 
-    return Campaign(responses_sample=responses_sample)
+    # Only filter 1 will be applied
+    responses_breakdown = dal.get_responses_breakdown_data()
+
+    return Campaign(
+        responses_sample=responses_sample, responses_breakdown=responses_breakdown
+    )
 
 
 @router.get(

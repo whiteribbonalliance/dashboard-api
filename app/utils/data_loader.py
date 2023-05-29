@@ -5,12 +5,12 @@ import logging
 import numpy as np
 
 from app.databank import get_campaign_databank
+from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 from app.utils import countries_data_loader
-from app.enums.campaign_code import CampaignCode
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -178,13 +178,13 @@ def load_campaign_data(campaign_code: CampaignCode):
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
-    print(f"Loading data for campaign {CampaignCode.what_women_want}...")
+    print(f"\t  Loading data for campaign {CampaignCode.what_women_want}...")
     load_campaign_data(campaign_code=CampaignCode.what_women_want)
 
-    print(f"Loading data for campaign {CampaignCode.what_young_people_want}...")
+    print(f"\t  Loading data for campaign {CampaignCode.what_young_people_want}...")
     load_campaign_data(campaign_code=CampaignCode.what_young_people_want)
 
-    print(f"Loading data for campaign {CampaignCode.midwives_voices}...")
+    print(f"\t  Loading data for campaign {CampaignCode.midwives_voices}...")
     load_campaign_data(campaign_code=CampaignCode.midwives_voices)
 
-    print("Loading campaigns data complete.")
+    print(f"\t  Loading campaigns data complete.")
