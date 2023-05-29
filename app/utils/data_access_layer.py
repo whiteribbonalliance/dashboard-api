@@ -33,13 +33,17 @@ class DataAccessLayer:
 
         # Apply filter 1
         if self.__filter_1:
-            self.__df_1 = self.__apply_filter_to_df(_filter=self.__filter_1)
+            self.__df_1 = self.__apply_filter_to_df(
+                df=self.__databank.dataframe.copy(), _filter=self.__filter_1
+            )
         else:
             self.__df_1 = self.__databank.dataframe.copy()
 
         # Apply filter 2
         if self.__filter_2:
-            self.__df_2 = self.__apply_filter_to_df(_filter=self.__filter_2)
+            self.__df_2 = self.__apply_filter_to_df(
+                df=self.__databank.dataframe.copy(), _filter=self.__filter_2
+            )
         else:
             self.__df_2 = self.__databank.dataframe.copy()
 
@@ -53,14 +57,12 @@ class DataAccessLayer:
 
         return self.__df_2.copy()
 
-    def __apply_filter_to_df(self, _filter: Filter) -> pd.DataFrame:
+    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> pd.DataFrame:
         """Apply filter to df"""
 
-        df_copy = self.__databank.dataframe.copy()
+        df = filters.apply_filter_to_df(df=df, _filter=_filter)
 
-        df_copy_filtered = filters.apply_filter_to_df(df=df_copy, _filter=_filter)
-
-        return df_copy_filtered
+        return df
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -163,7 +165,7 @@ class DataAccessLayer:
 
         return respondent_noun_plural
 
-    def get_responses_sample_data(self) -> dict[str, list[dict[str, str]]]:
+    def get_responses_sample_data(self) -> list[dict]:
         """Get responses sample data"""
 
         def get_all_descriptions(code: str):
@@ -248,4 +250,6 @@ class DataAccessLayer:
         else:
             df = pd.DataFrame()
 
-        return df.to_dict(orient="records")
+        responses_breakdown_data = df.to_dict(orient="records")
+
+        return responses_breakdown_data
