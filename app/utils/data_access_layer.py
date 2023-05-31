@@ -6,7 +6,9 @@ import operator
 from collections import Counter
 
 import inflect
+import nltk
 import pandas as pd
+from nltk.corpus import stopwords
 
 from app import databank
 from app.enums.campaign_code import CampaignCode
@@ -17,6 +19,9 @@ from app.utils import code_hierarchy
 from app.utils import filters
 
 inflect_engine = inflect.engine()
+
+# Download stopwords
+nltk.download("stopwords")
 
 
 class DataAccessLayer:
@@ -46,6 +51,11 @@ class DataAccessLayer:
             )
         else:
             self.__df_2 = self.__databank.dataframe.copy()
+
+        # If filter_1 was requested, then do not use the cached ngrams
+        self.__use_ngrams_cached = True
+        if self.__filter_1:
+            self.__use_ngrams_cached = False
 
     def __get_df_1_copy(self) -> pd.DataFrame:
         """Get dataframe 1 copy"""
@@ -165,6 +175,13 @@ class DataAccessLayer:
 
         return respondent_noun_plural
 
+    def get_extra_stopwords(self) -> list[str]:
+        """Get extra stopwords"""
+
+        extra_stopwords = self.__databank.extra_stopwords
+
+        return extra_stopwords
+
     def get_responses_sample_data(self) -> list[dict]:
         """Get responses sample data"""
 
@@ -253,3 +270,92 @@ class DataAccessLayer:
         responses_breakdown_data = df.to_dict(orient="records")
 
         return responses_breakdown_data
+
+    def get_n_grams(self, use_ngrams_cached: bool = False) -> tuple:
+        """Get n grams"""
+
+        # Return the cached n grams
+        if use_ngrams_cached:
+            ngrams_unfiltered = self.__databank.ngrams_unfiltered
+            unigram_count_dict = ngrams_unfiltered.get("unigram")
+            bigram_count_dict = ngrams_unfiltered.get("bigram")
+            trigram_count_dict = ngrams_unfiltered.get("trigram")
+
+            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+        # Get copy to not modify original
+        df_1_copy = self.__get_df_1_copy()
+
+        # Stopwords
+        extra_stopwords = self.get_extra_stopwords()
+        all_stopwords = stopwords.words("english") + extra_stopwords
+
+        # n gram counters
+        unigram_count_dict = Counter()
+        bigram_count_dict = Counter()
+        trigram_count_dict = Counter()
+
+        for words_list in df_1_copy["tokenized"]:
+            # Unigram
+            for i in range(len(words_list)):
+                if words_list[i] not in all_stopwords:
+                    unigram_count_dict[words_list[i]] += 1
+
+            # Bigram
+            for i in range(len(words_list) - 1):
+                if (
+                    words_list[i] not in all_stopwords
+                    and words_list[i + 1] not in all_stopwords
+                ):
+                    word_pair = f"{words_list[i]} {words_list[i + 1]}"
+                    bigram_count_dict[word_pair] += 1
+
+            # Trigram
+            for i in range(len(words_list) - 2):
+                if (
+                    words_list[i] not in all_stopwords
+                    and words_list[i + 1] not in all_stopwords
+                    and words_list[i + 2] not in all_stopwords
+                ):
+                    word_trio = (
+                        f"{words_list[i]} {words_list[i + 1]} {words_list[i + 2]}"
+                    )
+                    trigram_count_dict[word_trio] += 1
+
+        unigram_count_dict = dict(unigram_count_dict)
+        bigram_count_dict = dict(bigram_count_dict)
+        trigram_count_dict = dict(trigram_count_dict)
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def get_wordcloud_words(self) -> list[dict]:
+        """Get wordcloud words"""
+
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
+            use_ngrams_cached=self.__use_ngrams_cached
+        )
+
+        # Get words for wordcloud
+        wordcloud_words = (
+            unigram_count_dict
+            | dict([(k, v) for k, v in bigram_count_dict.items()])
+            | dict([(k, v) for k, v in trigram_count_dict.items()])
+        )
+
+        # Sort the words
+        wordcloud_words = sorted(
+            wordcloud_words.items(), key=lambda x: x[1], reverse=True
+        )
+
+        # Only keep the first 200 words
+        n_words_to_keep = 200
+        wordcloud_words_length = len(wordcloud_words)
+        if wordcloud_words_length < n_words_to_keep:
+            n_words_to_keep = wordcloud_words_length
+        wordcloud_words = wordcloud_words[:n_words_to_keep]
+
+        wordcloud_words_list = [
+            {"text": key, "value": item} for key, item in dict(wordcloud_words).items()
+        ]
+
+        return wordcloud_words_list

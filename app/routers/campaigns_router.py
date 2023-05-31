@@ -49,17 +49,22 @@ async def read_campaign(
         filter_2=campaign_req.filter_2,
     )
 
-    # Only filter 1 will be applied
+    # Only filter 1 is applied
+    top_words_and_phrases = {"wordcloud_words": dal.get_wordcloud_words()}
+
+    # Only filter 1 is applied
     responses_sample = {
         "columns": dal.get_responses_sample_columns(),
         "data": dal.get_responses_sample_data(),
     }
 
-    # Only filter 1 will be applied
+    # Only filter 1 is applied
     responses_breakdown = dal.get_responses_breakdown_data()
 
     return Campaign(
-        responses_sample=responses_sample, responses_breakdown=responses_breakdown
+        responses_sample=responses_sample,
+        responses_breakdown=responses_breakdown,
+        top_words_and_phrases=top_words_and_phrases,
     )
 
 

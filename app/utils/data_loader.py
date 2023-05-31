@@ -11,6 +11,7 @@ from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 from app.utils import countries_data_loader
+from app.utils.data_access_layer import DataAccessLayer
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -188,3 +189,55 @@ def load_all_campaigns_data():
     load_campaign_data(campaign_code=CampaignCode.midwives_voices)
 
     print(f"\t  Loading campaigns data complete.")
+
+
+# TODO: Task schedule to run every 12 hours
+def load_ngrams_unfiltered():
+    """Load ngrams unfiltered"""
+
+    print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
+    dal_wra03a = DataAccessLayer(campaign_code=CampaignCode.what_women_want)
+    databank = get_campaign_databank(campaign_code=CampaignCode.what_women_want)
+    (
+        unigram_count_dict_wra03a,
+        bigram_count_dict_wra03a,
+        trigram_count_dict_wra03a,
+    ) = dal_wra03a.get_n_grams()
+    ngrams_unfiltered_wra03a = {
+        "unigram": unigram_count_dict_wra03a,
+        "bigram": bigram_count_dict_wra03a,
+        "trigram": trigram_count_dict_wra03a,
+    }
+    databank.ngrams_unfiltered = ngrams_unfiltered_wra03a
+
+    print(f"\t  Loading ngrams for campaign {CampaignCode.what_young_people_want}...")
+    dal_pmn01a = DataAccessLayer(campaign_code=CampaignCode.what_young_people_want)
+    databank = get_campaign_databank(campaign_code=CampaignCode.what_young_people_want)
+    (
+        unigram_count_dict_pmn01a,
+        bigram_count_dict_pmn01a,
+        trigram_count_dict_pmn01a,
+    ) = dal_pmn01a.get_n_grams()
+    ngrams_unfiltered_pmn01a = {
+        "unigram": unigram_count_dict_pmn01a,
+        "bigram": bigram_count_dict_pmn01a,
+        "trigram": trigram_count_dict_pmn01a,
+    }
+    databank.ngrams_unfiltered = ngrams_unfiltered_pmn01a
+
+    print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
+    dal_midwife = DataAccessLayer(campaign_code=CampaignCode.midwives_voices)
+    databank = get_campaign_databank(campaign_code=CampaignCode.midwives_voices)
+    (
+        unigram_count_dict_midwife,
+        bigram_count_dict_midwife,
+        trigram_count_dict_midwife,
+    ) = dal_midwife.get_n_grams()
+    ngrams_unfiltered_midwife = {
+        "unigram": unigram_count_dict_midwife,
+        "bigram": bigram_count_dict_midwife,
+        "trigram": trigram_count_dict_midwife,
+    }
+    databank.ngrams_unfiltered = ngrams_unfiltered_midwife
+
+    print(f"\t  Loading campaigns ngrams complete.")
