@@ -15,6 +15,7 @@ from app.schemas.filter import Filter
 from app.schemas.response_topic import ResponseTopic
 from app.utils import code_hierarchy
 from app.utils import filters
+from app import constants
 
 inflect_engine = inflect.engine()
 
@@ -283,7 +284,7 @@ class DataAccessLayer:
 
         # Stopwords
         extra_stopwords = self.get_extra_stopwords()
-        all_stopwords = stopwords.words("english") + extra_stopwords
+        all_stopwords = constants.STOPWORDS + extra_stopwords
 
         # n gram counters
         unigram_count_dict = Counter()
