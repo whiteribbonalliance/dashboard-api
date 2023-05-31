@@ -6,9 +6,7 @@ import operator
 from collections import Counter
 
 import inflect
-import nltk
 import pandas as pd
-from nltk.corpus import stopwords
 
 from app import databank
 from app.enums.campaign_code import CampaignCode
@@ -19,9 +17,6 @@ from app.utils import code_hierarchy
 from app.utils import filters
 
 inflect_engine = inflect.engine()
-
-# Download stopwords
-nltk.download("stopwords")
 
 
 class DataAccessLayer:
