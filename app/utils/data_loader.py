@@ -175,12 +175,25 @@ def load_campaign_data(campaign_code: CampaignCode):
     databank.dataframe = df_responses
 
 
-# TODO: Task schedule to run every 12 hours
-def load_initial_data():
-    """Load initial data"""
+def load_ngrams_unfiltered(campaign_code: CampaignCode):
+    """Load ngrams unfiltered"""
 
-    load_all_campaigns_data()
-    load_ngrams_unfiltered()
+    dal = DataAccessLayer(campaign_code=campaign_code)
+    databank = get_campaign_databank(campaign_code=campaign_code)
+
+    (
+        unigram_count_dict,
+        bigram_count_dict,
+        trigram_count_dict,
+    ) = dal.get_n_grams()
+
+    ngrams_unfiltered = {
+        "unigram": unigram_count_dict,
+        "bigram": bigram_count_dict,
+        "trigram": trigram_count_dict,
+    }
+
+    databank.ngrams_unfiltered = ngrams_unfiltered
 
 
 def load_all_campaigns_data():
@@ -198,52 +211,24 @@ def load_all_campaigns_data():
     print(f"\t  Loading campaigns data complete.")
 
 
-def load_ngrams_unfiltered():
-    """Load ngrams unfiltered"""
+def load_all_campaigns_ngrams():
+    """Load all campaigns ngrams"""
 
-    print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
-    dal_wra03a = DataAccessLayer(campaign_code=CampaignCode.what_women_want)
-    databank = get_campaign_databank(campaign_code=CampaignCode.what_women_want)
-    (
-        unigram_count_dict_wra03a,
-        bigram_count_dict_wra03a,
-        trigram_count_dict_wra03a,
-    ) = dal_wra03a.get_n_grams()
-    ngrams_unfiltered_wra03a = {
-        "unigram": unigram_count_dict_wra03a,
-        "bigram": bigram_count_dict_wra03a,
-        "trigram": trigram_count_dict_wra03a,
-    }
-    databank.ngrams_unfiltered = ngrams_unfiltered_wra03a
+    print(f"\t  Loading ngrams for campaign {CampaignCode.what_women_want}...")
+    load_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.what_young_people_want}...")
-    dal_pmn01a = DataAccessLayer(campaign_code=CampaignCode.what_young_people_want)
-    databank = get_campaign_databank(campaign_code=CampaignCode.what_young_people_want)
-    (
-        unigram_count_dict_pmn01a,
-        bigram_count_dict_pmn01a,
-        trigram_count_dict_pmn01a,
-    ) = dal_pmn01a.get_n_grams()
-    ngrams_unfiltered_pmn01a = {
-        "unigram": unigram_count_dict_pmn01a,
-        "bigram": bigram_count_dict_pmn01a,
-        "trigram": trigram_count_dict_pmn01a,
-    }
-    databank.ngrams_unfiltered = ngrams_unfiltered_pmn01a
+    load_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
-    dal_midwife = DataAccessLayer(campaign_code=CampaignCode.midwives_voices)
-    databank = get_campaign_databank(campaign_code=CampaignCode.midwives_voices)
-    (
-        unigram_count_dict_midwife,
-        bigram_count_dict_midwife,
-        trigram_count_dict_midwife,
-    ) = dal_midwife.get_n_grams()
-    ngrams_unfiltered_midwife = {
-        "unigram": unigram_count_dict_midwife,
-        "bigram": bigram_count_dict_midwife,
-        "trigram": trigram_count_dict_midwife,
-    }
-    databank.ngrams_unfiltered = ngrams_unfiltered_midwife
+    load_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
 
     print(f"\t  Loading campaigns ngrams complete.")
+
+
+# TODO: Task schedule to run every 12 hours
+def load_initial_data():
+    """Load initial data"""
+
+    load_all_campaigns_data()
+    load_all_campaigns_ngrams()
