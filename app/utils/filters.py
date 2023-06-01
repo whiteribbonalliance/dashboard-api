@@ -55,6 +55,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
                 condition |= df_copy["canonical_code"].str.contains(
                     r"\b" + response_topic + r"\b", regex=True
                 )
+
         df_copy = df_copy[condition]
 
     # Filter genders

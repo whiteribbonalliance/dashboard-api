@@ -2,7 +2,6 @@
 Reads data from a databank
 """
 import operator
-import time
 from collections import Counter
 
 import inflect
@@ -34,19 +33,25 @@ class DataAccessLayer:
 
         # Apply filter 1
         if self.__filter_1:
-            self.__df_1 = self.__apply_filter_to_df(
+            df, description = self.__apply_filter_to_df(
                 df=self.__databank.dataframe.copy(), _filter=self.__filter_1
             )
+            self.__df_1 = df
+            self.__filter_1_description = description
         else:
             self.__df_1 = self.__databank.dataframe.copy()
+            self.__filter_1_description = ""
 
         # Apply filter 2
         if self.__filter_2:
-            self.__df_2 = self.__apply_filter_to_df(
+            df, description = self.__apply_filter_to_df(
                 df=self.__databank.dataframe.copy(), _filter=self.__filter_2
             )
+            self.__df_2 = df
+            self.__filter_2_description = description
         else:
             self.__df_2 = self.__databank.dataframe.copy()
+            self.__filter_2_description = ""
 
         # If filter_1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
@@ -68,12 +73,30 @@ class DataAccessLayer:
 
         return self.__df_2.copy()
 
-    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> pd.DataFrame:
+    def get_filter_1_description(self):
+        """Get filter 1 description"""
+
+        return self.__filter_1_description
+
+    def get_filter_2_description(self):
+        """Get filter 2 description"""
+
+        return self.__filter_2_description
+
+    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> tuple:
         """Apply filter to df"""
 
         df = filters.apply_filter_to_df(df=df, _filter=_filter)
 
-        return df
+        description = filters.generate_description_of_filter(
+            campaign_code=self.__campaign_code,
+            _filter=_filter,
+            num_results=len(df),
+            respondent_noun_singular=self.get_respondent_noun_singular(),
+            respondent_noun_plural=self.get_respondent_noun_plural(),
+        )
+
+        return df, description
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -382,8 +405,8 @@ class DataAccessLayer:
             wordcloud_words.items(), key=lambda x: x[1], reverse=True
         )
 
-        # Only keep the first 100 words
-        n_words_to_keep = 100
+        # Only keep the first 150 words
+        n_words_to_keep = 150
         wordcloud_words_length = len(wordcloud_words)
         if wordcloud_words_length < n_words_to_keep:
             n_words_to_keep = wordcloud_words_length

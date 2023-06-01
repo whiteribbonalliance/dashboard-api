@@ -80,10 +80,15 @@ async def read_campaign(
 
     responses_breakdown = dal.get_responses_breakdown_data()
 
+    filter_1_description = dal.get_filter_1_description()
+    filter_2_description = dal.get_filter_2_description()
+
     return Campaign(
         responses_sample=responses_sample,
         responses_breakdown=responses_breakdown,
         top_words_and_phrases=top_words_and_phrases,
+        filter_1_description=filter_1_description,
+        filter_2_description=filter_2_description,
     )
 
 
