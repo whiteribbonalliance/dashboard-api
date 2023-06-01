@@ -33,25 +33,31 @@ class DataAccessLayer:
 
         # Apply filter 1
         if self.__filter_1:
-            df, description = self.__apply_filter_to_df(
+            df = self.__apply_filter_to_df(
                 df=self.__databank.dataframe.copy(), _filter=self.__filter_1
             )
             self.__df_1 = df
-            self.__filter_1_description = description
         else:
             self.__df_1 = self.__databank.dataframe.copy()
-            self.__filter_1_description = ""
 
         # Apply filter 2
         if self.__filter_2:
-            df, description = self.__apply_filter_to_df(
+            df = self.__apply_filter_to_df(
                 df=self.__databank.dataframe.copy(), _filter=self.__filter_2
             )
             self.__df_2 = df
-            self.__filter_2_description = description
         else:
             self.__df_2 = self.__databank.dataframe.copy()
-            self.__filter_2_description = ""
+
+        # Get filter 1 description
+        self.__filter_1_description = self.__get_filter_description(
+            df=self.__df_1, _filter=self.__filter_1
+        )
+
+        # Get filter 2 description
+        self.__filter_2_description = self.__get_filter_description(
+            df=self.__df_2, _filter=self.__filter_2
+        )
 
         # If filter_1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
@@ -73,20 +79,40 @@ class DataAccessLayer:
 
         return self.__df_2.copy()
 
-    def get_filter_1_description(self):
+    def get_filter_1_description(self) -> str:
         """Get filter 1 description"""
 
         return self.__filter_1_description
 
-    def get_filter_2_description(self):
+    def get_filter_2_description(self) -> str:
         """Get filter 2 description"""
 
         return self.__filter_2_description
 
-    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> tuple:
+    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> pd.DataFrame:
         """Apply filter to df"""
 
         df = filters.apply_filter_to_df(df=df, _filter=_filter)
+
+        return df
+
+    def __get_filter_description(self, df: pd.DataFrame, _filter: Filter) -> str:
+        """Get filter description"""
+
+        if not _filter:
+            # Use an empty filter to generate description
+            _filter = Filter(
+                countries=[],
+                regions=[],
+                response_topics=[],
+                only_responses_from_categories=True,
+                genders=[],
+                professions=[],
+                ages=[],
+                only_multi_word_phrases_containing_filter_term=True,
+                keyword_filter="",
+                keyword_exclude="",
+            )
 
         description = filters.generate_description_of_filter(
             campaign_code=self.__campaign_code,
@@ -96,7 +122,7 @@ class DataAccessLayer:
             respondent_noun_plural=self.get_respondent_noun_plural(),
         )
 
-        return df, description
+        return description
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -183,14 +209,14 @@ class DataAccessLayer:
 
         return responses_sample_columns
 
-    def get_respondent_noun_singular(self):
+    def get_respondent_noun_singular(self) -> str:
         """Get respondent noun singular"""
 
         respondent_noun = self.__databank.respondent_noun
 
         return respondent_noun
 
-    def get_respondent_noun_plural(self):
+    def get_respondent_noun_plural(self) -> str:
         """Get respondent noun plural"""
 
         respondent_noun = self.__databank.respondent_noun
