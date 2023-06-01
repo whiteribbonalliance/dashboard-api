@@ -1,8 +1,8 @@
 """
 Reads data from a databank
 """
-
 import operator
+import time
 from collections import Counter
 
 import inflect
@@ -176,7 +176,7 @@ class DataAccessLayer:
 
         return respondent_noun_plural
 
-    def get_extra_stopwords(self) -> list[str]:
+    def get_extra_stopwords(self) -> set[str]:
         """Get extra stopwords"""
 
         extra_stopwords = self.__databank.extra_stopwords
@@ -277,7 +277,7 @@ class DataAccessLayer:
 
         # Stopwords
         extra_stopwords = self.get_extra_stopwords()
-        all_stopwords = constants.STOPWORDS + extra_stopwords
+        all_stopwords = constants.STOPWORDS.union(extra_stopwords)
 
         # ngram counters
         unigram_count_dict = Counter()

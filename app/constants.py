@@ -8,4 +8,4 @@ CAMPAIGNS_LIST = [
 
 # Load stopwords from file
 with open("stopwords.txt", "r") as file:
-    STOPWORDS = [line.rstrip() for line in file]
+    STOPWORDS: set[str] = {line.rstrip() for line in file}

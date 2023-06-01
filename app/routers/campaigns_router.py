@@ -55,7 +55,7 @@ async def read_campaign(
         bigram_count_dict_1,
         trigram_count_dict_1,
     ) = dal.get_ngrams_1()
-    print("ABC")
+
     # Get ngrams 2
     (
         unigram_count_dict_2,
