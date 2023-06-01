@@ -49,9 +49,14 @@ class DataAccessLayer:
             self.__df_2 = self.__databank.dataframe.copy()
 
         # If filter_1 was requested, then do not use the cached ngrams
-        self.__use_ngrams_unfiltered = True
+        self.__filter_1_use_ngrams_unfiltered = True
         if self.__filter_1:
-            self.__use_ngrams_unfiltered = False
+            self.__filter_1_use_ngrams_unfiltered = False
+
+        # If filter_2 was requested, then do not use the cached ngrams
+        self.__filter_2_use_ngrams_unfiltered = True
+        if self.__filter_2:
+            self.__filter_2_use_ngrams_unfiltered = False
 
     def __get_df_1_copy(self) -> pd.DataFrame:
         """Get dataframe 1 copy"""
@@ -267,14 +272,14 @@ class DataAccessLayer:
 
         return responses_breakdown_data
 
-    def get_n_grams(self, df: pd.DataFrame):
-        """Get n grams"""
+    def get_ngrams(self, df: pd.DataFrame):
+        """Get ngrams"""
 
         # Stopwords
         extra_stopwords = self.get_extra_stopwords()
         all_stopwords = constants.STOPWORDS + extra_stopwords
 
-        # n gram counters
+        # ngram counters
         unigram_count_dict = Counter()
         bigram_count_dict = Counter()
         trigram_count_dict = Counter()
@@ -312,11 +317,11 @@ class DataAccessLayer:
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def get_n_grams_1(self) -> tuple:
-        """Get n grams 1"""
+    def get_ngrams_1(self) -> tuple:
+        """Get ngrams 1"""
 
-        # Return the cached n grams (this is when filter 1 is not applied)
-        if self.__use_ngrams_unfiltered:
+        # Return the cached ngrams (this is when filter 1 was not requested)
+        if self.__filter_1_use_ngrams_unfiltered:
             (
                 unigram_count_dict,
                 bigram_count_dict,
@@ -325,17 +330,17 @@ class DataAccessLayer:
 
             return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
             df=self.__get_df_1_copy()
         )
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def get_n_grams_2(self) -> tuple:
-        """Get n grams 2"""
+    def get_ngrams_2(self) -> tuple:
+        """Get ngrams 2"""
 
-        # Return the cached n grams (this is when filter 1 is not applied)
-        if self.__use_ngrams_unfiltered:
+        # Return the cached ngrams (this is when filter 2 was not requested)
+        if self.__filter_2_use_ngrams_unfiltered:
             (
                 unigram_count_dict,
                 bigram_count_dict,
@@ -344,14 +349,14 @@ class DataAccessLayer:
 
             return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
             df=self.__get_df_2_copy()
         )
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
     def get_ngrams_unfiltered(self) -> tuple:
-        """Get n grams unfiltered"""
+        """Get ngrams unfiltered"""
 
         ngrams_unfiltered = self.__databank.ngrams_unfiltered
         unigram_count_dict = ngrams_unfiltered.get("unigram")
@@ -360,10 +365,10 @@ class DataAccessLayer:
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def get_wordcloud_words(self) -> list[dict]:
+    def get_wordcloud_words(self, ngrams_1: tuple) -> list[dict]:
         """Get wordcloud words"""
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams_1()
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = ngrams_1
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -390,19 +395,11 @@ class DataAccessLayer:
 
         return wordcloud_words_list
 
-    def get_top_words(self):
+    def get_top_words(self, ngrams_1: tuple, ngrams_2: tuple):
         """Get top words"""
 
-        (
-            unigram_count_dict_1,
-            bigram_count_dict_1,
-            trigram_count_dict_1,
-        ) = self.get_n_grams_1()
-        (
-            unigram_count_dict_2,
-            bigram_count_dict_2,
-            trigram_count_dict_2,
-        ) = self.get_n_grams_2()
+        unigram_count_dict_1, bigram_count_dict_1, trigram_count_dict_1 = ngrams_1
+        unigram_count_dict_2, bigram_count_dict_2, trigram_count_dict_2 = ngrams_2
 
         if len(unigram_count_dict_1) == 0:
             return {}

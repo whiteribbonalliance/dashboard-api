@@ -49,9 +49,28 @@ async def read_campaign(
         filter_2=campaign_req.filter_2,
     )
 
+    # Get ngrams 1
+    (
+        unigram_count_dict_1,
+        bigram_count_dict_1,
+        trigram_count_dict_1,
+    ) = dal.get_ngrams_1()
+    print("ABC")
+    # Get ngrams 2
+    (
+        unigram_count_dict_2,
+        bigram_count_dict_2,
+        trigram_count_dict_2,
+    ) = dal.get_ngrams_2()
+
     top_words_and_phrases = {
-        "top_words": dal.get_top_words(),
-        "wordcloud_words": dal.get_wordcloud_words(),
+        "top_words": dal.get_top_words(
+            ngrams_1=(unigram_count_dict_1, bigram_count_dict_1, trigram_count_dict_1),
+            ngrams_2=(unigram_count_dict_2, bigram_count_dict_2, trigram_count_dict_2),
+        ),
+        "wordcloud_words": dal.get_wordcloud_words(
+            ngrams_1=(unigram_count_dict_1, bigram_count_dict_1, trigram_count_dict_1)
+        ),
     }
 
     responses_sample = {

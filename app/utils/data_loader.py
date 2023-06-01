@@ -185,7 +185,7 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
         unigram_count_dict,
         bigram_count_dict,
         trigram_count_dict,
-    ) = dal.get_n_grams(df=databank.dataframe)
+    ) = dal.get_ngrams(df=databank.dataframe)
 
     ngrams_unfiltered = {
         "unigram": unigram_count_dict,
