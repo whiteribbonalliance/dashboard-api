@@ -8,6 +8,7 @@ from collections import Counter
 import inflect
 import pandas as pd
 
+from app import constants
 from app import databank
 from app.enums.campaign_code import CampaignCode
 from app.schemas.country import Country
@@ -15,7 +16,6 @@ from app.schemas.filter import Filter
 from app.schemas.response_topic import ResponseTopic
 from app.utils import code_hierarchy
 from app.utils import filters
-from app import constants
 
 inflect_engine = inflect.engine()
 
@@ -49,9 +49,9 @@ class DataAccessLayer:
             self.__df_2 = self.__databank.dataframe.copy()
 
         # If filter_1 was requested, then do not use the cached ngrams
-        self.__use_ngrams_cached = True
+        self.__use_ngrams_unfiltered = True
         if self.__filter_1:
-            self.__use_ngrams_cached = False
+            self.__use_ngrams_unfiltered = False
 
     def __get_df_1_copy(self) -> pd.DataFrame:
         """Get dataframe 1 copy"""
@@ -267,20 +267,8 @@ class DataAccessLayer:
 
         return responses_breakdown_data
 
-    def get_n_grams(self, use_ngrams_cached: bool = False) -> tuple:
+    def get_n_grams(self, df: pd.DataFrame):
         """Get n grams"""
-
-        # Return the cached n grams
-        if use_ngrams_cached:
-            ngrams_unfiltered = self.__databank.ngrams_unfiltered
-            unigram_count_dict = ngrams_unfiltered.get("unigram")
-            bigram_count_dict = ngrams_unfiltered.get("bigram")
-            trigram_count_dict = ngrams_unfiltered.get("trigram")
-
-            return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-        # Get copy to not modify original
-        df_1_copy = self.__get_df_1_copy()
 
         # Stopwords
         extra_stopwords = self.get_extra_stopwords()
@@ -291,7 +279,7 @@ class DataAccessLayer:
         bigram_count_dict = Counter()
         trigram_count_dict = Counter()
 
-        for words_list in df_1_copy["tokenized"]:
+        for words_list in df["tokenized"]:
             # Unigram
             for i in range(len(words_list)):
                 if words_list[i] not in all_stopwords:
@@ -324,12 +312,58 @@ class DataAccessLayer:
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
+    def get_n_grams_1(self) -> tuple:
+        """Get n grams 1"""
+
+        # Return the cached n grams (this is when filter 1 is not applied)
+        if self.__use_ngrams_unfiltered:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.get_ngrams_unfiltered()
+
+            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
+            df=self.__get_df_1_copy()
+        )
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def get_n_grams_2(self) -> tuple:
+        """Get n grams 2"""
+
+        # Return the cached n grams (this is when filter 1 is not applied)
+        if self.__use_ngrams_unfiltered:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.get_ngrams_unfiltered()
+
+            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
+            df=self.__get_df_2_copy()
+        )
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def get_ngrams_unfiltered(self) -> tuple:
+        """Get n grams unfiltered"""
+
+        ngrams_unfiltered = self.__databank.ngrams_unfiltered
+        unigram_count_dict = ngrams_unfiltered.get("unigram")
+        bigram_count_dict = ngrams_unfiltered.get("bigram")
+        trigram_count_dict = ngrams_unfiltered.get("trigram")
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
     def get_wordcloud_words(self) -> list[dict]:
         """Get wordcloud words"""
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams(
-            use_ngrams_cached=self.__use_ngrams_cached
-        )
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_n_grams_1()
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -355,3 +389,63 @@ class DataAccessLayer:
         ]
 
         return wordcloud_words_list
+
+    def get_top_words(self):
+        """Get top words"""
+
+        (
+            unigram_count_dict_1,
+            bigram_count_dict_1,
+            trigram_count_dict_1,
+        ) = self.get_n_grams_1()
+        (
+            unigram_count_dict_2,
+            bigram_count_dict_2,
+            trigram_count_dict_2,
+        ) = self.get_n_grams_2()
+
+        if len(unigram_count_dict_1) == 0:
+            return {}
+
+        unigram_count_dict_1 = sorted(
+            unigram_count_dict_1.items(), key=operator.itemgetter(1)
+        )
+        max1 = 0
+
+        if len(unigram_count_dict_1) > 0:
+            max1 = unigram_count_dict_1[-1][1]
+
+        if len(unigram_count_dict_1) > 20:
+            unigram_count_dict_1 = unigram_count_dict_1[-20:]
+
+        # words list + top words 1 frequency
+        if len(unigram_count_dict_1) == 0:
+            word_list, freq_list_top_1 = [], []
+        else:
+            word_list, freq_list_top_1 = zip(*unigram_count_dict_1)
+        if (
+            len(unigram_count_dict_2) > 0
+            and len(unigram_count_dict_1) > 0
+            and len(freq_list_top_1) > 0
+        ):
+            max2 = max(unigram_count_dict_2.values())
+            normalisation_factor = max1 / max2
+        else:
+            normalisation_factor = 1
+
+        # Top words 2 frequency
+        freq_list_top_2 = [
+            int(unigram_count_dict_2.get(w, 0) * normalisation_factor)
+            for w in word_list
+        ]
+
+        top_words = [
+            {
+                "word": word,
+                "count_1": freq_list_top_1[index],
+                "count_2": freq_list_top_2[index],
+            }
+            for index, word in enumerate(word_list)
+        ]
+
+        return top_words

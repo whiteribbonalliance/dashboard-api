@@ -175,7 +175,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     databank.dataframe = df_responses
 
 
-def load_ngrams_unfiltered(campaign_code: CampaignCode):
+def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
     """Load ngrams unfiltered"""
 
     dal = DataAccessLayer(campaign_code=campaign_code)
@@ -185,7 +185,7 @@ def load_ngrams_unfiltered(campaign_code: CampaignCode):
         unigram_count_dict,
         bigram_count_dict,
         trigram_count_dict,
-    ) = dal.get_n_grams()
+    ) = dal.get_n_grams(df=databank.dataframe)
 
     ngrams_unfiltered = {
         "unigram": unigram_count_dict,
@@ -211,17 +211,17 @@ def load_all_campaigns_data():
     print(f"\t  Loading campaigns data complete.")
 
 
-def load_all_ngrams_unfiltered():
+def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.what_women_want}...")
-    load_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
+    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.what_young_people_want}...")
-    load_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
+    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
-    load_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
+    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
 
     print(f"\t  Loading campaigns ngrams complete.")
 
@@ -231,4 +231,4 @@ def load_initial_data():
     """Load initial data"""
 
     load_all_campaigns_data()
-    load_all_ngrams_unfiltered()
+    load_all_campaigns_ngrams_unfiltered()
