@@ -211,7 +211,7 @@ def load_all_campaigns_data():
     print(f"\t  Loading campaigns data complete.")
 
 
-def load_all_campaigns_ngrams():
+def load_all_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
     print(f"\t  Loading ngrams for campaign {CampaignCode.what_women_want}...")
@@ -231,4 +231,4 @@ def load_initial_data():
     """Load initial data"""
 
     load_all_campaigns_data()
-    load_all_campaigns_ngrams()
+    load_all_ngrams_unfiltered()
