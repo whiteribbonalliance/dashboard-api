@@ -488,10 +488,10 @@ class DataAccessLayer:
         top_words = [
             {
                 "word": word,
-                "count_1": freq_list_top_1[index],
-                "count_2": freq_list_top_2[index],
+                "count_1": freq_list_top_1[(len(word_list) - 1) - index],
+                "count_2": freq_list_top_2[(len(word_list) - 1) - index],
             }
-            for index, word in enumerate(word_list)
+            for index, word in enumerate(reversed(word_list))
         ]
 
         return top_words
