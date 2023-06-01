@@ -176,6 +176,13 @@ def load_campaign_data(campaign_code: CampaignCode):
 
 
 # TODO: Task schedule to run every 12 hours
+def load_initial_data():
+    """Load initial data"""
+
+    load_all_campaigns_data()
+    load_ngrams_unfiltered()
+
+
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
@@ -191,7 +198,6 @@ def load_all_campaigns_data():
     print(f"\t  Loading campaigns data complete.")
 
 
-# TODO: Task schedule to run every 12 hours
 def load_ngrams_unfiltered():
     """Load ngrams unfiltered"""
 
