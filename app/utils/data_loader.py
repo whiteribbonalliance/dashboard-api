@@ -11,7 +11,7 @@ from app.schemas.country import Country
 from app.services import bigquery_interactions
 from app.utils import code_hierarchy
 from app.utils import countries_data_loader
-from app.utils.data_access_layer import DataAccessLayer
+from app.data_access_layer import DataAccessLayer
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

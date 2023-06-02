@@ -69,6 +69,12 @@ class DataAccessLayer:
         if self.__filter_2:
             self.__filter_2_use_ngrams_unfiltered = False
 
+        # Ngrams 1
+        self.__ngrams_1 = self.__get_ngrams_1()
+
+        # Ngrams 2
+        self.__ngrams_2 = self.__get_ngrams_2()
+
     def __get_df_1_copy(self) -> pd.DataFrame:
         """Get dataframe 1 copy"""
 
@@ -78,16 +84,6 @@ class DataAccessLayer:
         """Get dataframe 2 copy"""
 
         return self.__df_2.copy()
-
-    def get_filter_1_description(self) -> str:
-        """Get filter 1 description"""
-
-        return self.__filter_1_description
-
-    def get_filter_2_description(self) -> str:
-        """Get filter 2 description"""
-
-        return self.__filter_2_description
 
     def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> pd.DataFrame:
         """Apply filter to df"""
@@ -123,6 +119,16 @@ class DataAccessLayer:
         )
 
         return description
+
+    def get_filter_1_description(self) -> str:
+        """Get filter 1 description"""
+
+        return self.__filter_1_description
+
+    def get_filter_2_description(self) -> str:
+        """Get filter 2 description"""
+
+        return self.__filter_2_description
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -232,6 +238,99 @@ class DataAccessLayer:
 
         return extra_stopwords
 
+    def get_ngrams(self, df: pd.DataFrame):
+        """Get ngrams"""
+
+        # Stopwords
+        extra_stopwords = self.get_extra_stopwords()
+        all_stopwords = constants.STOPWORDS.union(extra_stopwords)
+
+        # ngram counters
+        unigram_count_dict = Counter()
+        bigram_count_dict = Counter()
+        trigram_count_dict = Counter()
+
+        for words_list in df["tokenized"]:
+            # Unigram
+            for i in range(len(words_list)):
+                if words_list[i] not in all_stopwords:
+                    unigram_count_dict[words_list[i]] += 1
+
+            # Bigram
+            for i in range(len(words_list) - 1):
+                if (
+                    words_list[i] not in all_stopwords
+                    and words_list[i + 1] not in all_stopwords
+                ):
+                    word_pair = f"{words_list[i]} {words_list[i + 1]}"
+                    bigram_count_dict[word_pair] += 1
+
+            # Trigram
+            for i in range(len(words_list) - 2):
+                if (
+                    words_list[i] not in all_stopwords
+                    and words_list[i + 1] not in all_stopwords
+                    and words_list[i + 2] not in all_stopwords
+                ):
+                    word_trio = (
+                        f"{words_list[i]} {words_list[i + 1]} {words_list[i + 2]}"
+                    )
+                    trigram_count_dict[word_trio] += 1
+
+        unigram_count_dict = dict(unigram_count_dict)
+        bigram_count_dict = dict(bigram_count_dict)
+        trigram_count_dict = dict(trigram_count_dict)
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def __get_ngrams_1(self) -> tuple:
+        """Get ngrams 1"""
+
+        # Return the cached ngrams (this is when filter 1 was not requested)
+        if self.__filter_1_use_ngrams_unfiltered:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.get_ngrams_unfiltered()
+
+            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
+            df=self.__get_df_1_copy()
+        )
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def __get_ngrams_2(self) -> tuple:
+        """Get ngrams 2"""
+
+        # Return the cached ngrams (this is when filter 2 was not requested)
+        if self.__filter_2_use_ngrams_unfiltered:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.get_ngrams_unfiltered()
+
+            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
+            df=self.__get_df_2_copy()
+        )
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def get_ngrams_unfiltered(self) -> tuple:
+        """Get ngrams unfiltered"""
+
+        ngrams_unfiltered = self.__databank.ngrams_unfiltered
+        unigram_count_dict = ngrams_unfiltered.get("unigram")
+        bigram_count_dict = ngrams_unfiltered.get("bigram")
+        trigram_count_dict = ngrams_unfiltered.get("trigram")
+
+        return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
     def get_responses_sample_data(self) -> list[dict]:
         """Get responses sample data"""
 
@@ -321,103 +420,10 @@ class DataAccessLayer:
 
         return responses_breakdown_data
 
-    def get_ngrams(self, df: pd.DataFrame):
-        """Get ngrams"""
-
-        # Stopwords
-        extra_stopwords = self.get_extra_stopwords()
-        all_stopwords = constants.STOPWORDS.union(extra_stopwords)
-
-        # ngram counters
-        unigram_count_dict = Counter()
-        bigram_count_dict = Counter()
-        trigram_count_dict = Counter()
-
-        for words_list in df["tokenized"]:
-            # Unigram
-            for i in range(len(words_list)):
-                if words_list[i] not in all_stopwords:
-                    unigram_count_dict[words_list[i]] += 1
-
-            # Bigram
-            for i in range(len(words_list) - 1):
-                if (
-                    words_list[i] not in all_stopwords
-                    and words_list[i + 1] not in all_stopwords
-                ):
-                    word_pair = f"{words_list[i]} {words_list[i + 1]}"
-                    bigram_count_dict[word_pair] += 1
-
-            # Trigram
-            for i in range(len(words_list) - 2):
-                if (
-                    words_list[i] not in all_stopwords
-                    and words_list[i + 1] not in all_stopwords
-                    and words_list[i + 2] not in all_stopwords
-                ):
-                    word_trio = (
-                        f"{words_list[i]} {words_list[i + 1]} {words_list[i + 2]}"
-                    )
-                    trigram_count_dict[word_trio] += 1
-
-        unigram_count_dict = dict(unigram_count_dict)
-        bigram_count_dict = dict(bigram_count_dict)
-        trigram_count_dict = dict(trigram_count_dict)
-
-        return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-    def get_ngrams_1(self) -> tuple:
-        """Get ngrams 1"""
-
-        # Return the cached ngrams (this is when filter 1 was not requested)
-        if self.__filter_1_use_ngrams_unfiltered:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.get_ngrams_unfiltered()
-
-            return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
-            df=self.__get_df_1_copy()
-        )
-
-        return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-    def get_ngrams_2(self) -> tuple:
-        """Get ngrams 2"""
-
-        # Return the cached ngrams (this is when filter 2 was not requested)
-        if self.__filter_2_use_ngrams_unfiltered:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.get_ngrams_unfiltered()
-
-            return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.get_ngrams(
-            df=self.__get_df_2_copy()
-        )
-
-        return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-    def get_ngrams_unfiltered(self) -> tuple:
-        """Get ngrams unfiltered"""
-
-        ngrams_unfiltered = self.__databank.ngrams_unfiltered
-        unigram_count_dict = ngrams_unfiltered.get("unigram")
-        bigram_count_dict = ngrams_unfiltered.get("bigram")
-        trigram_count_dict = ngrams_unfiltered.get("trigram")
-
-        return unigram_count_dict, bigram_count_dict, trigram_count_dict
-
-    def get_wordcloud_words(self, ngrams_1: tuple) -> list[dict]:
+    def get_wordcloud_words(self) -> list[dict]:
         """Get wordcloud words"""
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = ngrams_1
+        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.__ngrams_1
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -444,11 +450,19 @@ class DataAccessLayer:
 
         return wordcloud_words_list
 
-    def get_top_words(self, ngrams_1: tuple, ngrams_2: tuple):
+    def get_top_words(self):
         """Get top words"""
 
-        unigram_count_dict_1, bigram_count_dict_1, trigram_count_dict_1 = ngrams_1
-        unigram_count_dict_2, bigram_count_dict_2, trigram_count_dict_2 = ngrams_2
+        (
+            unigram_count_dict_1,
+            bigram_count_dict_1,
+            trigram_count_dict_1,
+        ) = self.__ngrams_1
+        (
+            unigram_count_dict_2,
+            bigram_count_dict_2,
+            trigram_count_dict_2,
+        ) = self.__ngrams_2
 
         if len(unigram_count_dict_1) == 0:
             return {}
