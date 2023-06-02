@@ -54,12 +54,22 @@ async def read_campaign(
     filter_1_description = dal.get_filter_1_description()
     filter_2_description = dal.get_filter_2_description()
 
+    filter_1_respondents_count = dal.get_filter_1_respondents_count()
+    filter_2_respondents_count = dal.get_filter_2_respondents_count()
+
+    filter_1_average_age = dal.get_filter_1_average_age()
+    filter_2_average_age = dal.get_filter_2_average_age()
+
     return Campaign(
         responses_sample=responses_sample,
         responses_breakdown=responses_breakdown,
         top_words_and_phrases=top_words_and_phrases,
         filter_1_description=filter_1_description,
         filter_2_description=filter_2_description,
+        filter_1_respondents_count=filter_1_respondents_count,
+        filter_2_respondents_count=filter_2_respondents_count,
+        filter_1_average_age=filter_1_average_age,
+        filter_2_average_age=filter_2_average_age,
     )
 
 

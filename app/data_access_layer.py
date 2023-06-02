@@ -130,6 +130,34 @@ class DataAccessLayer:
 
         return self.__filter_2_description
 
+    def get_filter_1_respondents_count(self) -> int:
+        """Get filter 1 respondents count"""
+
+        return len(self.__df_1.index)
+
+    def get_filter_2_respondents_count(self) -> int:
+        """Get filter 2 respondents count"""
+
+        return len(self.__df_2.index)
+
+    def get_filter_1_average_age(self) -> str:
+        """Get filter 1 average age"""
+
+        average_age = "N/A"
+        if len(self.__df_1) > 0:  #
+            average_age = " ".join(self.__df_1["age"].mode())
+
+        return average_age
+
+    def get_filter_2_average_age(self) -> str:
+        """Get filter 2 average age"""
+
+        average_age = "N/A"
+        if len(self.__df_1) > 0:  #
+            average_age = " ".join(self.__df_1["age"].mode())
+
+        return average_age
+
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
 
