@@ -1,5 +1,5 @@
 """
-Reads/writes data from/to a databank
+Reads/writes data from/to a campaign's databank
 """
 
 import inflect

@@ -1,5 +1,5 @@
 """
-Handles processing of data and business logic
+Handles processing of data and business logic for a campaign
 """
 
 import operator
