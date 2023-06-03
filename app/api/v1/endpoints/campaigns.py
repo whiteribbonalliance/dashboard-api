@@ -4,12 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.api import dependencies
-from app.services.campaign import CampaignCRUD, CampaignService
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.filter_options import FilterOptions
+from app.services.campaign import CampaignCRUD, CampaignService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -26,10 +26,10 @@ router = APIRouter(prefix="/campaigns")
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-    commons: Annotated[dict, Depends(dependencies.common_parameters)],
-    campaign_req: CampaignRequest,
+        commons: Annotated[dict, Depends(dependencies.common_parameters)],
+        campaign_req: CampaignRequest,
 ):
-    """Read campaign"""
+    """Read a campaign"""
 
     campaign_code = commons.get("campaign_code")
 
@@ -41,24 +41,30 @@ async def read_campaign(
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
+    # Top words and phrases
     top_words_and_phrases = {
         "top_words": campaign_service.get_top_words(),
         "wordcloud_words": campaign_service.get_wordcloud_words(),
     }
 
+    # Responses sample
     responses_sample = {
         "columns": campaign_crud.get_responses_sample_columns(),
         "data": campaign_service.get_responses_sample_data(),
     }
 
+    # Responses breakdown
     responses_breakdown = campaign_service.get_responses_breakdown_data()
 
+    # Description
     filter_1_description = campaign_service.get_filter_1_description()
     filter_2_description = campaign_service.get_filter_2_description()
 
+    # Respondents count
     filter_1_respondents_count = campaign_service.get_filter_1_respondents_count()
     filter_2_respondents_count = campaign_service.get_filter_2_respondents_count()
 
+    # Average age
     filter_1_average_age = campaign_service.get_filter_1_average_age()
     filter_2_average_age = campaign_service.get_filter_2_average_age()
 
@@ -81,9 +87,9 @@ async def read_campaign(
     status_code=status.HTTP_200_OK,
 )
 async def read_filter_options(
-    commons: Annotated[dict, Depends(dependencies.common_parameters)]
+        commons: Annotated[dict, Depends(dependencies.common_parameters)]
 ):
-    """Read filter options"""
+    """Read a campaign's filter options"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
 
