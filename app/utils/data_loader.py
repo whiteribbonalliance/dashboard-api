@@ -6,13 +6,12 @@ import logging
 
 import numpy as np
 
-from app import bigquery_interactions
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services.campaign import CampaignCRUD, CampaignService
-from app.utils import code_hierarchy
+from app.utils import code_hierarchy, bigquery_interactions
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

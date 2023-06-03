@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app import dependencies
+from app.api import dependencies
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
