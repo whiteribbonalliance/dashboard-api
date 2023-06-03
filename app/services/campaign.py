@@ -194,22 +194,52 @@ class CampaignService:
     def get_top_words(self):
         """Get top words"""
 
-        (
-            unigram_count_dict_1,
-            bigram_count_dict_1,
-            trigram_count_dict_1,
-        ) = self.__ngrams_1
-        (
-            unigram_count_dict_2,
-            bigram_count_dict_2,
-            trigram_count_dict_2,
-        ) = self.__ngrams_2
+        unigram_count_dict_1 = self.__ngrams_1[0]
+        unigram_count_dict_2 = self.__ngrams_2[0]
 
-        if len(unigram_count_dict_1) == 0:
+        top_words = self.__get_ngram_top_words_or_phrases(
+            ngram_count_dict_1=unigram_count_dict_1,
+            ngram_count_dict_2=unigram_count_dict_2,
+        )
+
+        return top_words
+
+    def get_two_word_phrases(self):
+        """Get two word phrases"""
+
+        bigram_count_dict_1 = self.__ngrams_1[1]
+        bigram_count_dict_2 = self.__ngrams_2[1]
+
+        top_words = self.__get_ngram_top_words_or_phrases(
+            ngram_count_dict_1=bigram_count_dict_1,
+            ngram_count_dict_2=bigram_count_dict_2,
+        )
+
+        return top_words
+
+    def get_three_word_phrases(self):
+        """Get three word phrases"""
+
+        trigram_count_dict_1 = self.__ngrams_1[2]
+        trigram_count_dict_2 = self.__ngrams_2[2]
+
+        top_words = self.__get_ngram_top_words_or_phrases(
+            ngram_count_dict_1=trigram_count_dict_1,
+            ngram_count_dict_2=trigram_count_dict_2,
+        )
+
+        return top_words
+
+    def __get_ngram_top_words_or_phrases(
+        self, ngram_count_dict_1: dict, ngram_count_dict_2: dict
+    ):
+        """Get ngram top words/phrases"""
+
+        if len(ngram_count_dict_1) == 0:
             return {}
 
         unigram_count_dict_1 = sorted(
-            unigram_count_dict_1.items(), key=operator.itemgetter(1)
+            ngram_count_dict_1.items(), key=operator.itemgetter(1)
         )
         max1 = 0
 
@@ -225,19 +255,18 @@ class CampaignService:
         else:
             word_list, freq_list_top_1 = zip(*unigram_count_dict_1)
         if (
-            len(unigram_count_dict_2) > 0
+            len(ngram_count_dict_2) > 0
             and len(unigram_count_dict_1) > 0
             and len(freq_list_top_1) > 0
         ):
-            max2 = max(unigram_count_dict_2.values())
+            max2 = max(ngram_count_dict_2.values())
             normalisation_factor = max1 / max2
         else:
             normalisation_factor = 1
 
         # Top words 2 frequency
         freq_list_top_2 = [
-            int(unigram_count_dict_2.get(w, 0) * normalisation_factor)
-            for w in word_list
+            int(ngram_count_dict_2.get(w, 0) * normalisation_factor) for w in word_list
         ]
 
         top_words = [

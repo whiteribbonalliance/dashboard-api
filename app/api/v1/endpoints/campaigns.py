@@ -26,8 +26,8 @@ router = APIRouter(prefix="/campaigns")
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-        commons: Annotated[dict, Depends(dependencies.common_parameters)],
-        campaign_req: CampaignRequest,
+    commons: Annotated[dict, Depends(dependencies.common_parameters)],
+    campaign_req: CampaignRequest,
 ):
     """Read a campaign"""
 
@@ -44,6 +44,8 @@ async def read_campaign(
     # Top words and phrases
     top_words_and_phrases = {
         "top_words": campaign_service.get_top_words(),
+        "two_word_phrases": campaign_service.get_two_word_phrases(),
+        "three_word_phrases": campaign_service.get_three_word_phrases(),
         "wordcloud_words": campaign_service.get_wordcloud_words(),
     }
 
@@ -87,7 +89,7 @@ async def read_campaign(
     status_code=status.HTTP_200_OK,
 )
 async def read_filter_options(
-        commons: Annotated[dict, Depends(dependencies.common_parameters)]
+    commons: Annotated[dict, Depends(dependencies.common_parameters)]
 ):
     """Read a campaign's filter options"""
 
