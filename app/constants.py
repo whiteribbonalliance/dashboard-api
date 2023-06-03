@@ -1,3 +1,5 @@
+import json
+
 from app.enums.campaign_code import CampaignCode
 
 CAMPAIGNS_LIST = [
@@ -9,3 +11,7 @@ CAMPAIGNS_LIST = [
 # Load stopwords from file
 with open("stopwords.txt", "r") as file:
     STOPWORDS: set[str] = {line.rstrip() for line in file}
+
+# Load countries data from file
+with open("countries_data.json", "r") as file:
+    COUNTRIES_DATA = json.loads(file.read())

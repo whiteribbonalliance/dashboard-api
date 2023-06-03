@@ -6,7 +6,7 @@ from pandas import DataFrame
 from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
-from app.utils import countries_data_loader
+from app import constants
 
 inflect_engine = inflect.engine()
 
@@ -113,12 +113,10 @@ def generate_description_of_filter(
         else:
             women = join_list_comma_and([inflect_engine.plural(p) for p in professions])
 
-    countries_data = countries_data_loader.get_countries_data_list()
-
     if len(countries) > 0:
         demonyms = []
         for country in countries:
-            country_data = countries_data.get(country)
+            country_data = constants.COUNTRIES_DATA.get(country)
             if not country_data:
                 # TODO: log?
                 continue

@@ -1,17 +1,18 @@
-"""Requests the dataframe of a campaign from BigQuery and stores the data into the databank"""
+"""
+Requests the dataframe of a campaign from BigQuery and stores the data into the databank
+"""
 
 import logging
 
 import numpy as np
 
-from app.databank import get_campaign_databank
+from app import bigquery_interactions
+from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
-from app.services import bigquery_interactions
+from app.services.campaign import CampaignCRUD, CampaignService
 from app.utils import code_hierarchy
-from app.utils import countries_data_loader
-from app.data_access_layer import DataAccessLayer
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -24,7 +25,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
-    databank = get_campaign_databank(campaign_code=campaign_code)
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
     def get_top_level(leaf_categories: str) -> str:
         mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
@@ -84,12 +85,9 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Add tokenized column
     df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
 
-    # Get countries data
-    countries_data = countries_data_loader.get_countries_data_list()
-
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
-        lambda x: countries_data[x]["name"]
+        lambda x: constants.COUNTRIES_DATA[x]["name"]
     )
 
     # Only keep ages 10-24 for PMNCH
@@ -102,9 +100,10 @@ def load_campaign_data(campaign_code: CampaignCode):
         df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 
     # Set ages
-    databank.ages = df_responses["age"].unique().tolist()
-    databank.ages = [age for age in databank.ages if age is not None]
-    databank.ages.sort()
+    ages = df_responses["age"].unique().tolist()
+    ages = [age for age in ages if age is not None]
+    ages.sort()
+    campaign_crud.set_ages(ages=ages)
 
     # Remove the UNCODABLE responses
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
@@ -129,7 +128,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     countries_alpha2_codes = df_responses[["alpha2country"]].drop_duplicates()
     for idx in range(len(countries_alpha2_codes)):
         alpha2_code = countries_alpha2_codes["alpha2country"].iloc[idx]
-        country = countries_data.get(alpha2_code)
+        country = constants.COUNTRIES_DATA.get(alpha2_code)
         if not country:
             logger.warning("Could not find country in countries_data.json")
             continue
@@ -150,17 +149,17 @@ def load_campaign_data(campaign_code: CampaignCode):
             countries[alpha2_code].regions.append(region)
 
     # Set countries
-    databank.countries = countries
+    campaign_crud.set_countries(countries=countries)
 
     # Get responses sample column ids
-    column_ids = [col["id"] for col in databank.responses_sample_columns]
+    column_ids = [col["id"] for col in campaign_crud.get_responses_sample_columns()]
 
     # Set genders
     genders = []
     if "gender" in column_ids:
         for gender in df_responses["gender"].value_counts().index:
             genders.append(gender)
-    databank.genders = genders
+    campaign_crud.set_genders(genders=genders)
 
     # Set professions
     professions = []
@@ -169,23 +168,25 @@ def load_campaign_data(campaign_code: CampaignCode):
             df_responses["professional_title"].value_counts().index
         ):
             professions.append(professional_title)
-    databank.professions = professions
+    campaign_crud.set_professions(professions=professions)
 
     # Set dataframe
-    databank.dataframe = df_responses
+    campaign_crud.set_dataframe(df=df_responses)
 
 
 def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
-    """Load ngrams unfiltered"""
+    """Load campaign ngrams unfiltered"""
 
-    dal = DataAccessLayer(campaign_code=campaign_code)
-    databank = get_campaign_databank(campaign_code=campaign_code)
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_service = CampaignService(campaign_code=campaign_code)
+
+    df = campaign_crud.get_dataframe()
 
     (
         unigram_count_dict,
         bigram_count_dict,
         trigram_count_dict,
-    ) = dal.get_ngrams(df=databank.dataframe)
+    ) = campaign_service.generate_ngrams(df=df)
 
     ngrams_unfiltered = {
         "unigram": unigram_count_dict,
@@ -193,7 +194,7 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
         "trigram": trigram_count_dict,
     }
 
-    databank.ngrams_unfiltered = ngrams_unfiltered
+    campaign_crud.set_ngrams_unfiltered(ngrams_unfiltered=ngrams_unfiltered)
 
 
 def load_all_campaigns_data():
