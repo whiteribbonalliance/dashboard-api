@@ -5,6 +5,7 @@ Handles processing of data and business logic for a campaign
 import operator
 from collections import Counter
 
+import numpy as np
 import pandas as pd
 
 from app import constants
@@ -46,22 +47,22 @@ class CampaignService:
         else:
             self.__df_2 = self.__crud.get_dataframe().copy()
 
-        # Get filter 1 description
+        # Filter 1 description
         self.__filter_1_description = self.__get_filter_description(
             df=self.__df_1, _filter=self.__filter_1
         )
 
-        # Get filter 2 description
+        # Filter 2 description
         self.__filter_2_description = self.__get_filter_description(
             df=self.__df_2, _filter=self.__filter_2
         )
 
-        # If filter_1 was requested, then do not use the cached ngrams
+        # If filter 1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
         if self.__filter_1:
             self.__filter_1_use_ngrams_unfiltered = False
 
-        # If filter_2 was requested, then do not use the cached ngrams
+        # If filter 2 was requested, then do not use the cached ngrams
         self.__filter_2_use_ngrams_unfiltered = True
         if self.__filter_2:
             self.__filter_2_use_ngrams_unfiltered = False
@@ -460,3 +461,41 @@ class CampaignService:
         ) = self.generate_ngrams(df=self.__get_df_2_copy())
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
+
+    def get_histogram(self) -> dict:
+        """Get histogram"""
+
+        # Get histogram for the keys used in the dictionary below
+        histogram = {"age": [], "profession": [], "region": [], "canonical_country": []}
+
+        for column_name in list(histogram.keys()):
+            # For each unique column value, get its row count
+            grouped_by_column_1 = self.__df_1.groupby(column_name)[
+                "raw_response"
+            ].count()
+            grouped_by_column_2 = self.__df_2.groupby(column_name)[
+                "raw_response"
+            ].count()
+
+            # Add count for each unique column value
+            names = list(
+                set(
+                    grouped_by_column_1.index.tolist()
+                    + grouped_by_column_2.index.tolist()
+                )
+            )
+            for name in names:
+                try:
+                    count_1 = grouped_by_column_1[name].item()
+                except KeyError:
+                    count_1 = 0
+                try:
+                    count_2 = grouped_by_column_2[name].item()
+                except KeyError:
+                    count_2 = 0
+
+                histogram[column_name].append(
+                    {"name": name, "count_1": count_1, "count_2": count_2}
+                )
+
+        return histogram

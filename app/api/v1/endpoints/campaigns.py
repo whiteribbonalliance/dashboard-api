@@ -70,10 +70,14 @@ async def read_campaign(
     filter_1_average_age = campaign_service.get_filter_1_average_age()
     filter_2_average_age = campaign_service.get_filter_2_average_age()
 
+    # Histogram
+    histogram = campaign_service.get_histogram()
+
     return Campaign(
         responses_sample=responses_sample,
         responses_breakdown=responses_breakdown,
         top_words_and_phrases=top_words_and_phrases,
+        histogram=histogram,
         filter_1_description=filter_1_description,
         filter_2_description=filter_2_description,
         filter_1_respondents_count=filter_1_respondents_count,

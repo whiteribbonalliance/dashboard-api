@@ -68,7 +68,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         respondent_region_name as region,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         INITCAP(respondent_gender) as gender,
-        JSON_VALUE(respondent_additional_fields.profession) as professional_title,
+        JSON_VALUE(respondent_additional_fields.profession) as profession,
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code}'
         AND response_original_text is not null

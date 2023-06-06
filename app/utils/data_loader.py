@@ -11,7 +11,8 @@ from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.services.campaign import CampaignCRUD, CampaignService
-from app.utils import code_hierarchy, bigquery_interactions
+from app.utils import code_hierarchy
+from app.services import bigquery_interactions
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -162,11 +163,9 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Set professions
     professions = []
-    if "professional_title" in column_ids:
-        for professional_title in (
-            df_responses["professional_title"].value_counts().index
-        ):
-            professions.append(professional_title)
+    if "profession" in column_ids:
+        for profession in df_responses["profession"].value_counts().index:
+            professions.append(profession)
     campaign_crud.set_professions(professions=professions)
 
     # Set dataframe

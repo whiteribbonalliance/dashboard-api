@@ -64,7 +64,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
 
     # Filter professions
     if len(professions) > 0:
-        df_copy = df_copy[df_copy["professional_title"].isin(professions)]
+        df_copy = df_copy[df_copy["profession"].isin(professions)]
 
     # Filter keyword
     if keyword_filter:
