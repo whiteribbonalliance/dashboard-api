@@ -465,7 +465,7 @@ class CampaignService:
         """Get histogram"""
 
         # Get histogram for the keys used in the dictionary below
-        histogram = {"age": [], "profession": [], "region": [], "canonical_country": []}
+        histogram = {"age": [], "gender": [], "profession": [], "canonical_country": []}
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
@@ -484,7 +484,7 @@ class CampaignService:
                 )
             )
 
-            # Sort ages (values with ages first reverse sorted, then other values e.g. 'prefer not to say')
+            # Sort ages (values with ages first reverse sorted, then add other values back in e.g. 'prefer not to say')
             if column_name == "age" and len(names) > 0:
                 names.sort(reverse=True)
                 tmp_names = []
@@ -499,6 +499,7 @@ class CampaignService:
                         continue
                 names = tmp_names + tmp_names_not_ages
 
+            # Set count values
             for name in names:
                 try:
                     count_1 = grouped_by_column_1[name].item()
@@ -512,5 +513,20 @@ class CampaignService:
                 histogram[column_name].append(
                     {"name": name, "count_1": count_1, "count_2": count_2}
                 )
+
+            # Sort canonical_country by count value
+            if column_name == "canonical_country":
+                if not self.__filter_1 and not self.__filter_2:
+                    histogram[column_name] = sorted(
+                        histogram[column_name], key=operator.itemgetter("count_1")
+                    )
+                elif self.__filter_1 and not self.__filter_2:
+                    histogram[column_name] = sorted(
+                        histogram[column_name], key=operator.itemgetter("count_2")
+                    )
+                elif not self.__filter_1 and self.__filter_2:
+                    histogram[column_name] = sorted(
+                        histogram[column_name], key=operator.itemgetter("count_1")
+                    )
 
         return histogram
