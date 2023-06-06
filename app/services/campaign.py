@@ -490,10 +490,13 @@ class CampaignService:
                 tmp_names = []
                 tmp_names_not_ages = []
                 for name in names:
-                    if not name[0].isnumeric():
-                        tmp_names_not_ages.append(name)
-                    else:
-                        tmp_names.append(name)
+                    try:
+                        if not name[0].isnumeric():
+                            tmp_names_not_ages.append(name)
+                        else:
+                            tmp_names.append(name)
+                    except KeyError:
+                        continue
                 names = tmp_names + tmp_names_not_ages
 
             for name in names:
