@@ -5,7 +5,6 @@ Handles processing of data and business logic for a campaign
 import operator
 from collections import Counter
 
-import numpy as np
 import pandas as pd
 
 from app import constants
@@ -484,6 +483,19 @@ class CampaignService:
                     + grouped_by_column_2.index.tolist()
                 )
             )
+
+            # Sort ages (values with ages first reverse sorted, then other values e.g. 'prefer not to say')
+            if column_name == "age" and len(names) > 0:
+                names.sort(reverse=True)
+                tmp_names = []
+                tmp_names_not_ages = []
+                for name in names:
+                    if not name[0].isnumeric():
+                        tmp_names_not_ages.append(name)
+                    else:
+                        tmp_names.append(name)
+                names = tmp_names + tmp_names_not_ages
+
             for name in names:
                 try:
                     count_1 = grouped_by_column_1[name].item()
