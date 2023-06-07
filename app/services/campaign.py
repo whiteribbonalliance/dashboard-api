@@ -529,6 +529,11 @@ class CampaignService:
                         histogram[column_name], key=operator.itemgetter("count_1")
                     )
 
-            # TODO: Limit results to 20
+            # Limit to last 20 results
+            if column_name == "canonical_country" or column_name == "profession":
+                keep_last_n = 20
+                for key, value in histogram.items():
+                    if len(value) > keep_last_n:
+                        histogram[key] = value[-keep_last_n:]
 
         return histogram
