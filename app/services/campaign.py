@@ -514,8 +514,12 @@ class CampaignService:
                     {"name": name, "count_1": count_1, "count_2": count_2}
                 )
 
-            # Sort canonical_country and profession by count value
-            if column_name == "canonical_country" or column_name == "profession":
+            # Sort the columns below by count value (ASC)
+            if (
+                column_name == "canonical_country"
+                or column_name == "profession"
+                or column_name == "gender"
+            ):
                 if not self.__filter_1 and not self.__filter_2:
                     histogram[column_name] = sorted(
                         histogram[column_name], key=operator.itemgetter("count_1")
