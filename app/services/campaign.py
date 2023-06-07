@@ -588,6 +588,6 @@ class CampaignService:
 
         genders_breakdown = []
         for key, value in gender_counts.items():
-            genders_breakdown.append({"name": key, "count ": value})
+            genders_breakdown.append({"name": key, "count": value})
 
         return genders_breakdown
