@@ -359,18 +359,22 @@ class CampaignService:
     def get_filter_1_average_age(self) -> str:
         """Get filter 1 average age"""
 
+        df_1_copy = self.__get_df_1_copy()
+
         average_age = "N/A"
-        if len(self.__df_1) > 0:  #
-            average_age = " ".join(self.__df_1["age"].mode())
+        if len(df_1_copy.index) > 0:  #
+            average_age = " ".join(df_1_copy["age"].mode())
 
         return average_age
 
     def get_filter_2_average_age(self) -> str:
         """Get filter 2 average age"""
 
+        df_2_copy = self.__get_df_2_copy()
+
         average_age = "N/A"
-        if len(self.__df_1) > 0:  #
-            average_age = " ".join(self.__df_1["age"].mode())
+        if len(df_2_copy.index) > 0:  #
+            average_age = " ".join(df_2_copy["age"].mode())
 
         return average_age
 
@@ -464,17 +468,16 @@ class CampaignService:
     def get_histogram(self) -> dict:
         """Get histogram"""
 
+        df_1_copy = self.__get_df_1_copy()
+        df_2_copy = self.__get_df_2_copy()
+
         # Get histogram for the keys used in the dictionary below
         histogram = {"age": [], "gender": [], "profession": [], "canonical_country": []}
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
-            grouped_by_column_1 = self.__df_1.groupby(column_name)[
-                "raw_response"
-            ].count()
-            grouped_by_column_2 = self.__df_2.groupby(column_name)[
-                "raw_response"
-            ].count()
+            grouped_by_column_1 = df_1_copy.groupby(column_name)["raw_response"].count()
+            grouped_by_column_2 = df_2_copy.groupby(column_name)["raw_response"].count()
 
             # Add count for each unique column value
             names = list(
@@ -575,3 +578,16 @@ class CampaignService:
             ]
 
         return options
+
+    def get_genders_breakdown(self) -> list:
+        """Get genders breakdown"""
+
+        df_1_copy = self.__get_df_1_copy()
+
+        gender_counts = df_1_copy["gender"].value_counts(ascending=True).to_dict()
+
+        genders_breakdown = []
+        for key, value in gender_counts.items():
+            genders_breakdown.append({"name": key, "value": value})
+
+        return genders_breakdown
