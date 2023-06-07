@@ -563,7 +563,7 @@ class CampaignService:
             options = [breakdown_age_option, breakdown_country_option]
         if self.__campaign_code == CampaignCode.what_young_people_want:
             options = [breakdown_age_option, breakdown_gender, breakdown_country_option]
-        if self.__campaign_code == CampaignCode.what_women_want:
+        if self.__campaign_code == CampaignCode.midwives_voices:
             options = [
                 breakdown_age_option,
                 breakdown_profession,
