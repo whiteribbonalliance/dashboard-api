@@ -95,7 +95,7 @@ async def read_campaign(
 async def read_filter_options(
     commons: Annotated[dict, Depends(dependencies.common_parameters)]
 ):
-    """Read a campaign's filter options"""
+    """Read campaign filter options"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
 
@@ -157,3 +157,21 @@ async def read_filter_options(
         only_responses_from_categories=only_responses_from_categories_options,
         only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
     )
+
+
+@router.get(
+    path="/{campaign}/who-the-people-are-options",
+    status_code=status.HTTP_200_OK,
+)
+async def read_who_the_people_are_options(
+    commons: Annotated[dict, Depends(dependencies.common_parameters)]
+):
+    """Read campaign who the people are options"""
+
+    campaign_code: CampaignCode = commons.get("campaign_code")
+
+    campaign_service = CampaignService(campaign_code=campaign_code)
+
+    options = campaign_service.get_who_the_people_are_options()
+
+    return options

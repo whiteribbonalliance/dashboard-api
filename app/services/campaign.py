@@ -536,3 +536,38 @@ class CampaignService:
                     histogram[column_name] = histogram[column_name][-keep_last_n:]
 
         return histogram
+
+    def get_who_the_people_are_options(self) -> list:
+        """Get who the people are options"""
+
+        breakdown_country_option = {
+            "value": "breakdown-country",
+            "label": "Show breakdown by country",
+        }
+        breakdown_age_option = {
+            "value": "breakdown-age",
+            "label": "Show breakdown by age",
+        }
+        breakdown_gender = {
+            "value": "breakdown-gender",
+            "label": "Show breakdown by gender",
+        }
+        breakdown_profession = {
+            "value": "breakdown-profession",
+            "label": "Show breakdown by profession",
+        }
+
+        options = []
+
+        if self.__campaign_code == CampaignCode.what_women_want:
+            options = [breakdown_age_option, breakdown_country_option]
+        if self.__campaign_code == CampaignCode.what_young_people_want:
+            options = [breakdown_age_option, breakdown_gender, breakdown_country_option]
+        if self.__campaign_code == CampaignCode.what_women_want:
+            options = [
+                breakdown_age_option,
+                breakdown_profession,
+                breakdown_country_option,
+            ]
+
+        return options
