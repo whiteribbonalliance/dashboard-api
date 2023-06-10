@@ -69,6 +69,9 @@ async def read_campaign(
     else:
         genders_breakdown = []
 
+    # World bubble maps coordinates
+    world_bubble_maps_coordinates = campaign_service.get_world_bubble_maps_coordinates()
+
     # Respondents count
     filter_1_respondents_count = campaign_service.get_filter_1_respondents_count()
     filter_2_respondents_count = campaign_service.get_filter_2_respondents_count()
@@ -77,7 +80,7 @@ async def read_campaign(
     filter_1_average_age = campaign_service.get_filter_1_average_age()
     filter_2_average_age = campaign_service.get_filter_2_average_age()
 
-    # Description
+    # Filters Description
     filter_1_description = campaign_service.get_filter_1_description()
     filter_2_description = campaign_service.get_filter_2_description()
 
@@ -87,6 +90,7 @@ async def read_campaign(
         top_words_and_phrases=top_words_and_phrases,
         histogram=histogram,
         genders_breakdown=genders_breakdown,
+        world_bubble_maps_coordinates=world_bubble_maps_coordinates,
         filter_1_respondents_count=filter_1_respondents_count,
         filter_2_respondents_count=filter_2_respondents_count,
         filter_1_average_age=filter_1_average_age,
@@ -104,7 +108,7 @@ async def read_campaign(
 async def read_filter_options(
     commons: Annotated[dict, Depends(dependencies.common_parameters)]
 ):
-    """Read campaign filter options"""
+    """Read filter options for campaign"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
 
@@ -179,7 +183,7 @@ async def read_filter_options(
 async def read_who_the_people_are_options(
     commons: Annotated[dict, Depends(dependencies.common_parameters)]
 ):
-    """Read campaign who the people are options"""
+    """Read who the people are options for campaign"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
 

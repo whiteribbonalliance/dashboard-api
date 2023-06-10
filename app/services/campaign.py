@@ -544,7 +544,7 @@ class CampaignService:
 
         return histogram
 
-    def get_who_the_people_are_options(self) -> list:
+    def get_who_the_people_are_options(self) -> list[dict]:
         """Get who the people are options"""
 
         breakdown_country_option = {
@@ -579,7 +579,7 @@ class CampaignService:
 
         return options
 
-    def get_genders_breakdown(self) -> list:
+    def get_genders_breakdown(self) -> list[dict]:
         """Get genders breakdown"""
 
         df_1_copy = self.__get_df_1_copy()
@@ -591,3 +591,65 @@ class CampaignService:
             genders_breakdown.append({"name": key, "count": value})
 
         return genders_breakdown
+
+    def get_world_bubble_maps_coordinates(self) -> dict:
+        """Get world bubble maps coordinates"""
+
+        def get_coordinates(alpha2country_counts, color_id: str):
+            """Add coordinate and count for each country"""
+
+            _coordinates = []
+            for key, value in alpha2country_counts.items():
+                lat = constants.COUNTRY_COORDINATE.get(key)[0]
+                lon = constants.COUNTRY_COORDINATE.get(key)[1]
+                country_name = constants.COUNTRIES_DATA.get(key).get("name")
+
+                if not lat or not lon or not country_name:
+                    continue
+
+                _coordinates.append(
+                    {
+                        "country_alpha2_code": key,
+                        "country_name": country_name,
+                        "color_id": color_id,
+                        "n": value,
+                        "lat": lat,
+                        "lon": lon,
+                    }
+                )
+
+            return _coordinates
+
+        # Get copy to not modify original
+        df_1_copy = self.__get_df_1_copy()
+
+        # Get count of each country
+        alpha2country_counts_1 = (
+            df_1_copy["alpha2country"].value_counts(ascending=True).to_dict()
+        )
+
+        coordinates_1 = get_coordinates(
+            alpha2country_counts=alpha2country_counts_1, color_id="color_1"
+        )
+
+        # Only add data for coordinate_2 if filter 2 was requested
+        coordinates_2 = []
+        if self.__filter_2:
+            # Get copy to not modify original
+            df_2_copy = self.__get_df_2_copy()
+
+            # Get count of each country
+            alpha2country_counts_2 = (
+                df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
+            )
+
+            coordinates_2 = get_coordinates(
+                alpha2country_counts=alpha2country_counts_2, color_id="color_2"
+            )
+
+        coordinates = {
+            "coordinates_1": coordinates_1,
+            "coordinates_2": coordinates_2,
+        }
+
+        return coordinates

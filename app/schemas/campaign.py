@@ -7,6 +7,7 @@ class Campaign(BaseModel):
     top_words_and_phrases: dict
     histogram: dict
     genders_breakdown: list[dict]
+    world_bubble_maps_coordinates: dict
     filter_1_respondents_count: int
     filter_2_respondents_count: int
     filter_1_average_age: str

@@ -213,16 +213,18 @@ def load_all_campaigns_data():
 def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
-    print(f"\t  Loading ngrams for campaign {CampaignCode.what_women_want}...")
+    print(f"\t  Loading ngrams cache for campaign {CampaignCode.what_women_want}...")
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
 
-    print(f"\t  Loading ngrams for campaign {CampaignCode.what_young_people_want}...")
+    print(
+        f"\t  Loading ngrams cache for campaign {CampaignCode.what_young_people_want}..."
+    )
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
 
-    print(f"\t  Loading ngrams for campaign {CampaignCode.midwives_voices}...")
+    print(f"\t  Loading ngrams cache for campaign {CampaignCode.midwives_voices}...")
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
 
-    print(f"\t  Loading campaigns ngrams complete.")
+    print(f"\t  Loading campaigns ngrams cache complete.")
 
 
 # TODO: Task schedule to run every 12 hours
