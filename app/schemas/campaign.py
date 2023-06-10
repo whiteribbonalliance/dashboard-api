@@ -14,3 +14,4 @@ class Campaign(BaseModel):
     filter_2_average_age: str
     filter_1_description: str
     filter_2_description: str
+    filters_are_identical: bool

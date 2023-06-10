@@ -72,6 +72,10 @@ class CampaignService:
         # Ngrams 2
         self.__ngrams_2 = self.__get_ngrams_2()
 
+        self.filters_are_identical = filters.check_if_filters_are_identical(
+            filter_1=filter_1, filter_2=filter_2
+        )
+
     def get_responses_sample_data(self) -> list[dict]:
         """Get responses sample data"""
 
@@ -646,3 +650,8 @@ class CampaignService:
         }
 
         return coordinates
+
+    def get_are_filters_identical(self) -> bool:
+        """Get are filters identical"""
+
+        return self.filters_are_identical
