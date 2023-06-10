@@ -85,7 +85,7 @@ async def read_campaign(
     filter_2_description = campaign_service.get_filter_2_description()
 
     # Filters are identical
-    filters_are_identical = campaign_service.get_are_filters_identical()
+    filters_are_identical = campaign_service.get_filters_are_identical()
 
     return Campaign(
         responses_sample=responses_sample,

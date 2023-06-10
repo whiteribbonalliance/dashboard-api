@@ -72,6 +72,7 @@ class CampaignService:
         # Ngrams 2
         self.__ngrams_2 = self.__get_ngrams_2()
 
+        # Check if filters are identical or not
         self.filters_are_identical = filters.check_if_filters_are_identical(
             filter_1=filter_1, filter_2=filter_2
         )
@@ -651,7 +652,7 @@ class CampaignService:
 
         return coordinates
 
-    def get_are_filters_identical(self) -> bool:
-        """Get are filters identical"""
+    def get_filters_are_identical(self) -> bool:
+        """Get filters are identical"""
 
         return self.filters_are_identical
