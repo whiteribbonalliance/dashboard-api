@@ -622,30 +622,23 @@ class CampaignService:
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
+        df_2_copy = self.__get_df_2_copy()
 
         # Get count of each country
         alpha2country_counts_1 = (
             df_1_copy["alpha2country"].value_counts(ascending=True).to_dict()
         )
-
         coordinates_1 = get_coordinates(
             alpha2country_counts=alpha2country_counts_1, color_id="color_1"
         )
 
-        # Only add data for coordinate_2 if filter 2 was requested
-        coordinates_2 = []
-        if self.__filter_2:
-            # Get copy to not modify original
-            df_2_copy = self.__get_df_2_copy()
-
-            # Get count of each country
-            alpha2country_counts_2 = (
-                df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
-            )
-
-            coordinates_2 = get_coordinates(
-                alpha2country_counts=alpha2country_counts_2, color_id="color_2"
-            )
+        # Get count of each country
+        alpha2country_counts_2 = (
+            df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
+        )
+        coordinates_2 = get_coordinates(
+            alpha2country_counts=alpha2country_counts_2, color_id="color_2"
+        )
 
         coordinates = {
             "coordinates_1": coordinates_1,
