@@ -10,9 +10,10 @@ from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
+from app.services import bigquery_interactions
+from app.services import translations_cache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.utils import code_hierarchy
-from app.services import bigquery_interactions
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -209,8 +210,6 @@ def load_all_campaigns_data():
     print(f"INFO:\t  Loading data for campaign {CampaignCode.midwives_voices}...")
     load_campaign_data(campaign_code=CampaignCode.midwives_voices)
 
-    print("INFO:\t  Loading campaigns data complete.")
-
 
 def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
@@ -230,11 +229,17 @@ def load_all_campaigns_ngrams_unfiltered():
     )
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
 
-    print("INFO:\t  Loading campaigns ngrams cache complete.")
-
 
 def load_data():
     """Load data"""
 
     load_all_campaigns_data()
     load_all_campaigns_ngrams_unfiltered()
+
+
+def load_translations_cache():
+    """Load translations cache"""
+
+    # Start the translations cache instance
+    print("INFO:\t  Loading cached translations...")
+    translations_cache.TranslationsCache()

@@ -12,6 +12,7 @@ from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.schemas.response_topic import ResponseTopic
+from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
 
@@ -20,11 +21,18 @@ class CampaignService:
     def __init__(
         self,
         campaign_code: CampaignCode,
+        language: str = "en",
         filter_1: Filter = None,
         filter_2: Filter = None,
     ):
         self.__campaign_code = campaign_code
+        self.__language = language
+
+        self.__translator = Translator(language=self.__language)
+        self.__t = self.__translator.translate
+
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
+
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
 
@@ -554,19 +562,19 @@ class CampaignService:
 
         breakdown_country_option = {
             "value": "breakdown-country",
-            "label": "Show breakdown by country",
+            "label": f"{self.__t('Show breakdown by country')}",
         }
         breakdown_age_option = {
             "value": "breakdown-age",
-            "label": "Show breakdown by age",
+            "label": f"{self.__t('Show breakdown by age')}",
         }
         breakdown_gender = {
             "value": "breakdown-gender",
-            "label": "Show breakdown by gender",
+            "label": f"{self.__t('Show breakdown by gender')}",
         }
         breakdown_profession = {
             "value": "breakdown-profession",
-            "label": "Show breakdown by profession",
+            "label": f"{self.__t('Show breakdown by profession')}",
         }
 
         options = []

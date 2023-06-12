@@ -1,10 +1,11 @@
+from app import constants
 from app.constants import CAMPAIGNS_LIST
 from app.enums.campaign_code import CampaignCode
 from app.http_exceptions import ResourceNotFoundHTTPException
 
 
-async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
-    """Verify the campaign and return the common parameter"""
+async def common_parameters(campaign: str, lang: str = "en") -> dict:
+    """Return the common parameters"""
 
     def verify_campaign() -> CampaignCode:
         """Check if campaign exists, If not, raise an exception"""
@@ -19,6 +20,15 @@ async def common_parameters(campaign: str) -> dict[str, CampaignCode]:
         if campaign == CampaignCode.midwives_voices:
             return CampaignCode.midwives_voices
 
-    campaign_code_verified = verify_campaign()
+    def verify_language() -> str:
+        """Check if language exists, If not, default to 'en'"""
 
-    return {"campaign_code": campaign_code_verified}
+        if lang in constants.TRANSLATION_LANGUAGES:
+            return lang
+        else:
+            return "en"
+
+    campaign_code_verified = verify_campaign()
+    language_verified = verify_language()
+
+    return {"campaign_code": campaign_code_verified, "language": language_verified}

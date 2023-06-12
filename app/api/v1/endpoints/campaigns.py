@@ -190,9 +190,10 @@ async def read_who_the_people_are_options(
     """Read who the people are options for campaign"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
+    language: str = commons.get("language")
 
     # Create service
-    campaign_service = CampaignService(campaign_code=campaign_code)
+    campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
     # Options
     options = campaign_service.get_who_the_people_are_options()
