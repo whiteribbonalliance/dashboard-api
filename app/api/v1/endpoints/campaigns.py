@@ -32,10 +32,12 @@ async def read_campaign(
     """Read a campaign"""
 
     campaign_code = commons.get("campaign_code")
+    language: str = commons.get("language")
 
     # Create service
     campaign_service = CampaignService(
         campaign_code=campaign_code,
+        language=language,
         filter_1=campaign_req.filter_1,
         filter_2=campaign_req.filter_2,
     )
@@ -53,12 +55,12 @@ async def read_campaign(
 
     # Responses sample
     responses_sample = {
-        "columns": campaign_crud.get_responses_sample_columns(),
-        "data": campaign_service.get_responses_sample_data(),
+        "columns": campaign_service.get_responses_sample_columns(),
+        "data": campaign_service.get_responses_sample(),
     }
 
     # Responses breakdown
-    responses_breakdown = campaign_service.get_responses_breakdown_data()
+    responses_breakdown = campaign_service.get_responses_breakdown()
 
     # Histogram
     histogram = campaign_service.get_histogram()
@@ -115,9 +117,10 @@ async def read_filter_options(
     """Read filter options for campaign"""
 
     campaign_code: CampaignCode = commons.get("campaign_code")
+    language: str = commons.get("language")
 
     # Create service
-    campaign_service = CampaignService(campaign_code=campaign_code)
+    campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
     # Create CRUD
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)

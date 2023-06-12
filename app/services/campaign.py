@@ -15,6 +15,7 @@ from app.schemas.response_topic import ResponseTopic
 from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
+from app.utils import helpers
 
 
 class CampaignService:
@@ -28,8 +29,9 @@ class CampaignService:
         self.__campaign_code = campaign_code
         self.__language = language
 
-        self.__translator = Translator(language=self.__language)
-        self.__t = self.__translator.translate
+        translator = Translator(language=self.__language)
+        self.__t = translator.translate
+        self.__t_delimiter = translator.translate_text_delimiter_separated
 
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
 
@@ -85,17 +87,31 @@ class CampaignService:
             filter_1=filter_1, filter_2=filter_2
         )
 
-    def get_responses_sample_data(self) -> list[dict]:
-        """Get responses sample data"""
+    def get_responses_sample_columns(self) -> list[dict]:
+        """Get responses sample columns"""
 
-        def get_all_descriptions(code: str):
-            """Get all descriptions"""
+        responses_sample_columns = self.__crud.get_responses_sample_columns()
+
+        # Translate column names
+        for column in responses_sample_columns:
+            if not column.get("name"):
+                continue
+
+            column["name"] = self.__t(column["name"])
+
+        return responses_sample_columns
+
+    def get_responses_sample(self) -> list[dict]:
+        """Get responses sample"""
+
+        def get_descriptions(code: str) -> str:
+            """Get descriptions"""
 
             mapping_to_description = code_hierarchy.get_mapping_to_description(
                 campaign_code=self.__campaign_code
             )
 
-            return mapping_to_description.get(
+            descriptions = mapping_to_description.get(
                 code,
                 " / ".join(
                     sorted(
@@ -103,6 +119,11 @@ class CampaignService:
                     )
                 ),
             )
+
+            # Translate descriptions
+            descriptions = self.__t_delimiter(text=descriptions, delimiter=",")
+
+            return descriptions
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
@@ -114,18 +135,30 @@ class CampaignService:
                 n_sample = len(df_1_copy.index)
             df_1_copy = df_1_copy.sample(n=n_sample, random_state=1)
 
-        df_1_copy["description"] = df_1_copy["canonical_code"].apply(
-            get_all_descriptions
-        )
+        df_1_copy["description"] = df_1_copy["canonical_code"].apply(get_descriptions)
 
         column_ids = [col["id"] for col in self.__crud.get_responses_sample_columns()]
+
+        # Translate column data
+        for column_id in column_ids:
+            # Skip 'descriptions' as it is already translated
+            if column_id == "description":
+                continue
+
+            if column_id == "age":
+                # Do not translate age e.g. '25-34'
+                df_1_copy[column_id] = df_1_copy[column_id].apply(
+                    lambda x: self.__t(x) if helpers.contains_letters(x) else x
+                )
+            else:
+                df_1_copy[column_id] = df_1_copy[column_id].apply(lambda x: self.__t(x))
 
         responses_sample_data = df_1_copy[column_ids].to_dict("records")
 
         return responses_sample_data
 
-    def get_responses_breakdown_data(self) -> list[dict]:
-        """Get responses breakdown data"""
+    def get_responses_breakdown(self) -> list[dict]:
+        """Get responses breakdown"""
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
@@ -150,6 +183,11 @@ class CampaignService:
                 code_hierarchy.get_mapping_to_description(
                     campaign_code=self.__campaign_code
                 )
+            )
+
+            # Translate descriptions
+            df["description"] = df["description"].apply(
+                lambda description: self.__t_delimiter(text=description, delimiter=",")
             )
 
             # Set top level column
@@ -199,12 +237,13 @@ class CampaignService:
         wordcloud_words = wordcloud_words[:n_words_to_keep]
 
         wordcloud_words_list = [
-            {"text": key, "value": item} for key, item in dict(wordcloud_words).items()
+            {"text": self.__t(key), "value": item}
+            for key, item in dict(wordcloud_words).items()
         ]
 
         return wordcloud_words_list
 
-    def get_top_words(self):
+    def get_top_words(self) -> list:
         """Get top words"""
 
         unigram_count_dict_1 = self.__ngrams_1[0]
@@ -217,7 +256,7 @@ class CampaignService:
 
         return top_words
 
-    def get_two_word_phrases(self):
+    def get_two_word_phrases(self) -> list:
         """Get two word phrases"""
 
         bigram_count_dict_1 = self.__ngrams_1[1]
@@ -230,7 +269,7 @@ class CampaignService:
 
         return top_words
 
-    def get_three_word_phrases(self):
+    def get_three_word_phrases(self) -> list:
         """Get three word phrases"""
 
         trigram_count_dict_1 = self.__ngrams_1[2]
@@ -245,11 +284,11 @@ class CampaignService:
 
     def __get_ngram_top_words_or_phrases(
         self, ngram_count_dict_1: dict, ngram_count_dict_2: dict
-    ):
+    ) -> list:
         """Get ngram top words/phrases"""
 
         if len(ngram_count_dict_1) == 0:
-            return {}
+            return []
 
         unigram_count_dict_1 = sorted(
             ngram_count_dict_1.items(), key=operator.itemgetter(1)
@@ -284,7 +323,7 @@ class CampaignService:
 
         top_words = [
             {
-                "word": word,
+                "word": self.__t_delimiter(text=word, delimiter=" "),
                 "count_1": freq_list_top_1[(len(word_list) - 1) - index],
                 "count_2": freq_list_top_2[(len(word_list) - 1) - index],
             }
@@ -300,7 +339,7 @@ class CampaignService:
         response_topics = []
         for top_level, leaves in hierarchy.items():
             for code, name in leaves.items():
-                response_topics.append(ResponseTopic(code=code, name=name))
+                response_topics.append(ResponseTopic(code=code, name=self.__t(name)))
 
         return response_topics
 
@@ -324,12 +363,12 @@ class CampaignService:
     def get_filter_1_description(self) -> str:
         """Get filter 1 description"""
 
-        return self.__filter_1_description
+        return self.__t(self.__filter_1_description)
 
     def get_filter_2_description(self) -> str:
         """Get filter 2 description"""
 
-        return self.__filter_2_description
+        return self.__t(self.__filter_2_description)
 
     def __get_filter_description(self, df: pd.DataFrame, _filter: Filter) -> str:
         """Get filter description"""
@@ -377,6 +416,11 @@ class CampaignService:
         average_age = "N/A"
         if len(df_1_copy.index) > 0:  #
             average_age = " ".join(df_1_copy["age"].mode())
+            average_age = (
+                self.__t(average_age)
+                if helpers.contains_letters(average_age)
+                else average_age
+            )
 
         return average_age
 
@@ -527,7 +571,13 @@ class CampaignService:
                     count_2 = 0
 
                 histogram[column_name].append(
-                    {"name": name, "count_1": count_1, "count_2": count_2}
+                    {
+                        "name": self.__t(name)
+                        if helpers.contains_letters(name)
+                        else name,
+                        "count_1": count_1,
+                        "count_2": count_2,
+                    }
                 )
 
             # Sort the columns below by count value (ASC)
@@ -601,7 +651,7 @@ class CampaignService:
 
         genders_breakdown = []
         for key, value in gender_counts.items():
-            genders_breakdown.append({"name": key, "count": value})
+            genders_breakdown.append({"name": self.__t(key), "count": value})
 
         return genders_breakdown
 
@@ -623,7 +673,7 @@ class CampaignService:
                 _coordinates.append(
                     {
                         "country_alpha2_code": key,
-                        "country_name": country_name,
+                        "country_name": self.__t(country_name),
                         "n": value,
                         "lat": lat,
                         "lon": lon,

@@ -26,7 +26,7 @@ class Translator:
 
         return translate_v2.Client(credentials=credentials)
 
-    def translate(self, text: str, test_mode: bool = False) -> str:
+    def translate(self, text: str, test_mode: bool = True) -> str:
         """
         Get translation of text from cache
         If not in cache, translate the text with Cloud Translate and add it to cache
@@ -36,7 +36,7 @@ class Translator:
             return text
 
         if test_mode:
-            return f"t_{text}"
+            return f"{text}"
 
         translate_client = self.__get_translate_client()
 
@@ -64,3 +64,25 @@ class Translator:
             self.__translations_cache.set(key, translated_text)
 
             return translated_text
+
+    def translate_text_delimiter_separated(self, text: str, delimiter: str) -> str:
+        """
+        Split string into a list of words e.g. "hello, world" -> ["hello", "world"]
+        Translate each word
+        Merge words back together
+        """
+
+        translated_text = ""
+
+        split_text = text.split(delimiter)
+
+        for index, word in enumerate(split_text):
+            word = word.strip()
+            translated_text += f"{self.translate(word)}"
+            if index < len(split_text) - 1:
+                if delimiter == " ":
+                    translated_text += f"{delimiter}"
+                else:
+                    translated_text += f"{delimiter} "
+
+        return translated_text
