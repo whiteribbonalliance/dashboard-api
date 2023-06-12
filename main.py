@@ -72,3 +72,7 @@ async def main():
     # Start both applications (FastAPI & Rocketry)
     print("INFO:\t  Starting applications...")
     await asyncio.wait([scheduler, api])
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
