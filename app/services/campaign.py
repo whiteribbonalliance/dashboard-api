@@ -600,7 +600,7 @@ class CampaignService:
     def get_world_bubble_maps_coordinates(self) -> dict:
         """Get world bubble maps coordinates"""
 
-        def get_coordinates(alpha2country_counts, color_id: str):
+        def get_coordinates(alpha2country_counts):
             """Add coordinate and count for each country"""
 
             _coordinates = []
@@ -616,7 +616,6 @@ class CampaignService:
                     {
                         "country_alpha2_code": key,
                         "country_name": country_name,
-                        "color_id": color_id,
                         "n": value,
                         "lat": lat,
                         "lon": lon,
@@ -633,17 +632,13 @@ class CampaignService:
         alpha2country_counts_1 = (
             df_1_copy["alpha2country"].value_counts(ascending=True).to_dict()
         )
-        coordinates_1 = get_coordinates(
-            alpha2country_counts=alpha2country_counts_1, color_id="color_1"
-        )
+        coordinates_1 = get_coordinates(alpha2country_counts=alpha2country_counts_1)
 
         # Get count of each country
         alpha2country_counts_2 = (
             df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
         )
-        coordinates_2 = get_coordinates(
-            alpha2country_counts=alpha2country_counts_2, color_id="color_2"
-        )
+        coordinates_2 = get_coordinates(alpha2country_counts=alpha2country_counts_2)
 
         coordinates = {
             "coordinates_1": coordinates_1,
