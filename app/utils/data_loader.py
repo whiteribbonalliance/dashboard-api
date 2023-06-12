@@ -198,38 +198,43 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
-    print(f"\t  Loading data for campaign {CampaignCode.what_women_want}...")
+    print(f"INFO:\t  Loading data for campaign {CampaignCode.what_women_want}...")
     load_campaign_data(campaign_code=CampaignCode.what_women_want)
 
-    print(f"\t  Loading data for campaign {CampaignCode.what_young_people_want}...")
+    print(
+        f"INFO:\t  Loading data for campaign {CampaignCode.what_young_people_want}..."
+    )
     load_campaign_data(campaign_code=CampaignCode.what_young_people_want)
 
-    print(f"\t  Loading data for campaign {CampaignCode.midwives_voices}...")
+    print(f"INFO:\t  Loading data for campaign {CampaignCode.midwives_voices}...")
     load_campaign_data(campaign_code=CampaignCode.midwives_voices)
 
-    print(f"\t  Loading campaigns data complete.")
+    print("INFO:\t  Loading campaigns data complete.")
 
 
 def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
-    print(f"\t  Loading ngrams cache for campaign {CampaignCode.what_women_want}...")
+    print(
+        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.what_women_want}..."
+    )
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
 
     print(
-        f"\t  Loading ngrams cache for campaign {CampaignCode.what_young_people_want}..."
+        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.what_young_people_want}..."
     )
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
 
-    print(f"\t  Loading ngrams cache for campaign {CampaignCode.midwives_voices}...")
+    print(
+        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.midwives_voices}..."
+    )
     load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
 
-    print(f"\t  Loading campaigns ngrams cache complete.")
+    print("INFO:\t  Loading campaigns ngrams cache complete.")
 
 
-# TODO: Task schedule to run every 12 hours
-def load_initial_data():
-    """Load initial data"""
+def load_data():
+    """Load data"""
 
     load_all_campaigns_data()
     load_all_campaigns_ngrams_unfiltered()

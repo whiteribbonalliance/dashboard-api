@@ -29,5 +29,5 @@ pip install -r requirements.txt
 ### Run
 
 ```bash
-uvicorn app.main:app --reload
+python run.py
 ```
