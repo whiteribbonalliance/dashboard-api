@@ -2,7 +2,7 @@ import json
 
 from app.enums.campaign_code import CampaignCode
 
-CAMPAIGNS_LIST = [
+CAMPAIGN_CODES = [
     CampaignCode.what_women_want.value,
     CampaignCode.what_young_people_want.value,
     CampaignCode.midwives_voices.value,
@@ -404,3 +404,5 @@ TRANSLATION_LANGUAGES = {
     "zh_tw": {"name": "中國人"},
     "zu": {"name": "isiZulu"},
 }
+
+TRANSLATIONS_JSON_FILE_NAME = "translations.json"

@@ -31,3 +31,15 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
+
+## Translations
+
+### Back-end
+
+To apply translations on the back-end data run the following:
+
+```bash
+python translate.py
+```
+
+Texts that have not been translated yet will be translated and saved to `translations.json`.

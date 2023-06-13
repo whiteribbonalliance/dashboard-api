@@ -9,10 +9,14 @@ import numpy as np
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
+from app.schemas.age import Age
 from app.schemas.country import Country
+from app.schemas.gender import Gender
+from app.schemas.profession import Profession
+from app.schemas.region import Region
 from app.services import bigquery_interactions
-from app.services import translations_cache
 from app.services.campaign import CampaignCRUD, CampaignService
+from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
 
 logger = logging.getLogger(__name__)
@@ -102,8 +106,7 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Set ages
     ages = df_responses["age"].unique().tolist()
-    ages = [age for age in ages if age is not None]
-    ages.sort()
+    ages = [Age(code=age, name=age) for age in ages if age is not None]
     campaign_crud.set_ages(ages=ages)
 
     # Remove the UNCODABLE responses
@@ -147,7 +150,7 @@ def load_campaign_data(campaign_code: CampaignCode):
         alpha2_code = unique_canonical_country_region["alpha2country"].iloc[idx]
         region = unique_canonical_country_region["region"].iloc[idx]
         if region:
-            countries[alpha2_code].regions.append(region)
+            countries[alpha2_code].regions.append(Region(code=region, name=region))
 
     # Set countries
     campaign_crud.set_countries(countries=countries)
@@ -159,14 +162,14 @@ def load_campaign_data(campaign_code: CampaignCode):
     genders = []
     if "gender" in column_ids:
         for gender in df_responses["gender"].value_counts().index:
-            genders.append(gender)
+            genders.append(Gender(code=gender, name=gender))
     campaign_crud.set_genders(genders=genders)
 
     # Set professions
     professions = []
     if "profession" in column_ids:
         for profession in df_responses["profession"].value_counts().index:
-            professions.append(profession)
+            professions.append(Profession(code=profession, name=profession))
     campaign_crud.set_professions(professions=professions)
 
     # Set dataframe
@@ -240,6 +243,7 @@ def load_data():
 def load_translations_cache():
     """Load translations cache"""
 
-    # Start the translations cache instance
-    print("INFO:\t  Loading cached translations...")
-    translations_cache.TranslationsCache()
+    print("INFO:\t  Loading translations cache...")
+
+    # Creating the singleton instance will automatically load the cache
+    TranslationsCache.get_instance()

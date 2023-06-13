@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     VERSION = "1.0.0"
     APP_TITLE = "What Women Want API"
     API_V1 = ApiPrefix.v1
+    OFFLINE_TRANSLATE_MODE = False
 
 
 class DevSettings(Settings):

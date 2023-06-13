@@ -8,8 +8,9 @@ from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
+from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
-from app.services.campaign import CampaignCRUD, CampaignService
+from app.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -26,13 +27,15 @@ router = APIRouter(prefix="/campaigns")
     status_code=status.HTTP_200_OK,
 )
 async def read_campaign(
-    commons: Annotated[dict, Depends(dependencies.common_parameters)],
+    common_parameters: Annotated[
+        CommonParameters, Depends(dependencies.common_parameters)
+    ],
     campaign_req: CampaignRequest,
 ):
     """Read a campaign"""
 
-    campaign_code = commons.get("campaign_code")
-    language: str = commons.get("language")
+    campaign_code = common_parameters.campaign_code
+    language = common_parameters.language
 
     # Create service
     campaign_service = CampaignService(
@@ -41,9 +44,6 @@ async def read_campaign(
         filter_1=campaign_req.filter_1,
         filter_2=campaign_req.filter_2,
     )
-
-    # Create CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
     # Top words and phrases
     top_words_and_phrases = {
@@ -112,21 +112,20 @@ async def read_campaign(
     status_code=status.HTTP_200_OK,
 )
 async def read_filter_options(
-    commons: Annotated[dict, Depends(dependencies.common_parameters)]
+    common_parameters: Annotated[
+        CommonParameters, Depends(dependencies.common_parameters)
+    ]
 ):
     """Read filter options for campaign"""
 
-    campaign_code: CampaignCode = commons.get("campaign_code")
-    language: str = commons.get("language")
+    campaign_code = common_parameters.campaign_code
+    language = common_parameters.language
 
     # Create service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
-    # Create CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
-
     # Country options
-    countries = campaign_crud.get_countries_list()
+    countries = campaign_service.get_countries_list()
     country_options = [
         {"value": country.alpha2_code, "label": country.name} for country in countries
     ]
@@ -136,7 +135,9 @@ async def read_filter_options(
     for country in countries:
         regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
         for region in country.regions:
-            regions_options["options"].append({"value": region, "label": region})
+            regions_options["options"].append(
+                {"value": region.code, "label": region.name}
+            )
         country_regions_options.append(regions_options)
 
     # Response topic options
@@ -147,27 +148,30 @@ async def read_filter_options(
     ]
 
     # Ages options
-    ages = campaign_crud.get_ages()
-    ages = [{"value": age, "label": age} for age in ages]
+    ages = campaign_service.get_ages()
+    ages = [{"value": age.code, "label": age.name} for age in ages]
 
     # Gender options
-    genders = campaign_crud.get_genders()
-    gender_options = [{"value": gender, "label": gender} for gender in genders]
+    genders = campaign_service.get_genders()
+    gender_options = [
+        {"value": gender.code, "label": gender.name} for gender in genders
+    ]
 
     # Profession options
-    professions = campaign_crud.get_professions()
+    professions = campaign_service.get_professions()
     profession_options = [
-        {"value": profession, "label": profession} for profession in professions
+        {"value": profession.code, "label": profession.name}
+        for profession in professions
     ]
 
     # Only responses from categories options
     only_responses_from_categories_options = (
-        campaign_crud.get_only_responses_from_categories_options()
+        campaign_service.get_only_responses_from_categories_options()
     )
 
     # Only multi-word phrases containing filter term options
     only_multi_word_phrases_containing_filter_term_options = (
-        campaign_crud.get_only_multi_word_phrases_containing_filter_term_options()
+        campaign_service.get_only_multi_word_phrases_containing_filter_term_options()
     )
 
     return FilterOptions(
@@ -188,12 +192,14 @@ async def read_filter_options(
     status_code=status.HTTP_200_OK,
 )
 async def read_who_the_people_are_options(
-    commons: Annotated[dict, Depends(dependencies.common_parameters)]
+    common_parameters: Annotated[
+        CommonParameters, Depends(dependencies.common_parameters)
+    ]
 ):
     """Read who the people are options for campaign"""
 
-    campaign_code: CampaignCode = commons.get("campaign_code")
-    language: str = commons.get("language")
+    campaign_code = common_parameters.campaign_code
+    language = common_parameters.language
 
     # Create service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)

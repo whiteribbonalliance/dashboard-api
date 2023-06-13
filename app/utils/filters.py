@@ -3,12 +3,29 @@ import re
 import inflect
 from pandas import DataFrame
 
+from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
-from app import constants
 
 inflect_engine = inflect.engine()
+
+
+def get_default_filter() -> Filter:
+    """Get default filter"""
+
+    return Filter(
+        countries=[],
+        regions=[],
+        response_topics=[],
+        only_responses_from_categories=False,
+        genders=[],
+        professions=[],
+        ages=[],
+        only_multi_word_phrases_containing_filter_term=False,
+        keyword_filter="",
+        keyword_exclude="",
+    )
 
 
 def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
@@ -228,6 +245,14 @@ def check_if_filters_are_identical(
         and filter_1.professions == filter_2.professions
         and filter_1.keyword_filter == filter_2.keyword_filter
         and filter_1.keyword_exclude == filter_2.keyword_exclude
+    )
+
+
+def check_if_filter_is_default(_filter: Filter) -> bool:
+    """Check if filter is default"""
+
+    return check_if_filters_are_identical(
+        filter_1=_filter, filter_2=get_default_filter()
     )
 
 

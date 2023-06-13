@@ -1,16 +1,17 @@
 from app import constants
-from app.constants import CAMPAIGNS_LIST
+from app.constants import CAMPAIGN_CODES
 from app.enums.campaign_code import CampaignCode
 from app.http_exceptions import ResourceNotFoundHTTPException
+from app.schemas.common_parameters import CommonParameters
 
 
-async def common_parameters(campaign: str, lang: str = "en") -> dict:
+async def common_parameters(campaign: str, lang: str = "en") -> CommonParameters:
     """Return the common parameters"""
 
     def verify_campaign() -> CampaignCode:
-        """Check if campaign exists, If not, raise an exception"""
+        """Verify campaign, If it doesn't exist, raise an exception"""
 
-        if campaign.lower() not in [c.lower() for c in CAMPAIGNS_LIST]:
+        if campaign.lower() not in [c.lower() for c in CAMPAIGN_CODES]:
             raise ResourceNotFoundHTTPException("Campaign not found")
 
         if campaign == CampaignCode.what_women_want:
@@ -20,7 +21,7 @@ async def common_parameters(campaign: str, lang: str = "en") -> dict:
         if campaign == CampaignCode.midwives_voices:
             return CampaignCode.midwives_voices
 
-    def verify_language() -> str:
+    def check_language() -> str:
         """Check if language exists, If not, default to 'en'"""
 
         if lang in constants.TRANSLATION_LANGUAGES:
@@ -29,6 +30,8 @@ async def common_parameters(campaign: str, lang: str = "en") -> dict:
             return "en"
 
     campaign_code_verified = verify_campaign()
-    language_verified = verify_language()
+    language_verified = check_language()
 
-    return {"campaign_code": campaign_code_verified, "language": language_verified}
+    return CommonParameters(
+        campaign_code=campaign_code_verified, language=language_verified
+    )

@@ -10,7 +10,11 @@ import pandas as pd
 from app import constants
 from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
+from app.schemas.age import Age
+from app.schemas.country import Country
 from app.schemas.filter import Filter
+from app.schemas.gender import Gender
+from app.schemas.profession import Profession
 from app.schemas.response_topic import ResponseTopic
 from app.services.translator import Translator
 from app.utils import code_hierarchy
@@ -23,15 +27,14 @@ class CampaignService:
         self,
         campaign_code: CampaignCode,
         language: str = "en",
-        filter_1: Filter = None,
-        filter_2: Filter = None,
+        filter_1: Filter | None = None,
+        filter_2: Filter | None = None,
     ):
         self.__campaign_code = campaign_code
         self.__language = language
 
-        translator = Translator(language=self.__language)
-        self.__t = translator.translate
-        self.__t_delimiter = translator.translate_text_delimiter_separated
+        Translator.get_instance().set_language(language=language)
+        self.__t = Translator.get_instance().translate_text
 
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
 
@@ -40,21 +43,19 @@ class CampaignService:
 
         # Apply filter 1
         if self.__filter_1:
-            df = self.__apply_filter_to_df(
-                df=self.__crud.get_dataframe().copy(), _filter=self.__filter_1
+            self.__df_1 = filters.apply_filter_to_df(
+                df=self.__crud.get_dataframe(), _filter=self.__filter_1
             )
-            self.__df_1 = df
         else:
-            self.__df_1 = self.__crud.get_dataframe().copy()
+            self.__df_1 = self.__crud.get_dataframe()
 
         # Apply filter 2
         if self.__filter_2:
-            df = self.__apply_filter_to_df(
-                df=self.__crud.get_dataframe().copy(), _filter=self.__filter_2
+            self.__df_2 = filters.apply_filter_to_df(
+                df=self.__crud.get_dataframe(), _filter=self.__filter_2
             )
-            self.__df_2 = df
         else:
-            self.__df_2 = self.__crud.get_dataframe().copy()
+            self.__df_2 = self.__crud.get_dataframe()
 
         # Filter 1 description
         self.__filter_1_description = self.__get_filter_description(
@@ -68,12 +69,16 @@ class CampaignService:
 
         # If filter 1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
-        if self.__filter_1:
+        if self.__filter_1 and not filters.check_if_filter_is_default(
+            _filter=self.__filter_1
+        ):
             self.__filter_1_use_ngrams_unfiltered = False
 
         # If filter 2 was requested, then do not use the cached ngrams
         self.__filter_2_use_ngrams_unfiltered = True
-        if self.__filter_2:
+        if self.__filter_2 and not filters.check_if_filter_is_default(
+            _filter=self.__filter_2
+        ):
             self.__filter_2_use_ngrams_unfiltered = False
 
         # Ngrams 1
@@ -121,15 +126,19 @@ class CampaignService:
             )
 
             # Translate descriptions
-            descriptions = self.__t_delimiter(text=descriptions, delimiter=",")
+            descriptions = self.__t(text=descriptions, delimiter=",")
 
             return descriptions
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
 
-        # Get a sample of 1000
-        n_sample = 1000
+        # Limit the sample for languages that are not English
+        if self.__language == "en":
+            n_sample = 1000
+        else:
+            n_sample = 100
+
         if len(df_1_copy.index) > 0:
             if len(df_1_copy.index) < n_sample:
                 n_sample = len(df_1_copy.index)
@@ -187,7 +196,7 @@ class CampaignService:
 
             # Translate descriptions
             df["description"] = df["description"].apply(
-                lambda description: self.__t_delimiter(text=description, delimiter=",")
+                lambda description: self.__t(text=description, delimiter=",")
             )
 
             # Set top level column
@@ -323,7 +332,7 @@ class CampaignService:
 
         top_words = [
             {
-                "word": self.__t_delimiter(text=word, delimiter=" "),
+                "word": self.__t(text=word, delimiter=" "),
                 "count_1": freq_list_top_1[(len(word_list) - 1) - index],
                 "count_2": freq_list_top_2[(len(word_list) - 1) - index],
             }
@@ -353,13 +362,6 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __apply_filter_to_df(self, df: pd.DataFrame, _filter: Filter) -> pd.DataFrame:
-        """Apply filter to df"""
-
-        df = filters.apply_filter_to_df(df=df, _filter=_filter)
-
-        return df
-
     def get_filter_1_description(self) -> str:
         """Get filter 1 description"""
 
@@ -375,18 +377,7 @@ class CampaignService:
 
         if not _filter:
             # Use an empty filter to generate description
-            _filter = Filter(
-                countries=[],
-                regions=[],
-                response_topics=[],
-                only_responses_from_categories=True,
-                genders=[],
-                professions=[],
-                ages=[],
-                only_multi_word_phrases_containing_filter_term=True,
-                keyword_filter="",
-                keyword_exclude="",
-            )
+            _filter = filters.get_default_filter()
 
         description = filters.generate_description_of_filter(
             campaign_code=self.__campaign_code,
@@ -709,3 +700,79 @@ class CampaignService:
         """Get filters are identical"""
 
         return self.filters_are_identical
+
+    def get_countries_list(self) -> list[Country]:
+        """Get countries list"""
+
+        countries = self.__crud.get_countries_list()
+
+        # Translate
+        for country in countries:
+            country.name = self.__t(country.name)
+            country.demonym = self.__t(country.demonym)
+
+            for region in country.regions:
+                region.name = self.__t(region.name)
+
+        return countries
+
+    def get_ages(self) -> list[Age]:
+        """Get ages"""
+
+        ages = self.__crud.get_ages()
+
+        # Translate
+        for index, age in enumerate(ages):
+            age.name = (
+                self.__t(age.name) if helpers.contains_letters(age.name) else age.name
+            )
+
+        return ages
+
+    def get_genders(self) -> list[Gender]:
+        """Get genders"""
+
+        genders = self.__crud.get_genders()
+
+        # Translate
+        for index, gender in enumerate(genders):
+            gender.name = self.__t(gender.name)
+
+        return genders
+
+    def get_professions(self) -> list[Profession]:
+        """Get professions"""
+
+        professions = self.__crud.get_professions()
+
+        # Translate
+        for index, profession in enumerate(professions):
+            profession.name = self.__t(profession.name)
+
+        return professions
+
+    def get_only_responses_from_categories_options(self) -> list[dict]:
+        """Get only responses from categories options"""
+
+        only_responses_from_categories_options = (
+            self.__crud.get_only_responses_from_categories_options()
+        )
+
+        # Translate
+        for option in only_responses_from_categories_options:
+            option["label"] = self.__t(option["label"])
+
+        return only_responses_from_categories_options
+
+    def get_only_multi_word_phrases_containing_filter_term_options(self) -> list[dict]:
+        """Get only multi-word phrases containing filter term options"""
+
+        only_multi_word_phrases_containing_filter_term_options = (
+            self.__crud.get_only_multi_word_phrases_containing_filter_term_options()
+        )
+
+        # Translate
+        for option in only_multi_word_phrases_containing_filter_term_options:
+            option["label"] = self.__t(option["label"])
+
+        return only_multi_word_phrases_containing_filter_term_options
