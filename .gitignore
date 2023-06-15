@@ -137,4 +137,3 @@ dmypy.json
 # Front translations
 /front_translations/*
 !front_translations/.gitkeep
-!front_translations/to_translate.txt

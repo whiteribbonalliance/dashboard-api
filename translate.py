@@ -26,15 +26,15 @@ count_chars_only = True
 async def translate():
     """Apply translation for each language in a campaign"""
 
+    translator = Translator()
+
     # Translate each campaign
     for campaign_code in constants.CAMPAIGN_CODES:
         for language in constants.TRANSLATION_LANGUAGES:
             if count_chars_only:
-                print(
-                    f"Counting characters for: {campaign_code}, Language: {language}..."
-                )
+                print(print(f"Counting characters from {campaign_code}..."))
             else:
-                print(f"Translating: {campaign_code}, Language: {language}...")
+                print(f"Translating texts from {campaign_code} to {language}...")
 
             common_parameters = CommonParameters(
                 campaign_code=campaign_code, language=language
@@ -51,15 +51,16 @@ async def translate():
             await read_who_the_people_are_options(common_parameters=common_parameters)
 
             # Translate extracted texts
-            Translator().translate_extracted_texts(count_chars_only=count_chars_only)
+            translator.translate_extracted_texts(count_chars_only=count_chars_only)
 
+    # Print
     if count_chars_only:
         print(
-            f"\nTotal Characters count from texts that can be translated: {Translator().get_translations_char_count()}"
+            f"\nTotal Characters count from texts that can be translated: {translator.get_translations_char_count()}"
         )
     else:
         print(
-            f"\nTotal Characters count from texts translated: {Translator().get_translations_char_count()}"
+            f"\nTotal Characters count from texts translated: {translator.get_translations_char_count()}"
         )
 
 

@@ -8,8 +8,8 @@ from google.oauth2 import service_account
 from app import constants
 from app.core.settings import settings
 from app.services.translations_cache import TranslationsCache
-from app.utils.singleton_meta import SingletonMeta
 from app.utils import helpers
+from app.utils.singleton_meta import SingletonMeta
 
 CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST = 128
 
@@ -24,9 +24,11 @@ class Translator(metaclass=SingletonMeta):
         self.__language = "en"
         self.__translations_cache = TranslationsCache()
 
+        # Keep the latest generated keys per language from extracted texts that have been translated
+        self.__latest_generated_keys_per_language = {}
+
         # Extracted texts are texts that were determined to be translated
         self.__extracted_texts = set()
-
         self.__translations_char_count = 0
 
     def __get_translate_client(self) -> translate_v2.Client:
@@ -53,7 +55,7 @@ class Translator(metaclass=SingletonMeta):
 
         # With OFFLINE_TRANSLATE_MODE = True, save the text to extracted_texts only
         if settings.OFFLINE_TRANSLATE_MODE:
-            self.extract_text(text=text)
+            self.add_text_to_extract(text=text)
 
             return text
 
@@ -121,9 +123,9 @@ class Translator(metaclass=SingletonMeta):
         else:
             return self.__translate_text(text=text)
 
-    def extract_text(self, text: str):
+    def add_text_to_extract(self, text: str):
         """
-        Extract text
+        Add text to extract
 
         :param text: Text to extract
         """
@@ -135,6 +137,16 @@ class Translator(metaclass=SingletonMeta):
         key = f"{self.__language}.{text}"
         if not self.__translations_cache.has(key):
             self.__extracted_texts.add(text)
+        else:
+            # Texts has already been translated
+            self.__add_key_to_latest_generated_keys(key)
+
+    def __add_key_to_latest_generated_keys(self, key: str):
+        """Add key to latest generated keys"""
+
+        if not self.__latest_generated_keys_per_language.get(self.__language):
+            self.__latest_generated_keys_per_language[self.__language] = []
+        self.__latest_generated_keys_per_language[self.__language].append(key)
 
     def translate_extracted_texts(self, count_chars_only: bool = False):
         """Translate extracted texts and save them to translations.json"""
@@ -178,6 +190,7 @@ class Translator(metaclass=SingletonMeta):
                     key = f"{self.__language}.{input_text}"
                     self.__translations_cache.set(key=key, value=translated_text)
                     self.__translations_char_count += len(input_text)
+                    self.__add_key_to_latest_generated_keys(key)
 
             self.__save_translations()
 
@@ -196,3 +209,8 @@ class Translator(metaclass=SingletonMeta):
         """Set language"""
 
         self.__language = language
+
+    def get_latest_generated_keys_per_language(self) -> dict:
+        """Get latest generated keys per language"""
+
+        return self.__latest_generated_keys_per_language

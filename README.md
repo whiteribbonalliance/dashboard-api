@@ -46,7 +46,17 @@ Texts that have not been translated yet will be translated and saved to `transla
 
 ### Front-end
 
-Copy and paste on a new line each text that needs to be translated to  `front_translations/to_translate.txt`.
+Create a JSON file at `front_translations/to_translate.json` that contains the key that is used in the front for
+accessing a translation with the value as the text in English.
+
+For example:
+
+```json
+{
+  "title": "Lorem Ipsum",
+  "click-button": "Click button"
+}
+```
 
 To apply translations run:
 

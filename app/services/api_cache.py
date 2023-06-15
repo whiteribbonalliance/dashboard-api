@@ -44,7 +44,7 @@ class ApiCache(metaclass=SingletonMeta):
         return wrapper
 
     def __check_cache_size(self):
-        """Clear cache when cached items is over 1000"""
+        """Clear cache when cached items are over 1000"""
 
         if len(self.__cache) > 1000:
             if self.__is_checking_cache_size:
