@@ -20,7 +20,7 @@ settings.OFFLINE_TRANSLATE_MODE = True
 
 data_loader.load_data()
 
-count_chars_only = True
+count_chars_only = False
 
 
 async def translate():
@@ -32,9 +32,9 @@ async def translate():
     for campaign_code in constants.CAMPAIGN_CODES:
         for language in constants.TRANSLATION_LANGUAGES:
             if count_chars_only:
-                print(print(f"Counting characters from {campaign_code}..."))
+                print(f"Counting characters for {campaign_code}-{language}...")
             else:
-                print(f"Translating texts from {campaign_code} to {language}...")
+                print(f"Translating texts for {campaign_code}-{language}...")
 
             common_parameters = CommonParameters(
                 campaign_code=campaign_code, language=language
@@ -52,6 +52,9 @@ async def translate():
 
             # Translate extracted texts
             translator.translate_extracted_texts(count_chars_only=count_chars_only)
+
+            if not count_chars_only:
+                print(f"Translations saved: {campaign_code}-{language}...")
 
     # Print
     if count_chars_only:

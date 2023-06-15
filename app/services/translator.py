@@ -65,8 +65,8 @@ class Translator(metaclass=SingletonMeta):
             # If translated text already exists, return it
             return self.__translations_cache.get(key)
         else:
-            # Do not translate
-            return f"t_{text}"
+            # FIXME: Temporarily return the text back and do not translate until translations.json has been updated
+            return f"{text}"
 
             # If translated text does not exist, translate it and add it to cache
             try:
