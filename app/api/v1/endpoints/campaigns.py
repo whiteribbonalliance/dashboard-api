@@ -4,13 +4,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.api import dependencies
-from app.services.api_cache import cache_response
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
+from app.services.api_cache import api_cache
 from app.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/campaigns")
     response_model=Campaign,
     status_code=status.HTTP_200_OK,
 )
-@cache_response
+@api_cache.cache_response
 async def read_campaign(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)
@@ -112,7 +112,7 @@ async def read_campaign(
     response_model=FilterOptions,
     status_code=status.HTTP_200_OK,
 )
-@cache_response
+@api_cache.cache_response
 async def read_filter_options(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)
@@ -193,7 +193,7 @@ async def read_filter_options(
     response_model=list,
     status_code=status.HTTP_200_OK,
 )
-@cache_response
+@api_cache.cache_response
 async def read_who_the_people_are_options(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)

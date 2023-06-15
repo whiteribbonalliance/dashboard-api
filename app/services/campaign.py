@@ -33,7 +33,7 @@ class CampaignService:
         self.__campaign_code = campaign_code
         self.__language = language
 
-        translator = Translator.get_instance()
+        translator = Translator()
         translator.set_language(language=self.__language)
         self.__t = translator.translate_text
 

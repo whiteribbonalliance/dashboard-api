@@ -8,34 +8,21 @@ from google.oauth2 import service_account
 from app import constants
 from app.core.settings import settings
 from app.services.translations_cache import TranslationsCache
+from app.utils.singleton_meta import SingletonMeta
 from app.utils import helpers
 
 CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST = 128
 
 
-class Translator:
+class Translator(metaclass=SingletonMeta):
     """
+    Singleton class
     This class is responsible for applying translations
     """
 
-    __instance = None
-
-    @staticmethod
-    def get_instance() -> "Translator":
-        """
-        Only use this function to get the instance e.g. 'Translator.get_instance()'
-        """
-
-        if Translator.__instance is None:
-            Translator()
-
-        return Translator.__instance
-
     def __init__(self):
-        Translator.__instance = self
-
         self.__language = "en"
-        self.__translations_cache = TranslationsCache.get_instance()
+        self.__translations_cache = TranslationsCache()
 
         # Extracted texts are texts that were determined to be translated
         self.__extracted_texts = set()

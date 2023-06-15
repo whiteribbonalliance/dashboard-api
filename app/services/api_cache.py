@@ -1,7 +1,3 @@
-"""
-Cache API responses
-"""
-
 import json
 from collections import OrderedDict
 from functools import wraps
@@ -9,66 +5,67 @@ from hashlib import sha256
 
 from fastapi.encoders import jsonable_encoder
 
-cache = OrderedDict()
-is_checking_cache_size = False
+from app.utils.singleton_meta import SingletonMeta
 
 
-def cache_response(func):
-    """Decorator for caching API responses"""
+class ApiCache(metaclass=SingletonMeta):
+    """
+    Singleton class
+    Cache API responses
+    """
 
-    global cache
+    def __init__(self):
+        self.__cache = OrderedDict()
+        self.__is_checking_cache_size = False
 
-    @wraps(func)
-    async def wrapper(*args: tuple, **kwargs: dict):
-        kwargs_jsonable = jsonable_encoder(kwargs)
-        kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
-        hash_value = sha256(kwargs_json.encode()).hexdigest()
+    def cache_response(self, func):
+        """Decorator for caching API responses"""
 
-        if hash_value in cache:
-            # Return cached result
-            result = cache.get(hash_value)
+        @wraps(func)
+        async def wrapper(*args: tuple, **kwargs: dict):
+            kwargs_jsonable = jsonable_encoder(kwargs)
+            kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
+            hash_value = sha256(kwargs_json.encode()).hexdigest()
 
-            return result
-        else:
-            check_cache_size()
+            if hash_value in self.__cache:
+                # Return cached result
+                result = self.__cache.get(hash_value)
 
-            # Create result, cache result, return result
-            result = await func(*args, **kwargs)
-            cache[hash_value] = result
+                return result
+            else:
+                self.__check_cache_size()
 
-            return result
+                # Create result, cache result, return result
+                result = await func(*args, **kwargs)
+                self.__cache[hash_value] = result
 
-    return wrapper
+                return result
+
+        return wrapper
+
+    def __check_cache_size(self):
+        """Clear cache when cached items is over 1000"""
+
+        if len(self.__cache) > 1000:
+            if self.__is_checking_cache_size:
+                return
+
+            self.__is_checking_cache_size = True
+
+            self.clear_cache()
+
+            self.__is_checking_cache_size = False
+
+    def get_cache(self):
+        """Get cache"""
+
+        return self.__cache
+
+    def clear_cache(self):
+        """Clear cache"""
+
+        if len(self.__cache) > 0:
+            self.__cache.clear()
 
 
-def check_cache_size():
-    """Clear cache when cached items is over 1000"""
-
-    if len(cache) > 1000:
-        global is_checking_cache_size
-
-        if is_checking_cache_size:
-            return
-
-        is_checking_cache_size = True
-
-        clear_cache()
-
-        is_checking_cache_size = False
-
-
-def get_cache():
-    """Get cache"""
-
-    global cache
-
-    return cache
-
-
-def clear_cache():
-    """Clear cache"""
-
-    global cache
-
-    if len(cache) > 0:
-        cache.clear()
+api_cache = ApiCache()

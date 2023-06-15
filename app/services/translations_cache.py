@@ -3,27 +3,16 @@ import os
 from typing import Any
 
 from app import constants
+from app.utils.singleton_meta import SingletonMeta
 
 
-class TranslationsCache:
-    """This class is responsible for caching translations"""
-
-    __instance = None
-
-    @staticmethod
-    def get_instance() -> "TranslationsCache":
-        """
-        Only use this function to get the instance e.g. 'TranslationsCache.get_instance()'
-        """
-
-        if TranslationsCache.__instance is None:
-            TranslationsCache()
-
-        return TranslationsCache.__instance
+class TranslationsCache(metaclass=SingletonMeta):
+    """
+    Singleton class
+    This class is responsible for caching translations
+    """
 
     def __init__(self):
-        TranslationsCache.__instance = self
-
         self.__cache = {}
 
         self.__load()

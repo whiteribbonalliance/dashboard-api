@@ -51,17 +51,15 @@ async def translate():
             await read_who_the_people_are_options(common_parameters=common_parameters)
 
             # Translate extracted texts
-            Translator.get_instance().translate_extracted_texts(
-                count_chars_only=count_chars_only
-            )
+            Translator().translate_extracted_texts(count_chars_only=count_chars_only)
 
     if count_chars_only:
         print(
-            f"\nTotal Characters count from texts that can be translated: {Translator.get_instance().get_translations_char_count()}"
+            f"\nTotal Characters count from texts that can be translated: {Translator().get_translations_char_count()}"
         )
     else:
         print(
-            f"\nTotal Characters count from texts translated: {Translator.get_instance().get_translations_char_count()}"
+            f"\nTotal Characters count from texts translated: {Translator().get_translations_char_count()}"
         )
 
 

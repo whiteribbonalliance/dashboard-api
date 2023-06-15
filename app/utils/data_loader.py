@@ -14,7 +14,7 @@ from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.region import Region
-from app.services import api_cache
+from app.services.api_cache import api_cache
 from app.services import bigquery_interactions
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
@@ -250,4 +250,4 @@ def load_translations_cache():
     print("INFO:\t  Loading translations cache...")
 
     # Creating the singleton instance will automatically load the cache
-    TranslationsCache.get_instance()
+    TranslationsCache()
