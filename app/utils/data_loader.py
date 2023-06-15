@@ -14,6 +14,7 @@ from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.region import Region
+from app.services import api_cache
 from app.services import bigquery_interactions
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
@@ -238,6 +239,9 @@ def load_data():
 
     load_all_campaigns_data()
     load_all_campaigns_ngrams_unfiltered()
+
+    # Clear the API cache
+    api_cache.clear_cache()
 
 
 def load_translations_cache():

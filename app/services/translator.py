@@ -70,15 +70,15 @@ class Translator:
 
             return text
 
-        # TODO: Remove
-        return f"{text}"
-
         key = f"{self.__language}.{text}"
 
         if self.__translations_cache.has(key):
             # If translated text already exists, return it
             return self.__translations_cache.get(key)
         else:
+            # Do not translate
+            return f"t_{text}"
+
             # If translated text does not exist, translate it and add it to cache
             try:
                 translate_client = self.__get_translate_client()

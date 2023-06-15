@@ -36,10 +36,25 @@ python main.py
 
 ### Back-end
 
-To apply translations on the back-end data run the following:
+To apply translations on the back-end data run:
 
 ```bash
 python translate.py
 ```
 
 Texts that have not been translated yet will be translated and saved to `translations.json`.
+
+### Front-end
+
+Copy and paste on a new line each text that needs to be translated to  `front_translations/to_translate.txt`.
+
+To apply translations run:
+
+```bash
+python translate_front.py
+```
+
+Once translations have been applied, a new folder called `languages` should have been inside `front_translations`.
+
+Copy the `translations` folder to the front-end project at `src/app/i18n`.
+

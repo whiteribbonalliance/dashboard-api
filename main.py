@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
 from app.core.settings import settings
-from app.scheduler import app as app_rocketry
+from app.services.scheduler import app as app_rocketry
 from app.utils import data_loader
 
 # Load initial data before starting the application
@@ -29,7 +29,7 @@ app_fastapi = FastAPI(
 )
 
 app_fastapi.add_middleware(
-    CORSMiddleware,
+    middleware_class=CORSMiddleware,
     allow_origins=settings.CORS["origins"],
     allow_credentials=settings.CORS["allow_credentials"],
     allow_methods=settings.CORS["allow_methods"],
@@ -52,7 +52,6 @@ class Server(uvicorn.Server):
 
 
 async def main():
-    # Create API task
     server = Server(
         config=uvicorn.Config(
             app=app_fastapi,
@@ -63,9 +62,8 @@ async def main():
             loop="asyncio",
         )
     )
-    api = asyncio.create_task(server.serve())
 
-    # Create scheduler task
+    api = asyncio.create_task(server.serve())
     scheduler = asyncio.create_task(app_rocketry.serve())
 
     # Start both applications (FastAPI & Rocketry)

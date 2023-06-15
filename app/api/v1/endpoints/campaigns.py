@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.api import dependencies
+from app.services.api_cache import cache_response
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -18,14 +19,12 @@ init_custom_logger(logger)
 router = APIRouter(prefix="/campaigns")
 
 
-# TODO: Cache responses for as long as data has not been reloaded from BigQuery
-
-
 @router.post(
     path="/{campaign}",
     response_model=Campaign,
     status_code=status.HTTP_200_OK,
 )
+@cache_response
 async def read_campaign(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)
@@ -36,13 +35,15 @@ async def read_campaign(
 
     campaign_code = common_parameters.campaign_code
     language = common_parameters.language
+    filter_1 = campaign_req.filter_1
+    filter_2 = campaign_req.filter_2
 
     # Create service
     campaign_service = CampaignService(
         campaign_code=campaign_code,
         language=language,
-        filter_1=campaign_req.filter_1,
-        filter_2=campaign_req.filter_2,
+        filter_1=filter_1,
+        filter_2=filter_2,
     )
 
     # Top words and phrases
@@ -111,6 +112,7 @@ async def read_campaign(
     response_model=FilterOptions,
     status_code=status.HTTP_200_OK,
 )
+@cache_response
 async def read_filter_options(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)
@@ -191,6 +193,7 @@ async def read_filter_options(
     response_model=list,
     status_code=status.HTTP_200_OK,
 )
+@cache_response
 async def read_who_the_people_are_options(
     common_parameters: Annotated[
         CommonParameters, Depends(dependencies.common_parameters)
