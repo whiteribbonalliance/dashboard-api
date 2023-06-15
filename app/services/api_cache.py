@@ -24,6 +24,7 @@ class ApiCache(metaclass=SingletonMeta):
         @wraps(func)
         async def wrapper(*args: tuple, **kwargs: dict):
             kwargs_jsonable = jsonable_encoder(kwargs)
+            kwargs_jsonable["function_name"] = func.__name__
             kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
             hash_value = sha256(kwargs_json.encode()).hexdigest()
 
