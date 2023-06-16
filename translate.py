@@ -17,16 +17,17 @@ from app.services.translator import Translator
 from app.utils import data_loader
 
 settings.OFFLINE_TRANSLATE_MODE = True
-
 data_loader.load_data()
-
 count_chars_only = False
+translator = Translator()
 
 
 async def translate():
-    """Apply translation for each language in a campaign"""
+    """
+    Apply translation for each language in a campaign
 
-    translator = Translator()
+    Will skip 'app.services.campaign.get_responses_sample()' as this contains random data (is translated on the fly)
+    """
 
     # Translate each campaign
     for campaign_code in constants.CAMPAIGN_CODES:
@@ -52,9 +53,6 @@ async def translate():
 
             # Translate extracted texts
             translator.translate_extracted_texts(count_chars_only=count_chars_only)
-
-            if not count_chars_only:
-                print(f"Translations saved: {campaign_code}-{language}...")
 
     # Print
     if count_chars_only:

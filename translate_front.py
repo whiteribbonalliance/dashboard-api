@@ -17,18 +17,13 @@ def translate_front():
 
     translations_cache = TranslationsCache()
 
-    with open("front_translations/to_translate.json", "r") as file:
+    with open("front_translations/to_translate.json", "r", encoding="utf8") as file:
         texts = json.loads(file.read())
 
     translator = Translator()
 
     # Translate text for every language
-    count = 0
     for language in constants.TRANSLATION_LANGUAGES.keys():
-        if count > 5:
-            break
-        count += 1
-
         print(f"Translating texts to {language}...")
 
         translator.set_language(language=language)
@@ -61,8 +56,13 @@ def translate_front():
                 if translations_cache.has(key):
                     translations[text_id] = translations_cache.get(key)
 
-            with open(f"{language_dir_path}/translations.json", "w") as file:
+            with open(f"{language_dir_path}/translation.json", "w") as file:
                 file.write(json.dumps(translations))
+
+    # English
+    os.mkdir("front_translations/languages/en/")
+    with open(f"front_translations/languages/en/translation.json", "w") as file:
+        file.write(json.dumps(texts))
 
     # Print
     if count_chars_only:

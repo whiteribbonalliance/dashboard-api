@@ -1,15 +1,19 @@
 import json
+import logging
 from html import unescape
 
-from google.api_core.exceptions import BadRequest
 from google.cloud import translate_v2
 from google.oauth2 import service_account
 
 from app import constants
 from app.core.settings import settings
+from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.utils import helpers
 from app.utils.singleton_meta import SingletonMeta
+
+logger = logging.getLogger(__name__)
+init_custom_logger(logger)
 
 CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST = 128
 
@@ -65,9 +69,6 @@ class Translator(metaclass=SingletonMeta):
             # If translated text already exists, return it
             return self.__translations_cache.get(key)
         else:
-            # FIXME: Temporarily return the text back and do not translate until translations.json has been updated
-            return f"{text}"
-
             # If translated text does not exist, translate it and add it to cache
             try:
                 translate_client = self.__get_translate_client()
@@ -77,7 +78,8 @@ class Translator(metaclass=SingletonMeta):
                     target_language=self.__language,
                 )
                 translated_text = unescape(output["translatedText"])
-            except (BadRequest, KeyError):
+            except (Exception,):
+                logger.error(f"Error translating: {text} to {self.__language}")
                 return text
 
             # Add translation to cache
@@ -130,7 +132,7 @@ class Translator(metaclass=SingletonMeta):
         :param text: Text to extract
         """
 
-        if not text:
+        if not text or self.__language == "en":
             return
 
         # If text is not in translations.json, add it to a set of texts to be translated
@@ -141,6 +143,11 @@ class Translator(metaclass=SingletonMeta):
             # Texts has already been translated
             self.__add_key_to_latest_generated_keys(key)
 
+    def __clear_extracted_texts(self):
+        """Clear extracted texts"""
+
+        self.__extracted_texts.clear()
+
     def __add_key_to_latest_generated_keys(self, key: str):
         """Add key to latest generated keys"""
 
@@ -148,10 +155,13 @@ class Translator(metaclass=SingletonMeta):
             self.__latest_generated_keys_per_language[self.__language] = []
         self.__latest_generated_keys_per_language[self.__language].append(key)
 
-    def translate_extracted_texts(self, count_chars_only: bool = False):
+    def translate_extracted_texts(
+        self, count_chars_only: bool = False, skip_saving_to_json: bool = False
+    ):
         """Translate extracted texts and save them to translations.json"""
 
         if len(self.__extracted_texts) < 1 or self.__language == "en":
+            self.__clear_extracted_texts()
             return
 
         # Divide extracted_texts into chunks
@@ -181,8 +191,11 @@ class Translator(metaclass=SingletonMeta):
                         source_language="en",
                         target_language=self.__language,
                     )
-                except (BadRequest, KeyError) as e:
-                    raise Exception(f"Error translating {self.__language}: {e}")
+                except (Exception,):
+                    logger.error(
+                        f"Error translating: extracted_texts_chunk to {self.__language}"
+                    )
+                    continue
 
                 for data in output:
                     input_text = data["input"]
@@ -192,7 +205,10 @@ class Translator(metaclass=SingletonMeta):
                     self.__translations_char_count += len(input_text)
                     self.__add_key_to_latest_generated_keys(key)
 
-            self.__save_translations()
+            if not skip_saving_to_json:
+                self.__save_translations()
+
+        self.__clear_extracted_texts()
 
     def __save_translations(self):
         """Save translations to translations.json"""

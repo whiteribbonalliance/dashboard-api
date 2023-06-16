@@ -36,13 +36,13 @@ python main.py
 
 ### Back-end
 
-To apply translations on the back-end data run:
+To apply translations offline on the data run:
 
 ```bash
 python translate.py
 ```
 
-Texts that have not been translated yet will be translated and saved to `translations.json`.
+*Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
 ### Front-end
 
@@ -68,3 +68,4 @@ Once translations have been applied, a new folder called `languages` should have
 
 Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
+*Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*

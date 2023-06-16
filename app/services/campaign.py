@@ -4,10 +4,12 @@ Handles processing of data and business logic for a campaign
 
 import operator
 from collections import Counter
+from typing import Callable
 
 import pandas as pd
 
 from app import constants
+from app.core.settings import settings
 from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.schemas.age import Age
@@ -33,9 +35,9 @@ class CampaignService:
         self.__campaign_code = campaign_code
         self.__language = language
 
-        translator = Translator()
-        translator.set_language(language=self.__language)
-        self.__t = translator.translate_text
+        self.__translator = Translator()
+        self.__translator.set_language(language=self.__language)
+        self.__t = self.__translator.translate_text
 
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
 
@@ -110,26 +112,9 @@ class CampaignService:
     def get_responses_sample(self) -> list[dict]:
         """Get responses sample"""
 
-        def get_descriptions(code: str) -> str:
-            """Get descriptions"""
-
-            mapping_to_description = code_hierarchy.get_mapping_to_description(
-                campaign_code=self.__campaign_code
-            )
-
-            descriptions = mapping_to_description.get(
-                code,
-                " / ".join(
-                    sorted(
-                        set([mapping_to_description.get(x, x) for x in code.split("/")])
-                    )
-                ),
-            )
-
-            # Translate descriptions
-            descriptions = self.__t(text=descriptions, delimiter=",")
-
-            return descriptions
+        # Do not translate if this function is called while translating texts offline
+        if settings.OFFLINE_TRANSLATE_MODE:
+            return []
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
@@ -145,23 +130,70 @@ class CampaignService:
                 n_sample = len(df_1_copy.index)
             df_1_copy = df_1_copy.sample(n=n_sample, random_state=1)
 
-        df_1_copy["description"] = df_1_copy["canonical_code"].apply(get_descriptions)
-
         column_ids = [col["id"] for col in self.__crud.get_responses_sample_columns()]
 
-        # Translate column data
-        for column_id in column_ids:
-            # Skip 'descriptions' as it is already translated
-            if column_id == "description":
-                continue
+        def get_descriptions(code: str, t: Callable) -> str:
+            """Get descriptions"""
 
-            if column_id == "age":
-                # Do not translate age e.g. '25-34'
-                df_1_copy[column_id] = df_1_copy[column_id].apply(
-                    lambda x: self.__t(x) if helpers.contains_letters(x) else x
-                )
+            mapping_to_description = code_hierarchy.get_mapping_to_description(
+                campaign_code=self.__campaign_code
+            )
+
+            descriptions = mapping_to_description.get(
+                code,
+                " / ".join(
+                    sorted(
+                        set([mapping_to_description.get(x, x) for x in code.split("/")])
+                    )
+                ),
+            )
+
+            # Translate
+            if t.__name__ == self.__translator.translate_text.__name__:
+                descriptions = t(text=descriptions, delimiter=",")
+
+            # Else extract
             else:
-                df_1_copy[column_id] = df_1_copy[column_id].apply(lambda x: self.__t(x))
+                descriptions = t(descriptions)
+
+            return descriptions
+
+        def translate_or_extract_responses_sample(t: Callable):
+            _df = df_1_copy.copy()
+
+            _df["description"] = _df["canonical_code"].apply(
+                lambda x: get_descriptions(x, t)
+            )
+
+            # Translate column data
+            for column_id in column_ids:
+                # Skip 'description' as it is already translated
+                if column_id == "description":
+                    continue
+
+                if column_id == "age":
+                    # Do not translate age e.g. '25-34'
+                    _df[column_id] = _df[column_id].apply(
+                        lambda x: t(x) if helpers.contains_letters(x) else x
+                    )
+                else:
+                    _df[column_id] = _df[column_id].apply(lambda x: t(x))
+
+            return _df
+
+        # Only translate if language is not 'en'
+        # Go through data initially to extract texts (to apply translations in chunks for faster results)
+        # Translate the extracted texts
+        # Go through data again to apply the translations on data
+        if self.__language != "en":
+            # Go through data and extract texts to be translated by sending the add_text_to_extract function
+            translate_or_extract_responses_sample(self.__translator.add_text_to_extract)
+
+            # Translate extracted texts
+            self.__translator.translate_extracted_texts(skip_saving_to_json=True)
+
+        # Go through data and apply translations of extracted texts by sending the translate_text function
+        df_1_copy = translate_or_extract_responses_sample(self.__t)
 
         responses_sample_data = df_1_copy[column_ids].to_dict("records")
 
@@ -239,8 +271,8 @@ class CampaignService:
             wordcloud_words.items(), key=lambda x: x[1], reverse=True
         )
 
-        # Only keep the first 100 words
-        n_words_to_keep = 100
+        # Only keep the first 75 words
+        n_words_to_keep = 75
         wordcloud_words_length = len(wordcloud_words)
         if wordcloud_words_length < n_words_to_keep:
             n_words_to_keep = wordcloud_words_length
