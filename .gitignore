@@ -135,6 +135,6 @@ dmypy.json
 # credentials.json
 
 # Front translations
-/front_translations/*
-!front_translations/.gitkeep
-!front_translations/to_translate.json
+/scripts/front_translations/*
+!scripts/front_translations/.gitkeep
+!scripts/front_translations/to_translate.json

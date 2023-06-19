@@ -39,14 +39,14 @@ python main.py
 To apply translations offline on the data run:
 
 ```bash
-python translate.py
+python scripts/translate.py
 ```
 
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
 ### Front-end
 
-Create a JSON file at `front_translations/to_translate.json` that contains the key that is used in the front for
+Create a JSON file at `scripts/front_translations/to_translate.json` that contains the key that is used in the front for
 accessing a translation with the value as the text in English.
 
 For example:
@@ -61,10 +61,10 @@ For example:
 To apply translations run:
 
 ```bash
-python translate_front.py
+python scripts/translate_front.py
 ```
 
-Once translations have been applied, a new folder called `languages` should have been inside `front_translations`.
+Once translations have been applied, a new folder called `languages` should have been inside `scripts/front_translations`.
 
 Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
