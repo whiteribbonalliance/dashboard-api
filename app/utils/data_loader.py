@@ -14,8 +14,8 @@ from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.region import Region
-from app.services.api_cache import api_cache
 from app.services import bigquery_interactions
+from app.services.api_cache import api_cache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
@@ -203,35 +203,17 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
-    print(f"INFO:\t  Loading data for campaign {CampaignCode.what_women_want}...")
-    load_campaign_data(campaign_code=CampaignCode.what_women_want)
-
-    print(
-        f"INFO:\t  Loading data for campaign {CampaignCode.what_young_people_want}..."
-    )
-    load_campaign_data(campaign_code=CampaignCode.what_young_people_want)
-
-    print(f"INFO:\t  Loading data for campaign {CampaignCode.midwives_voices}...")
-    load_campaign_data(campaign_code=CampaignCode.midwives_voices)
+    for campaign_code in constants.CAMPAIGN_CODES:
+        print(f"INFO:\t  Loading data for campaign {campaign_code}...")
+        load_campaign_data(campaign_code=campaign_code)
 
 
 def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
-    print(
-        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.what_women_want}..."
-    )
-    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_women_want)
-
-    print(
-        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.what_young_people_want}..."
-    )
-    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.what_young_people_want)
-
-    print(
-        f"INFO:\t  Loading ngrams cache for campaign {CampaignCode.midwives_voices}..."
-    )
-    load_campaign_ngrams_unfiltered(campaign_code=CampaignCode.midwives_voices)
+    for campaign_code in constants.CAMPAIGN_CODES:
+        print(f"INFO:\t  Loading ngrams cache for campaign {campaign_code}...")
+        load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
 
 def load_data():

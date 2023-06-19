@@ -94,6 +94,9 @@ class Translator(metaclass=SingletonMeta):
         Merge words back together
         """
 
+        if not text or self.__language == "en":
+            return text
+
         translated_text = ""
 
         split_text = text.split(delimiter)

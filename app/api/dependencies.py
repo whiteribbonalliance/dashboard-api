@@ -20,6 +20,8 @@ async def common_parameters(campaign: str, lang: str = "en") -> CommonParameters
             return CampaignCode.what_young_people_want
         if campaign == CampaignCode.midwives_voices:
             return CampaignCode.midwives_voices
+        if campaign == CampaignCode.healthwellbeing:
+            return CampaignCode.healthwellbeing
 
     def check_language() -> str:
         """Check if language exists, If not, default to 'en'"""

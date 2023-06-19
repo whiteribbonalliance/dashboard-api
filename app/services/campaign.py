@@ -271,8 +271,8 @@ class CampaignService:
             wordcloud_words.items(), key=lambda x: x[1], reverse=True
         )
 
-        # Only keep the first 75 words
-        n_words_to_keep = 75
+        # Only keep the first 100 words
+        n_words_to_keep = 100
         wordcloud_words_length = len(wordcloud_words)
         if wordcloud_words_length < n_words_to_keep:
             n_words_to_keep = wordcloud_words_length

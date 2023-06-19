@@ -6,6 +6,7 @@ CAMPAIGN_CODES = [
     CampaignCode.what_women_want.value,
     CampaignCode.what_young_people_want.value,
     CampaignCode.midwives_voices.value,
+    CampaignCode.healthwellbeing,
 ]
 
 # Load stopwords from file
