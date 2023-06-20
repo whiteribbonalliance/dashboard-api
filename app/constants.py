@@ -401,4 +401,4 @@ TRANSLATION_LANGUAGES = {
     "zu": {"name": "isiZulu"},
 }
 
-TRANSLATIONS_JSON_FILE_NAME = "translations.json"
+TRANSLATIONS_JSON = "translations.json"

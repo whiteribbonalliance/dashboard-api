@@ -20,8 +20,8 @@ class TranslationsCache(metaclass=SingletonMeta):
     def __load(self):
         """Load content of translations.json into cache"""
 
-        if os.path.isfile(constants.TRANSLATIONS_JSON_FILE_NAME):
-            with open(constants.TRANSLATIONS_JSON_FILE_NAME, "r") as file:
+        if os.path.isfile(constants.TRANSLATIONS_JSON):
+            with open(constants.TRANSLATIONS_JSON, "r") as file:
                 self.__cache: dict = json.loads(file.read())
 
     def set(self, key: str, value: Any):

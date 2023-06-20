@@ -216,7 +216,7 @@ class Translator(metaclass=SingletonMeta):
     def __save_translations(self):
         """Save translations to translations.json"""
 
-        with open(constants.TRANSLATIONS_JSON_FILE_NAME, "w") as file:
+        with open(constants.TRANSLATIONS_JSON, "w") as file:
             file.write(json.dumps(self.__translations_cache.get_all()))
 
     def get_translations_char_count(self) -> int:
