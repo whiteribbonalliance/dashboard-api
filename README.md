@@ -64,8 +64,14 @@ To apply translations run:
 python scripts/translate_front.py
 ```
 
-Once translations have been applied, a new folder called `languages` should have been inside `scripts/front_translations`.
+Once translations have been applied, a new folder called `languages` should have been
+inside `scripts/front_translations`.
 
 Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
+
+## How to add a new campaign
+
+1. Add campaign code to `app/enums/campaign_code.py`.
+2. Create new databank for campaign at `app/databank` and add the new databank to `databanks` dictionary.

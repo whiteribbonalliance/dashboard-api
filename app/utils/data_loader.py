@@ -101,7 +101,12 @@ def load_campaign_data(campaign_code: CampaignCode):
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
-    # Modify ages into age buckets (skip if PMNCH)
+    # TODO: Clean age data for 'healthwellbeing'
+    # if campaign_code == CampaignCode.healthwellbeing:
+    #     pass
+    # print(df_responses["age"])
+
+    # Modify age into age bucket (skip if PMNCH)
     if campaign_code != CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 
@@ -203,7 +208,7 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 def load_all_campaigns_data():
     """Load all campaigns data"""
 
-    for campaign_code in constants.CAMPAIGN_CODES:
+    for campaign_code in CampaignCode:
         print(f"INFO:\t  Loading data for campaign {campaign_code}...")
         load_campaign_data(campaign_code=campaign_code)
 
@@ -211,7 +216,7 @@ def load_all_campaigns_data():
 def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
-    for campaign_code in constants.CAMPAIGN_CODES:
+    for campaign_code in CampaignCode:
         print(f"INFO:\t  Loading ngrams cache for campaign {campaign_code}...")
         load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 

@@ -14,14 +14,11 @@ async def common_parameters(campaign: str, lang: str = "en") -> CommonParameters
         if campaign.lower() not in [c.lower() for c in CAMPAIGN_CODES]:
             raise ResourceNotFoundHTTPException("Campaign not found")
 
-        if campaign == CampaignCode.what_women_want:
-            return CampaignCode.what_women_want
-        if campaign == CampaignCode.what_young_people_want:
-            return CampaignCode.what_young_people_want
-        if campaign == CampaignCode.midwives_voices:
-            return CampaignCode.midwives_voices
-        if campaign == CampaignCode.healthwellbeing:
-            return CampaignCode.healthwellbeing
+        for campaign_code in CampaignCode:
+            if campaign_code.value == campaign:
+                return campaign_code
+
+        raise ResourceNotFoundHTTPException("Campaign not found")
 
     def check_language() -> str:
         """Check if language exists, If not, default to 'en'"""
