@@ -255,7 +255,7 @@ def load_coordinates():
     with open(coordinates_json, "r") as file:
         coordinates: dict = json.loads(file.read())
 
-    # Get new coordinates
+    # Get new coordinates (if coordinate is not in coordinates.json)
     focus_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
     for campaign_code in focus_on_country_campaigns_codes:
         print(f"INFO:\t  Loading coordinates for campaign {campaign_code.value}...")
@@ -267,16 +267,21 @@ def load_coordinates():
             logger.warning(f"Campaign {campaign_code} has no countries")
             continue
 
-        locations = [location.name for location in countries[0].regions]
+        country_name = countries[0].name
+        country_regions = countries[0].regions
         locations = [
-            location for location in locations if location not in coordinates.keys()
+            {"country_name": country_name, "location": region.name}
+            for region in country_regions
+            if region.name not in coordinates.keys()
         ]
         for location in locations:
             if not new_coordinates_added:
                 new_coordinates_added = True
-            coordinate = googlemaps_interactions.get_coordinate(location=location)
+            coordinate = googlemaps_interactions.get_coordinate(
+                location=f"{location['country_name']}, {location['location']}"
+            )
             print(f"{location} {coordinate}")
-            coordinates[location] = coordinate
+            coordinates[location["location"]] = coordinate
 
     # Save coordinates
     if is_dev and new_coordinates_added:
