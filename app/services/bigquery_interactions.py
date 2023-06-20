@@ -70,7 +70,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         INITCAP(respondent_gender) as gender,
         JSON_VALUE(respondent_additional_fields.profession) as profession,
         FROM deft-stratum-290216.{table_name}
-        WHERE campaign = '{campaign_code}'
+        WHERE campaign = '{campaign_code.value}'
         AND response_original_text is not null
         AND (respondent_age >= {min_age} OR respondent_age is null)
         AND respondent_country_code is not null
