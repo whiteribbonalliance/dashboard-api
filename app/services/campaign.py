@@ -18,6 +18,7 @@ from app.schemas.filter import Filter
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.response_topic import ResponseTopic
+from app.services import googlemaps_interactions
 from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
@@ -655,14 +656,20 @@ class CampaignService:
 
         if self.__campaign_code == CampaignCode.what_women_want:
             options = [breakdown_age_option, breakdown_country_option]
-        if self.__campaign_code == CampaignCode.what_young_people_want:
+        elif self.__campaign_code == CampaignCode.what_young_people_want:
             options = [breakdown_age_option, breakdown_gender, breakdown_country_option]
-        if self.__campaign_code == CampaignCode.midwives_voices:
+        elif self.__campaign_code == CampaignCode.midwives_voices:
             options = [
                 breakdown_age_option,
                 breakdown_profession,
                 breakdown_country_option,
             ]
+        elif self.__campaign_code == CampaignCode.healthwellbeing:
+            options = [breakdown_age_option, breakdown_country_option]
+        elif self.__campaign_code == CampaignCode.mexico:
+            options = [breakdown_age_option]
+        elif self.__campaign_code == CampaignCode.pakistan:
+            options = [breakdown_age_option]
 
         return options
 
@@ -682,7 +689,7 @@ class CampaignService:
     def get_world_bubble_maps_coordinates(self) -> dict:
         """Get world bubble maps coordinates"""
 
-        def get_coordinates(alpha2country_counts):
+        def get_country_coordinates(alpha2country_counts):
             """Add coordinate and count for each country"""
 
             _coordinates = []
@@ -696,8 +703,41 @@ class CampaignService:
 
                 _coordinates.append(
                     {
-                        "country_alpha2_code": key,
-                        "country_name": self.__t(country_name),
+                        "location_code": key,
+                        "location_name": self.__t(country_name),
+                        "n": value,
+                        "lat": lat,
+                        "lon": lon,
+                    }
+                )
+
+            return _coordinates
+
+        def get_region_coordinates(region_counts):
+            """Add coordinate and count for each region"""
+
+            _coordinates = []
+            for key, value in region_counts.items():
+                # TODO: Why is there an empty key?
+                if not key:
+                    continue
+
+                # Get coordinate
+                _coordinate = constants.OTHER_LOCATION_COORDINATE.get(key)
+                if not _coordinate:
+                    # Get coordinate from googlemaps directly
+                    _coordinate = googlemaps_interactions.get_coordinate(location=key)
+                    constants.OTHER_LOCATION_COORDINATE[key] = _coordinate
+                if not _coordinate:
+                    continue
+
+                lat = _coordinate.get("lat")
+                lon = _coordinate.get("lon")
+
+                _coordinates.append(
+                    {
+                        "location_code": key,
+                        "location_name": key,
                         "n": value,
                         "lat": lat,
                         "lon": lon,
@@ -710,22 +750,46 @@ class CampaignService:
         df_1_copy = self.__get_df_1_copy()
         df_2_copy = self.__get_df_2_copy()
 
-        # Get count of each country
-        alpha2country_counts_1 = (
-            df_1_copy["alpha2country"].value_counts(ascending=True).to_dict()
-        )
-        coordinates_1 = get_coordinates(alpha2country_counts=alpha2country_counts_1)
+        # For these campaigns, use region as location
+        if (
+            self.__campaign_code == CampaignCode.mexico
+            or self.__campaign_code == CampaignCode.pakistan
+        ):
+            # Get count of each region
+            region_counts_1 = df_1_copy["region"].value_counts(ascending=True).to_dict()
+            coordinates_1 = get_region_coordinates(region_counts=region_counts_1)
 
-        # Get count of each country
-        alpha2country_counts_2 = (
-            df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
-        )
-        coordinates_2 = get_coordinates(alpha2country_counts=alpha2country_counts_2)
+            # Get count of each region
+            region_counts_2 = df_2_copy["region"].value_counts(ascending=True).to_dict()
+            coordinates_2 = get_region_coordinates(region_counts=region_counts_2)
 
-        coordinates = {
-            "coordinates_1": coordinates_1,
-            "coordinates_2": coordinates_2,
-        }
+            coordinates = {
+                "coordinates_1": coordinates_1,
+                "coordinates_2": coordinates_2,
+            }
+
+        # For other campaigns, use country as location
+        else:
+            # Get count of each country
+            alpha2country_counts_1 = (
+                df_1_copy["alpha2country"].value_counts(ascending=True).to_dict()
+            )
+            coordinates_1 = get_country_coordinates(
+                alpha2country_counts=alpha2country_counts_1
+            )
+
+            # Get count of each country
+            alpha2country_counts_2 = (
+                df_2_copy["alpha2country"].value_counts(ascending=True).to_dict()
+            )
+            coordinates_2 = get_country_coordinates(
+                alpha2country_counts=alpha2country_counts_2
+            )
+
+            coordinates = {
+                "coordinates_1": coordinates_1,
+                "coordinates_2": coordinates_2,
+            }
 
         return coordinates
 

@@ -2,7 +2,9 @@
 Requests the dataframe of a campaign from BigQuery and stores the data into the databank
 """
 
+import json
 import logging
+import os
 
 import numpy as np
 
@@ -15,6 +17,7 @@ from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.services import bigquery_interactions
+from app.services import googlemaps_interactions
 from app.services.api_cache import api_cache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
@@ -119,7 +122,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
 
     # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
-    if campaign_code == "pmn01a":
+    if campaign_code == CampaignCode.what_young_people_want:
         _map = {"ENVIRONMENT": "SAFETY"}
         df_responses["canonical_code"] = df_responses["canonical_code"].apply(
             lambda x: _map.get(x, x)
@@ -209,7 +212,7 @@ def load_all_campaigns_data():
     """Load all campaigns data"""
 
     for campaign_code in CampaignCode:
-        print(f"INFO:\t  Loading data for campaign {campaign_code}...")
+        print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")
         load_campaign_data(campaign_code=campaign_code)
 
 
@@ -217,7 +220,7 @@ def load_all_campaigns_ngrams_unfiltered():
     """Load all campaigns ngrams"""
 
     for campaign_code in CampaignCode:
-        print(f"INFO:\t  Loading ngrams cache for campaign {campaign_code}...")
+        print(f"INFO:\t  Loading ngrams cache for campaign {campaign_code.value}...")
         load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
 
@@ -238,3 +241,45 @@ def load_translations_cache():
 
     # Creating the singleton instance will automatically load the cache
     TranslationsCache()
+
+
+def load_coordinates():
+    """Load coordinates"""
+
+    is_dev = os.getenv("stage", "") == "dev"
+    coordinates_json = "coordinates.json"
+    new_coordinates_added = False
+
+    # Get saved coordinates
+    with open(coordinates_json, "r") as file:
+        coordinates: dict = json.loads(file.read())
+
+    # Get new coordinates
+    focus_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
+    for campaign_code in focus_on_country_campaigns_codes:
+        print(f"INFO:\t  Loading coordinates for campaign {campaign_code.value}...")
+
+        campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+        countries = campaign_crud.get_countries_list()
+
+        if len(countries) < 1:
+            logger.warning(f"Campaign {campaign_code} has no countries")
+            continue
+
+        locations = [location.name for location in countries[0].regions]
+        locations = [
+            location for location in locations if location not in coordinates.keys()
+        ]
+        for location in locations:
+            if not new_coordinates_added:
+                new_coordinates_added = True
+            coordinate = googlemaps_interactions.get_coordinate(location=location)
+            print(f"{location} {coordinate}")
+            coordinates[location] = coordinate
+
+    # Save coordinates
+    if is_dev and new_coordinates_added:
+        with open(coordinates_json, "w") as file:
+            file.write(json.dumps(coordinates, indent=2))
+
+    constants.OTHER_LOCATION_COORDINATE = coordinates

@@ -22,7 +22,7 @@ class TranslationsCache(metaclass=SingletonMeta):
 
         if os.path.isfile(constants.TRANSLATIONS_JSON_FILE_NAME):
             with open(constants.TRANSLATIONS_JSON_FILE_NAME, "r") as file:
-                self.__cache = json.loads(file.read())
+                self.__cache: dict = json.loads(file.read())
 
     def set(self, key: str, value: Any):
         """Set key value pair"""

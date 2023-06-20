@@ -1,0 +1,46 @@
+{
+  "Ciudad de M\u00e9xico": {
+    "lat": 19.4326077,
+    "lon": -99.133208
+  },
+  "Swabi, KP": {
+    "lat": 34.1240709,
+    "lon": 72.4613191
+  },
+  "Mardan, KP": {
+    "lat": 34.1986394,
+    "lon": 72.0404293
+  },
+  "Jhang, Punjab": {
+    "lat": 31.27806829999999,
+    "lon": 72.3316761
+  },
+  "Jamshoro, Sindh": {
+    "lat": 25.4303884,
+    "lon": 68.28086259999999
+  },
+  "Jacobabad, Sindh": {
+    "lat": 28.2823326,
+    "lon": 68.4472078
+  },
+  "Shikarpur, Sindh": {
+    "lat": 27.9570397,
+    "lon": 68.637993
+  },
+  "Bahawalpur, Punjab": {
+    "lat": 29.35435,
+    "lon": 71.69106599999999
+  },
+  "Rahim Yar Khan, Punjab": {
+    "lat": 28.4211565,
+    "lon": 70.2988744
+  },
+  "Toba Tek Singh, Punjab": {
+    "lat": 30.9709356,
+    "lon": 72.48264739999999
+  },
+  "Qambar Shahdadkot, Sindh": {
+    "lat": 27.5859189,
+    "lon": 68.0060183
+  }
+}

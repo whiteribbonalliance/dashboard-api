@@ -11,6 +11,7 @@ from app.utils import data_loader
 
 # Load initial data before starting the application
 data_loader.load_data()
+data_loader.load_coordinates()
 data_loader.load_translations_cache()
 
 description = """

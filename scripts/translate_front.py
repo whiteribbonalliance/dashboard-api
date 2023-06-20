@@ -18,7 +18,7 @@ def translate_front():
     translations_cache = TranslationsCache()
 
     with open("front_translations/to_translate.json", "r", encoding="utf8") as file:
-        texts = json.loads(file.read())
+        texts: dict = json.loads(file.read())
 
     translator = Translator()
 

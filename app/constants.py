@@ -10,7 +10,7 @@ with open("stopwords.txt", "r") as file:
 
 # Load countries data from file
 with open("countries_data.json", "r") as file:
-    COUNTRIES_DATA = json.loads(file.read())
+    COUNTRIES_DATA: dict = json.loads(file.read())
 
 # This is nominally the coordinates of the capital of each country
 # but where they appear too close together on the map I have shifted them slightly.
@@ -262,6 +262,9 @@ COUNTRY_COORDINATE = {
     "EH": [24.5, -13.0],
     "YE": [15.0, 48.0],
 }
+
+# data_loader.load_coordinates() will add data to this dictionary
+OTHER_LOCATION_COORDINATE = {}
 
 # Languages supported by Cloud Translation API
 TRANSLATION_LANGUAGES = {

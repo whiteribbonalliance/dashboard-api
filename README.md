@@ -75,3 +75,4 @@ Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
 1. Add campaign code to `app/enums/campaign_code.py`.
 2. Create new databank for campaign at `app/databank` and add the new databank to `databanks` dictionary.
+3. In `app/services/campaign.py` modify the functions if needed for the campaign's api response.
