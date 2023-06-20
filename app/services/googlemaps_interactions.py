@@ -14,8 +14,6 @@ def get_googlemaps_client() -> googlemaps.Client:
 def get_coordinate(location: str) -> dict:
     """Get coordinate"""
 
-    # TODO: Cache this data
-
     client = get_googlemaps_client()
     geocode_result = client.geocode(location)
     if len(geocode_result) > 0:

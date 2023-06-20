@@ -263,9 +263,6 @@ COUNTRY_COORDINATE = {
     "YE": [15.0, 48.0],
 }
 
-# data_loader.load_coordinates() will add data to this dictionary
-OTHER_LOCATION_COORDINATE = {}
-
 # Languages supported by Cloud Translation API
 TRANSLATION_LANGUAGES = {
     "af": {"name": "Afrikaans"},

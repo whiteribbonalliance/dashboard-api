@@ -22,6 +22,7 @@ from app.services.api_cache import api_cache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
+from app.utils import locations_coordinates
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -282,4 +283,4 @@ def load_coordinates():
         with open(coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 
-    constants.OTHER_LOCATION_COORDINATE = coordinates
+    locations_coordinates.coordinates = coordinates

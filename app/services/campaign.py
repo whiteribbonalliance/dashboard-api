@@ -23,6 +23,7 @@ from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
 from app.utils import helpers
+from app.utils import locations_coordinates
 
 
 class CampaignService:
@@ -723,11 +724,11 @@ class CampaignService:
                     continue
 
                 # Get coordinate
-                _coordinate = constants.OTHER_LOCATION_COORDINATE.get(key)
+                _coordinate = locations_coordinates.coordinates.get(key)
                 if not _coordinate:
                     # Get coordinate from googlemaps directly
                     _coordinate = googlemaps_interactions.get_coordinate(location=key)
-                    constants.OTHER_LOCATION_COORDINATE[key] = _coordinate
+                    locations_coordinates.coordinates[key] = _coordinate
                 if not _coordinate:
                     continue
 
