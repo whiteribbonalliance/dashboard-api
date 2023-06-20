@@ -1,3 +1,5 @@
+from fastapi import Request
+
 from app import constants
 from app.constants import CAMPAIGN_CODES
 from app.enums.campaign_code import CampaignCode
@@ -5,7 +7,9 @@ from app.http_exceptions import ResourceNotFoundHTTPException
 from app.schemas.common_parameters import CommonParameters
 
 
-async def common_parameters(campaign: str, lang: str = "en") -> CommonParameters:
+async def common_parameters(
+    request: Request, campaign: str, lang: str = "en"
+) -> CommonParameters:
     """Return the common parameters"""
 
     def verify_campaign() -> CampaignCode:
@@ -32,5 +36,7 @@ async def common_parameters(campaign: str, lang: str = "en") -> CommonParameters
     language_verified = check_language()
 
     return CommonParameters(
-        campaign_code=campaign_code_verified, language=language_verified
+        campaign_code=campaign_code_verified,
+        language=language_verified,
+        request=request,
     )

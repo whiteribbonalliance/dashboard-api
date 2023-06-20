@@ -247,6 +247,8 @@ def load_translations_cache():
 def load_coordinates():
     """Load coordinates"""
 
+    print(f"INFO:\t  Loading coordinates...")
+
     is_dev = os.getenv("stage", "") == "dev"
     coordinates_json = "coordinates.json"
     new_coordinates_added = False
@@ -258,8 +260,6 @@ def load_coordinates():
     # Get new coordinates (if coordinate is not in coordinates.json)
     focus_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
     for campaign_code in focus_on_country_campaigns_codes:
-        print(f"INFO:\t  Loading coordinates for campaign {campaign_code.value}...")
-
         campaign_crud = CampaignCRUD(campaign_code=campaign_code)
         countries = campaign_crud.get_countries_list()
 
