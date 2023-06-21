@@ -22,8 +22,8 @@ from app.services import googlemaps_interactions
 from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
+from app.utils import globals
 from app.utils import helpers
-from app.utils import locations_coordinates
 
 
 class CampaignService:
@@ -690,10 +690,10 @@ class CampaignService:
     def get_world_bubble_maps_coordinates(self) -> dict:
         """Get world bubble maps coordinates"""
 
-        def get_country_coordinates(alpha2country_counts):
+        def get_country_coordinates(alpha2country_counts: dict):
             """Add coordinate and count for each country"""
 
-            _coordinates = []
+            country_coordinates = []
             for key, value in alpha2country_counts.items():
                 lat = constants.COUNTRY_COORDINATE.get(key)[0]
                 lon = constants.COUNTRY_COORDINATE.get(key)[1]
@@ -702,7 +702,7 @@ class CampaignService:
                 if not lat or not lon or not country_name:
                     continue
 
-                _coordinates.append(
+                country_coordinates.append(
                     {
                         "location_code": key,
                         "location_name": self.__t(country_name),
@@ -712,40 +712,57 @@ class CampaignService:
                     }
                 )
 
-            return _coordinates
+            return country_coordinates
 
-        def get_region_coordinates(region_counts):
+        def get_region_coordinates(region_counts: dict):
             """Add coordinate and count for each region"""
 
-            _coordinates = []
-            for key, value in region_counts.items():
-                # TODO: Why is there an empty key?
-                if not key:
+            region_coordinates = []
+
+            for (
+                alpha2country,
+                canonical_country,
+                region,
+            ), value in region_counts.items():
+                # TODO: Why is there an empty region?
+                if not region:
                     continue
 
-                # Get coordinate
-                _coordinate = locations_coordinates.coordinates.get(key)
-                if not _coordinate:
-                    # Get coordinate from googlemaps directly
-                    _coordinate = googlemaps_interactions.get_coordinate(location=key)
-                    locations_coordinates.coordinates[key] = _coordinate
-                if not _coordinate:
-                    continue
+                country_coordinates = globals.coordinates.get(alpha2country)
 
-                lat = _coordinate.get("lat")
-                lon = _coordinate.get("lon")
+                # Check if the region's coordinate already exists
+                coordinate_found = False
+                if country_coordinates:
+                    if country_coordinates.get(region):
+                        coordinate_found = True
 
-                _coordinates.append(
+                # Get coordinate from googlemaps directly
+                if not coordinate_found:
+                    coordinate = googlemaps_interactions.get_coordinate(
+                        location=f"{canonical_country}, {region}"
+                    )
+                    if not coordinate:
+                        continue
+
+                    # Add the new coordinate
+                    if not globals.coordinates.get(alpha2country):
+                        globals.coordinates[alpha2country] = {}
+                    globals.coordinates[alpha2country][region] = coordinate
+
+                # Create region_coordinates
+                lat = globals.coordinates[alpha2country][region].get("lat")
+                lon = globals.coordinates[alpha2country][region].get("lon")
+                region_coordinates.append(
                     {
-                        "location_code": key,
-                        "location_name": key,
+                        "location_code": region,
+                        "location_name": region,
                         "n": value,
                         "lat": lat,
                         "lon": lon,
                     }
                 )
 
-            return _coordinates
+            return region_coordinates
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
@@ -756,12 +773,20 @@ class CampaignService:
             self.__campaign_code == CampaignCode.mexico
             or self.__campaign_code == CampaignCode.pakistan
         ):
-            # Get count of each region
-            region_counts_1 = df_1_copy["region"].value_counts(ascending=True).to_dict()
+            # Get count of each region per country
+            region_counts_1 = (
+                df_1_copy[["alpha2country", "canonical_country", "region"]]
+                .value_counts(ascending=True)
+                .to_dict()
+            )
             coordinates_1 = get_region_coordinates(region_counts=region_counts_1)
 
-            # Get count of each region
-            region_counts_2 = df_2_copy["region"].value_counts(ascending=True).to_dict()
+            # Get count of each region per country
+            region_counts_2 = (
+                df_2_copy[["alpha2country", "canonical_country", "region"]]
+                .value_counts(ascending=True)
+                .to_dict()
+            )
             coordinates_2 = get_region_coordinates(region_counts=region_counts_2)
 
             coordinates = {

@@ -22,7 +22,7 @@ from app.services.api_cache import api_cache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
-from app.utils import locations_coordinates
+from app.utils import globals
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -249,13 +249,16 @@ def load_coordinates():
 
     print(f"INFO:\t  Loading coordinates...")
 
-    is_dev = os.getenv("stage", "") == "dev"
+    stage_is_dev = os.getenv("stage", "") == "dev"
     coordinates_json = "coordinates.json"
     new_coordinates_added = False
 
     # Get saved coordinates
     with open(coordinates_json, "r") as file:
         coordinates: dict = json.loads(file.read())
+
+    if globals.coordinates:
+        coordinates = globals.coordinates
 
     # Get new coordinates (if coordinate is not in coordinates.json)
     focus_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
@@ -267,25 +270,45 @@ def load_coordinates():
             logger.warning(f"Campaign {campaign_code} has no countries")
             continue
 
+        country_alpha2_code = countries[0].alpha2_code
         country_name = countries[0].name
         country_regions = countries[0].regions
+
         locations = [
-            {"country_name": country_name, "location": region.name}
+            {
+                "country_alpha2_code": country_alpha2_code,
+                "country_name": country_name,
+                "location": region.name,
+            }
             for region in country_regions
-            if region.name not in coordinates.keys()
         ]
         for location in locations:
-            if not new_coordinates_added:
-                new_coordinates_added = True
+            # If coordinate already exists, continue
+            country_coordinates = coordinates.get(location["country_alpha2_code"])
+            if (
+                country_coordinates
+                and location["location"] in country_coordinates.keys()
+            ):
+                continue
+
+            # Get coordinate
             coordinate = googlemaps_interactions.get_coordinate(
                 location=f"{location['country_name']}, {location['location']}"
             )
-            print(f"{location} {coordinate}")
-            coordinates[location["location"]] = coordinate
+
+            # Add coordinate to coordinates
+            if not coordinates.get(location["country_alpha2_code"]):
+                coordinates[location["country_alpha2_code"]] = {}
+            coordinates[location["country_alpha2_code"]][
+                location["location"]
+            ] = coordinate
+
+            if not new_coordinates_added:
+                new_coordinates_added = True
 
     # Save coordinates
-    if is_dev and new_coordinates_added:
+    if stage_is_dev and new_coordinates_added:
         with open(coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 
-    locations_coordinates.coordinates = coordinates
+    globals.coordinates = coordinates
