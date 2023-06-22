@@ -222,6 +222,11 @@ class CampaignService:
             # Set column names
             df.columns = ["label", "count"]
 
+            # Set code
+            df["code"] = df["label"].map(
+                code_hierarchy.get_mapping_to_code(campaign_code=self.__campaign_code)
+            )
+
             # Set description column
             df["description"] = df["label"].map(
                 code_hierarchy.get_mapping_to_description(
@@ -728,15 +733,16 @@ class CampaignService:
                 if not region:
                     continue
 
-                country_coordinates = globals.coordinates.get(alpha2country)
+                country_regions_coordinates = globals.coordinates.get(alpha2country)
 
                 # Check if the region's coordinate already exists
                 coordinate_found = False
-                if country_coordinates:
-                    if country_coordinates.get(region):
-                        coordinate_found = True
+                if country_regions_coordinates and country_regions_coordinates.get(
+                    region
+                ):
+                    coordinate_found = True
 
-                # Get coordinate from googlemaps directly
+                # Get coordinate from googlemaps if it was not found
                 if not coordinate_found:
                     coordinate = googlemaps_interactions.get_coordinate(
                         location=f"{canonical_country}, {region}"

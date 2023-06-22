@@ -2,6 +2,20 @@ from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 
 
+def get_mapping_to_code(campaign_code: CampaignCode) -> dict:
+    """Get mapping to code"""
+
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+
+    hierarchy = campaign_crud.get_category_hierarchy()
+    mapping_to_code = {}
+    for top_level, leaves in hierarchy.items():
+        for code, name in leaves.items():
+            mapping_to_code[code] = code
+
+    return mapping_to_code
+
+
 def get_mapping_to_description(campaign_code: CampaignCode) -> dict:
     """Get mapping to description"""
 

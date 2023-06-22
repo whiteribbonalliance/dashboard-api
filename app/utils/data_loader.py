@@ -253,16 +253,15 @@ def load_coordinates():
     coordinates_json = "coordinates.json"
     new_coordinates_added = False
 
-    # Get saved coordinates
-    with open(coordinates_json, "r") as file:
-        coordinates: dict = json.loads(file.read())
-
     if globals.coordinates:
         coordinates = globals.coordinates
+    else:
+        with open(coordinates_json, "r") as file:
+            coordinates: dict = json.loads(file.read())
 
     # Get new coordinates (if coordinate is not in coordinates.json)
-    focus_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
-    for campaign_code in focus_on_country_campaigns_codes:
+    focused_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
+    for campaign_code in focused_on_country_campaigns_codes:
         campaign_crud = CampaignCRUD(campaign_code=campaign_code)
         countries = campaign_crud.get_countries_list()
 
@@ -283,25 +282,24 @@ def load_coordinates():
             for region in country_regions
         ]
         for location in locations:
+            location_country_alpha2_code = location["country_alpha2_code"]
+            location_country_name = location["country_name"]
+            location_name = location["location"]
+
             # If coordinate already exists, continue
-            country_coordinates = coordinates.get(location["country_alpha2_code"])
-            if (
-                country_coordinates
-                and location["location"] in country_coordinates.keys()
-            ):
+            country_coordinates = coordinates.get(location_country_alpha2_code)
+            if country_coordinates and location_name in country_coordinates.keys():
                 continue
 
             # Get coordinate
             coordinate = googlemaps_interactions.get_coordinate(
-                location=f"{location['country_name']}, {location['location']}"
+                location=f"{location_country_name}, {location_name}"
             )
 
             # Add coordinate to coordinates
-            if not coordinates.get(location["country_alpha2_code"]):
-                coordinates[location["country_alpha2_code"]] = {}
-            coordinates[location["country_alpha2_code"]][
-                location["location"]
-            ] = coordinate
+            if not coordinates.get(location_country_alpha2_code):
+                coordinates[location_country_alpha2_code] = {}
+            coordinates[location_country_alpha2_code][location_name] = coordinate
 
             if not new_coordinates_added:
                 new_coordinates_added = True
