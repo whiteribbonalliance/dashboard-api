@@ -470,8 +470,14 @@ class CampaignService:
         """Generate ngrams"""
 
         # Stopwords
+        all_stopwords = constants.STOPWORDS
+        if self.__language in all_stopwords:
+            stopwords = set(all_stopwords.get(self.__language))
+        else:
+            stopwords = set()
+
         extra_stopwords = self.__crud.get_extra_stopwords()
-        all_stopwords = constants.STOPWORDS.union(extra_stopwords)
+        stopwords = stopwords.union(extra_stopwords)
 
         # ngram counters
         unigram_count_dict = Counter()
@@ -481,14 +487,14 @@ class CampaignService:
         for words_list in df["tokenized"]:
             # Unigram
             for i in range(len(words_list)):
-                if words_list[i] not in all_stopwords:
+                if words_list[i] not in stopwords:
                     unigram_count_dict[words_list[i]] += 1
 
             # Bigram
             for i in range(len(words_list) - 1):
                 if (
-                    words_list[i] not in all_stopwords
-                    and words_list[i + 1] not in all_stopwords
+                    words_list[i] not in stopwords
+                    and words_list[i + 1] not in stopwords
                 ):
                     word_pair = f"{words_list[i]} {words_list[i + 1]}"
                     bigram_count_dict[word_pair] += 1
@@ -496,9 +502,9 @@ class CampaignService:
             # Trigram
             for i in range(len(words_list) - 2):
                 if (
-                    words_list[i] not in all_stopwords
-                    and words_list[i + 1] not in all_stopwords
-                    and words_list[i + 2] not in all_stopwords
+                    words_list[i] not in stopwords
+                    and words_list[i + 1] not in stopwords
+                    and words_list[i + 2] not in stopwords
                 ):
                     word_trio = (
                         f"{words_list[i]} {words_list[i + 1]} {words_list[i + 2]}"
