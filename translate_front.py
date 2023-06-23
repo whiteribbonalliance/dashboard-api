@@ -9,7 +9,7 @@ from app.services.translator import Translator
 
 settings.OFFLINE_TRANSLATE_MODE = True
 
-count_chars_only = False
+count_chars_only = True
 
 
 def translate_front():
