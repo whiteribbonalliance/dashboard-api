@@ -9,7 +9,7 @@ from app.services.translator import Translator
 
 settings.OFFLINE_TRANSLATE_MODE = True
 
-count_chars_only = True
+count_chars_only = False
 
 
 def translate_front():
@@ -60,9 +60,10 @@ def translate_front():
                 file.write(json.dumps(translations))
 
     # English
-    os.mkdir("front_translations/languages/en/")
-    with open(f"front_translations/languages/en/translation.json", "w") as file:
-        file.write(json.dumps(texts))
+    if not count_chars_only:
+        os.mkdir("front_translations/languages/en/")
+        with open(f"front_translations/languages/en/translation.json", "w") as file:
+            file.write(json.dumps(texts))
 
     # Print
     if count_chars_only:

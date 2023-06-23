@@ -46,7 +46,7 @@ python scripts/translate.py
 
 ### Front-end
 
-Create a JSON file at `scripts/front_translations/to_translate.json` that contains the key that is used in the front for
+Create a JSON file at `front_translations/to_translate.json` that contains the key that is used in the front for
 accessing a translation with the value as the text in English.
 
 For example:
@@ -65,7 +65,7 @@ python scripts/translate_front.py
 ```
 
 Once translations have been applied, a new folder called `languages` should have been
-inside `scripts/front_translations`.
+inside `front_translations`.
 
 Copy the `translations` folder to the front-end project at `src/app/i18n`.
 

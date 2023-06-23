@@ -43,3 +43,10 @@ class LimitExceededHTTPException(HTTPException):
         if not detail:
             detail = "Too many requests, try again later"
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
+
+
+class NotAllowedHTTPException(HTTPException):
+    def __init__(self, detail: str = None):
+        if not detail:
+            detail = "Not allowed"
+        super().__init__(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=detail)
