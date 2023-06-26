@@ -87,25 +87,6 @@ def load_campaign_data(campaign_code: CampaignCode):
 
         return np.nan
 
-    def clean_ages(age: str) -> str:
-        """Clean age data"""
-
-        if age is None:
-            return "N/A"
-
-        # If age is a number, return the age
-        if age.isnumeric():
-            if int(age) <= 125:
-                return age
-
-        # If age ends with 'años', extract the age number from the text
-        if age.endswith("años"):
-            age = age.replace("años", "").strip()
-            if age.isnumeric() and int(age) <= 125:
-                return age
-
-        return "N/A"
-
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
         campaign_code=campaign_code
@@ -123,10 +104,6 @@ def load_campaign_data(campaign_code: CampaignCode):
     if campaign_code == CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
-
-    # For healthwellbeing, clean the age column
-    if campaign_code == CampaignCode.healthwellbeing:
-        df_responses["age"] = df_responses["age"].apply(clean_ages)
 
     # Modify age into age bucket (skip if PMNCH)
     if campaign_code != CampaignCode.what_young_people_want:
