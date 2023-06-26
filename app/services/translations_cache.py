@@ -8,8 +8,7 @@ from app.utils.singleton_meta import SingletonMeta
 
 class TranslationsCache(metaclass=SingletonMeta):
     """
-    Singleton class
-    This class is responsible for caching translations
+    This class is responsible for caching translations (Singleton class)
     """
 
     def __init__(self):

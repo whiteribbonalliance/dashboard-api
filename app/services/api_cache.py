@@ -10,8 +10,7 @@ from app.utils.singleton_meta import SingletonMeta
 
 class ApiCache(metaclass=SingletonMeta):
     """
-    Singleton class
-    Cache API responses
+    Cache API responses (Singleton class)
     """
 
     def __init__(self):
