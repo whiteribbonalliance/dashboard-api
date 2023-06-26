@@ -10,13 +10,15 @@ from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
-from app.services.api_cache import api_cache
+from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 router = APIRouter(prefix="/campaigns")
+
+api_cache = ApiCache()
 
 
 @router.post(

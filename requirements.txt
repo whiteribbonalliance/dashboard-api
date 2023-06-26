@@ -13,3 +13,4 @@ inflect==6.0.0
 rocketry==2.5.1
 google-cloud-translate==3.9.0
 googlemaps==4.10.0
+cachetools==5.3.1

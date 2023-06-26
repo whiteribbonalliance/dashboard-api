@@ -18,7 +18,7 @@ from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.services import bigquery_interactions
 from app.services import googlemaps_interactions
-from app.services.api_cache import api_cache
+from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
@@ -232,7 +232,7 @@ def load_data():
     load_all_campaigns_ngrams_unfiltered()
 
     # Clear the API cache
-    api_cache.clear_cache()
+    ApiCache().clear_cache()
 
 
 def load_translations_cache():

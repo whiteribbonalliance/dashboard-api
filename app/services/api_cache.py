@@ -1,8 +1,8 @@
 import json
-from collections import OrderedDict
 from functools import wraps
 from hashlib import sha256
 
+from cachetools import LRUCache
 from fastapi.encoders import jsonable_encoder
 
 from app.utils.singleton_meta import SingletonMeta
@@ -15,8 +15,7 @@ class ApiCache(metaclass=SingletonMeta):
     """
 
     def __init__(self):
-        self.__cache = OrderedDict()
-        self.__is_checking_cache_size = False
+        self.__cache = LRUCache(maxsize=1000)
 
     def cache_response(self, func):
         """Decorator for caching API responses"""
@@ -48,8 +47,6 @@ class ApiCache(metaclass=SingletonMeta):
 
                 return result
             else:
-                self.__check_cache_size()
-
                 # Create result, cache result, return result
                 result = await func(*args, **kwargs)
                 self.__cache[hash_value] = result
@@ -57,19 +54,6 @@ class ApiCache(metaclass=SingletonMeta):
                 return result
 
         return wrapper
-
-    def __check_cache_size(self):
-        """Clear cache when cached items are over 1000"""
-
-        if len(self.__cache) > 1000:
-            if self.__is_checking_cache_size:
-                return
-
-            self.__is_checking_cache_size = True
-
-            self.clear_cache()
-
-            self.__is_checking_cache_size = False
 
     def get_cache(self):
         """Get cache"""
@@ -81,6 +65,3 @@ class ApiCache(metaclass=SingletonMeta):
 
         if len(self.__cache) > 0:
             self.__cache.clear()
-
-
-api_cache = ApiCache()
