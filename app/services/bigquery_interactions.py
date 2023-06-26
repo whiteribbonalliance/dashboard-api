@@ -62,6 +62,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     query_job = bigquery_client.query(
         f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as raw_response,
+        response_original_lang as original_language,
         respondent_country_code as alpha2country,
         response_nlu_category AS canonical_code,
         response_lemmatized_text as lemmatized,
