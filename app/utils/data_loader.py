@@ -95,10 +95,8 @@ def load_campaign_data(campaign_code: CampaignCode):
 
         # If age is a number, return the age
         if age.isnumeric():
-            if int(age) > 125:
-                return "N/A"
-
-            return age
+            if int(age) <= 125:
+                return age
 
         # If age ends with 'años', extract the age number from the text
         if age.endswith("años"):
