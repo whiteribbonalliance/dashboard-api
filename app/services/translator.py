@@ -7,6 +7,7 @@ from google.oauth2 import service_account
 
 from app import constants
 from app.core.settings import settings
+from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.utils import helpers
@@ -25,6 +26,7 @@ class Translator(metaclass=SingletonMeta):
     """
 
     def __init__(self):
+        self.__campaign_code = None
         self.__language = "en"
         self.__translations_cache = TranslationsCache()
 
@@ -53,6 +55,10 @@ class Translator(metaclass=SingletonMeta):
         This function will only be used to translate texts on the fly
         When OFFLINE_TRANSLATE_MODE = True, texts will be extracted only
         """
+
+        # FIXME: Do not translate 'giz'
+        if self.__campaign_code and self.__campaign_code == CampaignCode.mexico:
+            return text
 
         if not text or self.__language == "en":
             return text
@@ -233,3 +239,8 @@ class Translator(metaclass=SingletonMeta):
         """Get latest generated keys per language"""
 
         return self.__latest_generated_keys_per_language
+
+    def set_campaign_code(self, campaign_code: CampaignCode):
+        """Set campaign code"""
+
+        self.__campaign_code = campaign_code
