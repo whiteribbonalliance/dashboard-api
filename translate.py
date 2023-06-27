@@ -38,7 +38,7 @@ async def translate():
                 print(f"Translating texts for {campaign_code}-{language}...")
 
             common_parameters = CommonParameters(
-                campaign_code=campaign_code, language=language
+                request=None, campaign_code=campaign_code, language=language
             )
             campaign_req = CampaignRequest()
 

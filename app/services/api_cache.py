@@ -22,7 +22,10 @@ class ApiCache(metaclass=SingletonMeta):
         @wraps(func)
         async def wrapper(*args: tuple, **kwargs: dict):
             # Get path from request
-            path = kwargs.get("common_parameters").request.url.path
+            if kwargs.get("common_parameters").request:
+                path = kwargs.get("common_parameters").request.url.path
+            else:
+                path = ""
 
             # Set request as None as it is not needed anymore
             kwargs.get("common_parameters").request = None

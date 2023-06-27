@@ -1,3 +1,6 @@
+"""Singleton meta class"""
+
+
 class SingletonMeta(type):
     _instances = {}
 
