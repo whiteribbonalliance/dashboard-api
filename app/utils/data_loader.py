@@ -261,7 +261,7 @@ def load_coordinates():
         countries = campaign_crud.get_countries_list()
 
         if len(countries) < 1:
-            logger.warning(f"Campaign {campaign_code} has no countries")
+            logger.warning(f"Campaign {campaign_code.value} has no countries")
             continue
 
         country_alpha2_code = countries[0].alpha2_code
