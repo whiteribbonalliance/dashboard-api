@@ -3,6 +3,7 @@ Handles processing of data and business logic for a campaign
 """
 
 import operator
+import re
 from collections import Counter
 from typing import Callable
 
@@ -38,8 +39,7 @@ class CampaignService:
         self.__language = language
 
         self.__translator = Translator()
-        self.__translator.set_campaign_code(campaign_code=campaign_code)
-        self.__translator.set_language(language=self.__language)
+        self.__translator.set_target_language(target_language=self.__language)
         self.__t = self.__translator.translate_text
 
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
@@ -161,10 +161,22 @@ class CampaignService:
 
             return descriptions
 
-        def translate_or_extract_responses_sample(t: Callable):
-            _df = df_1_copy.copy()
+        def translate_or_extract_responses_sample(t: Callable) -> pd.DataFrame:
+            def translate_text_between_parentheses(text: str) -> str:
+                """Find text between parentheses and translate it"""
 
-            _df["description"] = _df["canonical_code"].apply(
+                texts_between_parentheses = re.findall("\\(([^)]+)", text)
+                if len(texts_between_parentheses) > 0:
+                    text_between_parentheses = texts_between_parentheses[-1]
+                    text = text.replace(
+                        text_between_parentheses, t(text_between_parentheses)
+                    )
+
+                return text
+
+            df_tmp = df_1_copy.copy()
+
+            df_tmp["description"] = df_tmp["canonical_code"].apply(
                 lambda x: get_descriptions(x, t)
             )
 
@@ -174,15 +186,24 @@ class CampaignService:
                 if column_id == "description":
                     continue
 
+                # Do not translate age e.g. '25-34'
                 if column_id == "age":
-                    # Do not translate age e.g. '25-34'
-                    _df[column_id] = _df[column_id].apply(
+                    df_tmp[column_id] = df_tmp[column_id].apply(
                         lambda x: t(x) if helpers.contains_letters(x) else x
                     )
-                else:
-                    _df[column_id] = _df[column_id].apply(lambda x: t(x))
 
-            return _df
+                if column_id == "raw_response":
+                    # giz: Do not translate 'raw_response' if the language is 'es'
+                    # giz: For other languages, only translate text between parentheses
+                    if self.__campaign_code == CampaignCode.mexico:
+                        if self.__language != "es":
+                            df_tmp[column_id] = df_tmp[column_id].apply(
+                                translate_text_between_parentheses
+                            )
+                    else:
+                        df_tmp[column_id] = df_tmp[column_id].apply(lambda x: t(x))
+
+            return df_tmp
 
         # Only translate if language is not 'en'
         # Go through data initially to extract texts (to apply translations in chunks for faster results)

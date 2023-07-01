@@ -26,7 +26,7 @@ def translate_front():
     for language in constants.TRANSLATION_LANGUAGES.keys():
         print(f"Translating texts to {language}...")
 
-        translator.set_language(language=language)
+        translator.set_target_language(target_language=language)
 
         for text_id, text in texts.items():
             translator.add_text_to_extract(text)

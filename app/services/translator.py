@@ -7,7 +7,6 @@ from google.oauth2 import service_account
 
 from app import constants
 from app.core.settings import settings
-from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.utils import helpers
@@ -26,8 +25,7 @@ class Translator(metaclass=SingletonMeta):
     """
 
     def __init__(self):
-        self.__campaign_code = None
-        self.__language = "en"
+        self.__target_language = "en"
         self.__translations_cache = TranslationsCache()
 
         # Keep the latest generated keys per language from extracted texts that have been translated
@@ -56,11 +54,7 @@ class Translator(metaclass=SingletonMeta):
         When OFFLINE_TRANSLATE_MODE = True, texts will be extracted only
         """
 
-        # FIXME: Do not translate 'giz'
-        if self.__campaign_code and self.__campaign_code == CampaignCode.mexico:
-            return text
-
-        if not text or self.__language == "en":
+        if not text or self.__target_language == "en":
             return text
 
         # With OFFLINE_TRANSLATE_MODE = True, save the text to extracted_texts only
@@ -69,7 +63,7 @@ class Translator(metaclass=SingletonMeta):
 
             return text
 
-        key = f"{self.__language}.{text}"
+        key = f"{self.__target_language}.{text}"
 
         if self.__translations_cache.has(key):
             # If translated text already exists, return it
@@ -81,11 +75,11 @@ class Translator(metaclass=SingletonMeta):
                 output = translate_client.translate(
                     values=text,
                     source_language="en",
-                    target_language=self.__language,
+                    target_language=self.__target_language,
                 )
                 translated_text = unescape(output["translatedText"])
             except (Exception,):
-                logger.error(f"Error translating: {text} to {self.__language}")
+                logger.error(f"Error translating: {text} to {self.__target_language}")
                 return text
 
             # Add translation to cache
@@ -100,7 +94,7 @@ class Translator(metaclass=SingletonMeta):
         Merge words back together
         """
 
-        if not text or self.__language == "en":
+        if not text or self.__target_language == "en":
             return text
 
         translated_text = ""
@@ -134,23 +128,23 @@ class Translator(metaclass=SingletonMeta):
         else:
             return self.__translate_text(text=text)
 
-    def add_text_to_extract(self, text: str):
+    def add_text_to_extract(self, text: str) -> str:
         """
         Add text to extract
 
         :param text: Text to extract
         """
 
-        if not text or self.__language == "en":
-            return
+        if text and self.__target_language != "en":
+            # If text is not in translations.json, add it to a set of texts to be translated
+            key = f"{self.__target_language}.{text}"
+            if not self.__translations_cache.has(key):
+                self.__extracted_texts.add(text)
+            else:
+                # Texts has already been translated
+                self.__add_key_to_latest_generated_keys(key)
 
-        # If text is not in translations.json, add it to a set of texts to be translated
-        key = f"{self.__language}.{text}"
-        if not self.__translations_cache.has(key):
-            self.__extracted_texts.add(text)
-        else:
-            # Texts has already been translated
-            self.__add_key_to_latest_generated_keys(key)
+        return text
 
     def __clear_extracted_texts(self):
         """Clear extracted texts"""
@@ -160,16 +154,16 @@ class Translator(metaclass=SingletonMeta):
     def __add_key_to_latest_generated_keys(self, key: str):
         """Add key to latest generated keys"""
 
-        if not self.__latest_generated_keys_per_language.get(self.__language):
-            self.__latest_generated_keys_per_language[self.__language] = []
-        self.__latest_generated_keys_per_language[self.__language].append(key)
+        if not self.__latest_generated_keys_per_language.get(self.__target_language):
+            self.__latest_generated_keys_per_language[self.__target_language] = []
+        self.__latest_generated_keys_per_language[self.__target_language].append(key)
 
     def translate_extracted_texts(
         self, count_chars_only: bool = False, skip_saving_to_json: bool = False
     ):
         """Translate extracted texts and save them to translations.json"""
 
-        if len(self.__extracted_texts) < 1 or self.__language == "en":
+        if len(self.__extracted_texts) < 1 or self.__target_language == "en":
             self.__clear_extracted_texts()
             return
 
@@ -186,7 +180,7 @@ class Translator(metaclass=SingletonMeta):
         if count_chars_only:
             for extracted_texts_chunk in extracted_texts_chunks:
                 for text in extracted_texts_chunk:
-                    key = f"{self.__language}.{text}"
+                    key = f"{self.__target_language}.{text}"
                     self.__translations_cache.set(key=key, value=text)
                     self.__translations_char_count += len(text)
 
@@ -198,18 +192,18 @@ class Translator(metaclass=SingletonMeta):
                     output = translate_client.translate(
                         values=extracted_texts_chunk,
                         source_language="en",
-                        target_language=self.__language,
+                        target_language=self.__target_language,
                     )
                 except (Exception,):
                     logger.error(
-                        f"Error translating: extracted_texts_chunk to {self.__language}"
+                        f"Error translating: extracted_texts_chunk to {self.__target_language}"
                     )
                     continue
 
                 for data in output:
                     input_text = data["input"]
                     translated_text = unescape(data["translatedText"])
-                    key = f"{self.__language}.{input_text}"
+                    key = f"{self.__target_language}.{input_text}"
                     self.__translations_cache.set(key=key, value=translated_text)
                     self.__translations_char_count += len(input_text)
                     self.__add_key_to_latest_generated_keys(key)
@@ -230,17 +224,12 @@ class Translator(metaclass=SingletonMeta):
 
         return self.__translations_char_count
 
-    def set_language(self, language: str):
-        """Set language"""
+    def set_target_language(self, target_language: str):
+        """Set target language"""
 
-        self.__language = language
+        self.__target_language = target_language
 
     def get_latest_generated_keys_per_language(self) -> dict:
         """Get latest generated keys per language"""
 
         return self.__latest_generated_keys_per_language
-
-    def set_campaign_code(self, campaign_code: CampaignCode):
-        """Set campaign code"""
-
-        self.__campaign_code = campaign_code
