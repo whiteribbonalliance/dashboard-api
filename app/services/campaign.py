@@ -717,6 +717,8 @@ class CampaignService:
 
         genders_breakdown = []
         for key, value in gender_counts.items():
+            if not key:
+                continue
             genders_breakdown.append({"name": self.__t(key), "count": value})
 
         return genders_breakdown
