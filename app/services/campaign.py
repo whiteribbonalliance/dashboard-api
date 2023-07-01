@@ -602,6 +602,7 @@ class CampaignService:
                     + grouped_by_column_2.index.tolist()
                 )
             )
+            names = [name for name in names if name]
 
             # Sort ages (values with ages first reverse sorted, then add other values back in e.g. 'prefer not to say')
             if column_name == "age" and len(names) > 0:

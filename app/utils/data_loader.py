@@ -167,6 +167,8 @@ def load_campaign_data(campaign_code: CampaignCode):
     genders = []
     if "gender" in column_ids:
         for gender in df_responses["gender"].value_counts().index:
+            if not gender:
+                continue
             genders.append(Gender(code=gender, name=gender))
     campaign_crud.set_genders(genders=genders)
 
