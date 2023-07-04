@@ -488,7 +488,12 @@ class CampaignService:
 
         return average_age
 
-    def generate_ngrams(self, df: pd.DataFrame):
+    def generate_ngrams(
+        self,
+        df: pd.DataFrame,
+        only_multi_word_phrases_containing_filter_term: bool = False,
+        keyword: str = "",
+    ):
         """Generate ngrams"""
 
         # Stopwords
@@ -537,9 +542,20 @@ class CampaignService:
         bigram_count_dict = dict(bigram_count_dict)
         trigram_count_dict = dict(trigram_count_dict)
 
+        # Only show words in bigram and trigram if it contains the keyword
+        if only_multi_word_phrases_containing_filter_term and len(keyword) > 0:
+            bigram_count_dict = dict(
+                (a, b) for a, b in bigram_count_dict.items() if keyword in a
+            )
+            trigram_count_dict = dict(
+                (a, b) for a, b in trigram_count_dict.items() if keyword in a
+            )
+
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def __get_ngrams_1(self) -> tuple:
+    def __get_ngrams_1(
+        self,
+    ) -> tuple:
         """Get ngrams 1"""
 
         # Return the cached ngrams (this is when filter 1 was not requested)
