@@ -39,9 +39,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
     ages = _filter.ages
-    only_multi_word_phrases_containing_filter_term = (
-        _filter.only_multi_word_phrases_containing_filter_term
-    )
+    only_responses_from_categories = _filter.only_responses_from_categories
 
     df_copy = df.copy()
 
@@ -55,7 +53,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
 
     # Filter response topics
     if len(response_topics) > 0:
-        if only_multi_word_phrases_containing_filter_term:
+        if only_responses_from_categories:
             condition = ~df_copy["canonical_code"].isin(
                 {"xxxx"}
             )  # dummy series always True
@@ -64,7 +62,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
                 "top_level"
             ].isin(response_topics)
         for response_topic in response_topics:
-            if only_multi_word_phrases_containing_filter_term:
+            if only_responses_from_categories:
                 condition &= df_copy["canonical_code"].str.contains(
                     r"\b" + response_topic + r"\b", regex=True
                 )
