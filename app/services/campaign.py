@@ -88,7 +88,16 @@ class CampaignService:
             self.__filter_2_use_ngrams_unfiltered = False
 
         # Ngrams 1
-        self.__ngrams_1 = self.__get_ngrams_1()
+        if self.__filter_1:
+            self.__ngrams_1 = self.__get_ngrams_1(
+                only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
+                keyword=self.__filter_1.keyword_filter,
+            )
+        else:
+            self.__ngrams_1 = self.__get_ngrams_1(
+                only_multi_word_phrases_containing_filter_term=False,
+                keyword="",
+            )
 
         # Ngrams 2
         self.__ngrams_2 = self.__get_ngrams_2()
@@ -554,7 +563,7 @@ class CampaignService:
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
     def __get_ngrams_1(
-        self,
+        self, only_multi_word_phrases_containing_filter_term: bool, keyword: str
     ) -> tuple:
         """Get ngrams 1"""
 
@@ -572,7 +581,11 @@ class CampaignService:
             unigram_count_dict,
             bigram_count_dict,
             trigram_count_dict,
-        ) = self.generate_ngrams(df=self.__get_df_1_copy())
+        ) = self.generate_ngrams(
+            df=self.__get_df_1_copy(),
+            only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term,
+            keyword=keyword,
+        )
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
