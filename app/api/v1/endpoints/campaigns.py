@@ -131,14 +131,14 @@ async def read_filter_options(
     # Country options
     countries = campaign_service.get_countries_list()
     country_options = [
-        {"value": country.alpha2_code, "label": country.name} for country in countries
+        {"value": country.alpha2_code, "label": country.name} for country in sorted(countries, key=lambda country : country.name)
     ]
 
     # Country regions options
     country_regions_options = []
     for country in countries:
         regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
-        for region in country.regions:
+        for region in sorted(country.regions, key=lambda r : r.name):
             regions_options["options"].append(
                 {"value": region.code, "label": region.name}
             )
