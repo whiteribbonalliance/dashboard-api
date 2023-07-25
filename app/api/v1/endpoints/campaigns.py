@@ -152,8 +152,10 @@ async def read_filter_options(
     ]
 
     # Ages options
+    def convert_numeric(age_str: str):
+        return age.zfill(6) # zero-pad the age string
     ages = campaign_service.get_ages()
-    ages = [{"value": age.code, "label": age.name} for age in ages]
+    ages = [{"value": age.code, "label": age.name} for age in  sorted(ages, key = lambda age : convert_numeric(age.name))]
 
     # Gender options
     genders = campaign_service.get_genders()
