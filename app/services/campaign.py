@@ -3,6 +3,7 @@ Handles processing of data and business logic for a campaign
 """
 
 import operator
+import random
 import re
 from collections import Counter
 from typing import Callable
@@ -124,23 +125,50 @@ class CampaignService:
     def get_responses_sample(self) -> list[dict]:
         """Get responses sample"""
 
+        # Get copy to not modify original
+        df_1_copy = self.__get_df_1_copy()
+
+        response_sample_1 = self.__get_df_responses_sample(df=df_1_copy)
+
+        # Only set responses_sample_2 if filter 2 was applied
+        if self.__filter_2:
+            # Get copy to not modify original
+            df_2_copy = self.__get_df_2_copy()
+
+            response_sample_2 = self.__get_df_responses_sample(df=df_2_copy)
+        else:
+            response_sample_2 = []
+
+        responses_breakdown = response_sample_1 + response_sample_2
+
+        # Shuffle
+        random.shuffle(responses_breakdown)
+
+        return responses_breakdown
+
+    def __get_df_responses_sample(self, df: pd.DataFrame) -> list[dict]:
+        """Get df responses sample"""
+
         # Do not translate if this function is called while translating texts offline
         if settings.OFFLINE_TRANSLATE_MODE:
             return []
 
-        # Get copy to not modify original
-        df_1_copy = self.__get_df_1_copy()
-
         # Limit the sample for languages that are not English
         if self.__language == "en":
-            n_sample = 1000
+            if self.__filter_2:
+                n_sample = 500
+            else:
+                n_sample = 1000
         else:
-            n_sample = 100
+            if self.__filter_2:
+                n_sample = 50
+            else:
+                n_sample = 100
 
-        if len(df_1_copy.index) > 0:
-            if len(df_1_copy.index) < n_sample:
-                n_sample = len(df_1_copy.index)
-            df_1_copy = df_1_copy.sample(n=n_sample, random_state=1)
+        if len(df.index) > 0:
+            if len(df.index) < n_sample:
+                n_sample = len(df.index)
+            df_1_copy = df.sample(n=n_sample, random_state=1)
 
         column_ids = [col["id"] for col in self.__crud.get_responses_sample_columns()]
 
