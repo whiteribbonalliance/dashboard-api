@@ -232,10 +232,10 @@ class CampaignService:
 
         return responses_sample_data
 
-    def get_responses_breakdown(self) -> dict:
+    def get_responses_breakdown(self) -> list:
         """Get responses breakdown"""
 
-        def get_df_responses_breakdown(df: pd.DataFrame):
+        def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
 
             # Count occurrence of responses
@@ -298,10 +298,46 @@ class CampaignService:
         df_1_copy = self.__get_df_1_copy()
         df_2_copy = self.__get_df_2_copy()
 
-        responses_breakdown = {
-            "count_1": get_df_responses_breakdown(df=df_1_copy),
-            "count_2": get_df_responses_breakdown(df=df_2_copy),
-        }
+        # Get responses breakdown from each df
+        responses_breakdown_1 = get_df_responses_breakdown(df=df_1_copy)
+        responses_breakdown_2 = get_df_responses_breakdown(df=df_2_copy)
+
+        # Get all unique codes from responses breakdown
+        codes_1 = [x["code"] for x in responses_breakdown_1]
+        codes_2 = [x["code"] for x in responses_breakdown_2]
+        all_codes = set(codes_1 + codes_2)
+
+        # Responses breakdown
+        responses_breakdown = []
+        for code in all_codes:
+            responses_1 = [x for x in responses_breakdown_1 if x["code"] == code]
+            responses_2 = [x for x in responses_breakdown_2 if x["code"] == code]
+
+            if responses_1:
+                response_1 = responses_1[0]
+            else:
+                response_1 = None
+
+            if responses_2:
+                response_2 = responses_2[0]
+            else:
+                response_2 = None
+
+            # Set description
+            description = ""
+            if response_1:
+                description = response_1["description"]
+            if response_2:
+                description = response_2["description"]
+
+            responses_breakdown.append(
+                {
+                    "count1": response_1.get("count") if response_1 else 0,
+                    "count2": response_2.get("count") if response_2 else 0,
+                    "code": code,
+                    "description": description,
+                }
+            )
 
         return responses_breakdown
 
