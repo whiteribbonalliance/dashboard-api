@@ -131,14 +131,14 @@ async def read_filter_options(
     # Country options
     countries = campaign_service.get_countries_list()
     country_options = [
-        {"value": country.alpha2_code, "label": country.name} for country in sorted(countries, key=lambda country : country.name)
+        {"value": country.alpha2_code, "label": country.name} for country in countries
     ]
 
     # Country regions options
     country_regions_options = []
     for country in countries:
         regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
-        for region in sorted(country.regions, key=lambda r : r.name):
+        for region in sorted(country.regions, key=lambda r: r.name):
             regions_options["options"].append(
                 {"value": region.code, "label": region.name}
             )
@@ -151,11 +151,9 @@ async def read_filter_options(
         for response_topic in response_topics
     ]
 
-    # Ages options
-    def convert_numeric(age_str: str):
-        return age_str.zfill(6) # zero-pad the age string
+    # Age options
     ages = campaign_service.get_ages()
-    ages = [{"value": age.code, "label": age.name} for age in sorted(ages, key = lambda a : convert_numeric(a.name))]
+    ages = [{"value": age.code, "label": age.name} for age in ages]
 
     # Gender options
     genders = campaign_service.get_genders()

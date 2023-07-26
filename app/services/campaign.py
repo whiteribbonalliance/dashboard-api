@@ -232,65 +232,78 @@ class CampaignService:
 
         return responses_sample_data
 
-    def get_responses_breakdown(self) -> list[dict]:
+    def get_responses_breakdown(self) -> dict:
         """Get responses breakdown"""
+
+        def get_df_responses_breakdown(df: pd.DataFrame):
+            """Get df responses breakdown"""
+
+            # Count occurrence of responses
+            counter = Counter()
+            for canonical_code in df["canonical_code"]:
+                for code in canonical_code.split("/"):
+                    counter[code] += 1
+
+            if len(counter) > 0:
+                # Create dataframe with items from counter
+                df = pd.DataFrame(
+                    sorted(counter.items(), key=operator.itemgetter(1), reverse=True)
+                )
+
+                # Set column names
+                df.columns = ["label", "count"]
+
+                # Set code
+                df["code"] = df["label"].map(
+                    code_hierarchy.get_mapping_to_code(
+                        campaign_code=self.__campaign_code
+                    )
+                )
+
+                # Set description column
+                df["description"] = df["label"].map(
+                    code_hierarchy.get_mapping_to_description(
+                        campaign_code=self.__campaign_code
+                    )
+                )
+
+                # Translate descriptions
+                df["description"] = df["description"].apply(
+                    lambda description: self.__t(text=description, delimiter=",")
+                )
+
+                # Set top level column
+                # df["top_level"] = df["label"].map(
+                #     code_hierarchy.get_mapping_to_top_level(campaign_code=self.__campaign_code))
+
+                # Drop label column
+                df = df.drop(["label"], axis=1)
+
+                # Drop rows with nan values
+                df = df.dropna()
+
+                # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
+                if self.__campaign_code == CampaignCode.what_young_people_want:
+                    n_rows_keep = 5
+                    df = df.sort_values(by="count", ascending=False)
+                    df = df.head(n_rows_keep)
+            else:
+                df = pd.DataFrame()
+
+            responses_breakdown_data = df.to_dict(orient="records")
+
+            return responses_breakdown_data
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
+        df_2_copy = self.__get_df_2_copy()
 
-        # Count occurrence of responses
-        counter = Counter()
-        for canonical_code in df_1_copy["canonical_code"]:
-            for code in canonical_code.split("/"):
-                counter[code] += 1
+        responses_breakdown = {
+            "count_1": get_df_responses_breakdown(df=df_1_copy),
+            "count_2": get_df_responses_breakdown(df=df_2_copy),
+        }
 
-        if len(counter) > 0:
-            # Create dataframe with items from counter
-            df = pd.DataFrame(
-                sorted(counter.items(), key=operator.itemgetter(1), reverse=True)
-            )
-
-            # Set column names
-            df.columns = ["label", "count"]
-
-            # Set code
-            df["code"] = df["label"].map(
-                code_hierarchy.get_mapping_to_code(campaign_code=self.__campaign_code)
-            )
-
-            # Set description column
-            df["description"] = df["label"].map(
-                code_hierarchy.get_mapping_to_description(
-                    campaign_code=self.__campaign_code
-                )
-            )
-
-            # Translate descriptions
-            df["description"] = df["description"].apply(
-                lambda description: self.__t(text=description, delimiter=",")
-            )
-
-            # Set top level column
-            # df["top_level"] = df["label"].map(
-            #     code_hierarchy.get_mapping_to_top_level(campaign_code=self.__campaign_code))
-
-            # Drop label column
-            df = df.drop(["label"], axis=1)
-
-            # Drop rows with nan values
-            df = df.dropna()
-
-            # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
-            if self.__campaign_code == CampaignCode.what_young_people_want:
-                n_rows_keep = 5
-                df = df.sort_values(by="count", ascending=False)
-                df = df.head(n_rows_keep)
-        else:
-            df = pd.DataFrame()
-
-        responses_breakdown_data = df.to_dict(orient="records")
-
-        return responses_breakdown_data
+        return responses_breakdown
 
     def get_wordcloud_words(self) -> list[dict]:
         """Get wordcloud words"""
@@ -903,10 +916,16 @@ class CampaignService:
             for region in country.regions:
                 region.name = self.__t(region.name)
 
+        # Sort countries
+        countries = sorted(countries, key=lambda x: x.name)
+
         return countries
 
     def get_ages(self) -> list[Age]:
         """Get ages"""
+
+        def convert_numeric(age_str: str):
+            return age_str.zfill(6)  # zero-pad the age string
 
         ages = self.__crud.get_ages()
 
@@ -915,6 +934,9 @@ class CampaignService:
             age.name = (
                 self.__t(age.name) if helpers.contains_letters(age.name) else age.name
             )
+
+        # Sort ages
+        ages = sorted(ages, key=lambda a: convert_numeric(a.name))
 
         return ages
 
