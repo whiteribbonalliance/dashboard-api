@@ -241,8 +241,8 @@ class CampaignService:
             # Count occurrence of responses
             counter = Counter()
             for canonical_code in df["canonical_code"]:
-                for code in canonical_code.split("/"):
-                    counter[code] += 1
+                for c in canonical_code.split("/"):
+                    counter[c] += 1
 
             if len(counter) > 0:
                 # Create dataframe with items from counter
@@ -338,6 +338,11 @@ class CampaignService:
                     "description": description,
                 }
             )
+
+        # Sort responses breakdown
+        responses_breakdown = sorted(
+            responses_breakdown, key=lambda x: x["count_1"], reverse=True
+        )
 
         return responses_breakdown
 
