@@ -332,8 +332,8 @@ class CampaignService:
 
             responses_breakdown.append(
                 {
-                    "count1": response_1.get("count") if response_1 else 0,
-                    "count2": response_2.get("count") if response_2 else 0,
+                    "count_1": response_1.get("count") if response_1 else 0,
+                    "count_2": response_2.get("count") if response_2 else 0,
                     "code": code,
                     "description": description,
                 }
