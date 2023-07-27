@@ -127,13 +127,6 @@ def load_campaign_data(campaign_code: CampaignCode):
     else:
         has_q2 = False
 
-    # Add additional columns for q2
-    if has_q2:
-        df_responses["q2_raw_response"] = ""
-        df_responses["q2_lemmatized"] = ""
-        df_responses["q2_canonical_code"] = ""
-        df_responses["q2_original_language"] = ""
-
     # Populate columns for q2
     if has_q2:
         df_responses = df_responses.apply(populate_q2_columns, axis=1)
