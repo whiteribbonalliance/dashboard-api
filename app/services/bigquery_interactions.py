@@ -6,7 +6,6 @@ from google.cloud import bigquery
 from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
-
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 
@@ -70,6 +69,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         INITCAP(respondent_gender) as gender,
         JSON_VALUE(respondent_additional_fields.profession) as profession,
+        respondent_additional_fields as additional_fields,
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code.value}'
         AND response_original_text is not null
