@@ -25,6 +25,7 @@ from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
 from app.utils import globals
+from app.utils import helpers
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -122,10 +123,7 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        has_q2 = True
-    else:
-        has_q2 = False
+    has_q2 = helpers.campaign_has_q2(campaign_code=campaign_code)
 
     # Populate columns for q2
     if has_q2:

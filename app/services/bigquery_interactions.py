@@ -9,6 +9,7 @@ from pandas import DataFrame
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app import constants
+from app.utils import helpers
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -59,11 +60,6 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     else:
         min_age = "15"
 
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        has_q2 = True
-    else:
-        has_q2 = False
-
     query_job = bigquery_client.query(
         f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
@@ -92,7 +88,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Add additional columns for q2
-    if has_q2:
+    if helpers.campaign_has_q2(campaign_code=campaign_code):
         df_responses["q2_raw_response"] = ""
         df_responses["q2_lemmatized"] = ""
         df_responses["q2_canonical_code"] = ""

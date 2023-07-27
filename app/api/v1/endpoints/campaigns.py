@@ -13,7 +13,7 @@ from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app import constants
+from app.utils import helpers
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -42,10 +42,7 @@ async def read_campaign(
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        has_q2 = True
-    else:
-        has_q2 = False
+    has_q2 = helpers.campaign_has_q2(campaign_code=campaign_code)
 
     # Create service
     campaign_service = CampaignService(
