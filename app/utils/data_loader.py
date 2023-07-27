@@ -122,25 +122,27 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
-    # Add additional columns for q2
-    df_responses["q2_raw_response"] = ""
-    df_responses["q2_lemmatized"] = ""
-    df_responses["q2_canonical_code"] = ""
-    df_responses["q2_original_language"] = ""
-    df_responses["q2_response_original_text"] = ""
-
     if campaign_code in constants.CAMPAIGNS_WITH_Q2:
         has_q2 = True
     else:
         has_q2 = False
+
+    # Add additional columns for q2
+    if has_q2:
+        df_responses["q2_raw_response"] = ""
+        df_responses["q2_lemmatized"] = ""
+        df_responses["q2_canonical_code"] = ""
+        df_responses["q2_original_language"] = ""
 
     # Populate columns for q2
     if has_q2:
         df_responses = df_responses.apply(populate_q2_columns, axis=1)
 
     # Add tokenized column
-    df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
-    if campaign_code == CampaignCode.mexico:
+    df_responses["q1_tokenized"] = df_responses["q1_lemmatized"].apply(
+        lambda x: x.split(" ")
+    )
+    if has_q2:
         df_responses["q2_tokenized"] = df_responses["q2_lemmatized"].apply(
             lambda x: x.split(" ")
         )
@@ -165,7 +167,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_ages(ages=ages)
 
     # Remove the UNCODABLE responses
-    df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
+    df_responses = df_responses[~df_responses["q1_canonical_code"].isin(["UNCODABLE"])]
     if has_q2:
         df_responses = df_responses[
             ~df_responses["q2_canonical_code"].isin(["UNCODABLE"])
@@ -174,12 +176,12 @@ def load_campaign_data(campaign_code: CampaignCode):
     # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
     if campaign_code == CampaignCode.what_young_people_want:
         _map = {"ENVIRONMENT": "SAFETY"}
-        df_responses["canonical_code"] = df_responses["canonical_code"].apply(
+        df_responses["q1_canonical_code"] = df_responses["q1_canonical_code"].apply(
             lambda x: _map.get(x, x)
         )
 
     # Rename canonical_code OTHERQUESTIONABLE to NOTRELATED
-    df_responses["canonical_code"] = df_responses["canonical_code"].apply(
+    df_responses["q1_canonical_code"] = df_responses["q1_canonical_code"].apply(
         lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
     )
     if has_q2:
@@ -188,7 +190,13 @@ def load_campaign_data(campaign_code: CampaignCode):
         )
 
     # Add top_level column
-    df_responses["top_level"] = df_responses["canonical_code"].apply(get_top_level)
+    df_responses["q1_top_level"] = df_responses["q1_canonical_code"].apply(
+        get_top_level
+    )
+    if has_q2:
+        df_responses["q2_top_level"] = df_responses["q2_canonical_code"].apply(
+            get_top_level
+        )
 
     # Create countries
     countries = {}
@@ -250,9 +258,9 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
     campaign_service = CampaignService(campaign_code=campaign_code)
 
-    df = campaign_crud.get_dataframe()
+    df = campaign_crud.get_dataframe().copy()
 
-    # Question 1 ngrams
+    # Q1 ngrams
     (
         q1_unigram_count_dict,
         q1_bigram_count_dict,
@@ -267,8 +275,8 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 
     campaign_crud.set_q1_ngrams_unfiltered(ngrams_unfiltered=q1_ngrams_unfiltered)
 
-    if campaign_code == CampaignCode.mexico:
-        # Question 2 ngrams
+    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
+        # Q2 ngrams
         (
             q2_unigram_count_dict,
             q2_bigram_count_dict,

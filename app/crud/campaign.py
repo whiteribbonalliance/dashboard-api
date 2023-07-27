@@ -91,18 +91,17 @@ class CampaignCRUD:
     def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
         """Get responses sample columns"""
 
-        if q_code == QuestionCode.q2:
-            responses_sample_columns = self.__databank.responses_sample_columns
-            for column in responses_sample_columns:
-                if column.get("id") == "raw_response":
-                    column["id"] = "q2_raw_response"
-                if column.get("id") == "description":
-                    column["id"] = "q2_description"
+        responses_sample_columns = copy.deepcopy(
+            self.__databank.responses_sample_columns
+        )
 
-        else:
-            responses_sample_columns = self.__databank.responses_sample_columns
+        for column in responses_sample_columns:
+            if column.get("id") == "raw_response":
+                column["id"] = f"q{q_code.value}_raw_response"
+            if column.get("id") == "description":
+                column["id"] = f"q{q_code.value}_description"
 
-        return copy.deepcopy(responses_sample_columns)
+        return responses_sample_columns
 
     def get_respondent_noun_singular(self) -> str:
         """Get respondent noun singular"""

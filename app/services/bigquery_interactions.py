@@ -60,11 +60,11 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
 
     query_job = bigquery_client.query(
         f"""
-        SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as raw_response,
-        response_original_lang as original_language,
+        SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
+        response_original_lang as q1_original_language,
         respondent_country_code as alpha2country,
-        response_nlu_category AS canonical_code,
-        response_lemmatized_text as lemmatized,
+        response_nlu_category AS q1_canonical_code,
+        response_lemmatized_text as q1_lemmatized,
         respondent_region_name as region,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         INITCAP(respondent_gender) as gender,

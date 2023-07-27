@@ -52,7 +52,9 @@ class CampaignService:
         # Apply filter 1
         if self.__filter_1:
             self.__df_1 = filters.apply_filter_to_df(
-                df=self.__crud.get_dataframe(), _filter=self.__filter_1
+                df=self.__crud.get_dataframe(),
+                _filter=self.__filter_1,
+                campaign_code=self.__campaign_code,
             )
         else:
             self.__df_1 = self.__crud.get_dataframe()
@@ -60,7 +62,9 @@ class CampaignService:
         # Apply filter 2
         if self.__filter_2:
             self.__df_2 = filters.apply_filter_to_df(
-                df=self.__crud.get_dataframe(), _filter=self.__filter_2
+                df=self.__crud.get_dataframe(),
+                _filter=self.__filter_2,
+                campaign_code=self.__campaign_code,
             )
         else:
             self.__df_2 = self.__crud.get_dataframe()
@@ -175,6 +179,11 @@ class CampaignService:
     ) -> list[dict]:
         """Get df responses sample"""
 
+        # Set column names based on the question code
+        description_column_name = f"q{q_code.value}_description"
+        canonical_code_column_name = f"q{q_code.value}_canonical_code"
+        raw_response_column_name = f"q{q_code.value}_raw_response"
+
         # Do not translate if this function is called while translating texts offline
         if settings.OFFLINE_TRANSLATE_MODE:
             return []
@@ -241,16 +250,6 @@ class CampaignService:
 
             df_tmp = df_1_copy.copy()
 
-            # Set column names based on the question code
-            if q_code == QuestionCode.q2:
-                description_column_name = "q2_description"
-                canonical_code_column_name = "q2_canonical_code"
-                raw_response_column_name = "q2_raw_response"
-            else:
-                description_column_name = "description"
-                canonical_code_column_name = "canonical_code"
-                raw_response_column_name = "raw_response"
-
             df_tmp[description_column_name] = df_tmp[canonical_code_column_name].apply(
                 lambda x: get_descriptions(x, t)
             )
@@ -302,18 +301,11 @@ class CampaignService:
         """Get responses breakdown"""
 
         # Set column names based on question code
-        if q_code == QuestionCode.q2:
-            canonical_code_column_name = "q2_canonical_code"
-            label_column_name = "q2_label"
-            count_column_name = "q2_count"
-            code_column_name = "q2_code"
-            description_column_name = "q2_description"
-        else:
-            canonical_code_column_name = "canonical_code"
-            label_column_name = "label"
-            count_column_name = "count"
-            code_column_name = "code"
-            description_column_name = "description"
+        canonical_code_column_name = f"q{q_code.value}_canonical_code"
+        label_column_name = f"q{q_code.value}_label"
+        count_column_name = f"q{q_code.value}_count"
+        code_column_name = f"q{q_code.value}_code"
+        description_column_name = f"q{q_code.value}_description"
 
         def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
@@ -351,10 +343,6 @@ class CampaignService:
                 df[description_column_name] = df[description_column_name].apply(
                     lambda x: self.__t(text=x, delimiter=",")
                 )
-
-                # Set top level column
-                # df["top_level"] = df["label"].map(
-                #     code_hierarchy.get_mapping_to_top_level(campaign_code=self.__campaign_code))
 
                 # Drop label column
                 df = df.drop([label_column_name], axis=1)
@@ -668,6 +656,9 @@ class CampaignService:
     ):
         """Generate ngrams"""
 
+        # Set column name based on question code
+        tokenized_column_name = f"q{q_code.value}_tokenized"
+
         # Stopwords
         all_stopwords = constants.STOPWORDS
         if self.__language in all_stopwords:
@@ -683,13 +674,7 @@ class CampaignService:
         bigram_count_dict = Counter()
         trigram_count_dict = Counter()
 
-        # Set column name based on question code
-        if q_code == QuestionCode.q2:
-            column_name = "q2_tokenized"
-        else:
-            column_name = "tokenized"
-
-        for words_list in df[column_name]:
+        for words_list in df[tokenized_column_name]:
             # Unigram
             for i in range(len(words_list)):
                 if words_list[i] not in stopwords:
@@ -782,8 +767,12 @@ class CampaignService:
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
-            grouped_by_column_1 = df_1_copy.groupby(column_name)["raw_response"].count()
-            grouped_by_column_2 = df_2_copy.groupby(column_name)["raw_response"].count()
+            grouped_by_column_1 = df_1_copy.groupby(column_name)[
+                "q1_raw_response"
+            ].count()
+            grouped_by_column_2 = df_2_copy.groupby(column_name)[
+                "q1_raw_response"
+            ].count()
 
             # Add count for each unique column value
             names = list(

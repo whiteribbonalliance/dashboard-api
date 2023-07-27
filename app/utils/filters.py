@@ -5,6 +5,7 @@ from pandas import DataFrame
 
 from app import constants
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
 
@@ -28,7 +29,9 @@ def get_default_filter() -> Filter:
     )
 
 
-def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
+def apply_filter_to_df(
+    df: DataFrame, _filter: Filter, campaign_code: CampaignCode
+) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = _filter.countries
@@ -43,59 +46,73 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter) -> DataFrame:
 
     df_copy = df.copy()
 
-    # Filter countries
-    if len(countries) > 0:
-        df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
+    question_codes = [QuestionCode.q1]
+    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
+        question_codes.append(QuestionCode.q2)
 
-    # Filter regions
-    if len(regions) > 0:
-        df_copy = df_copy[df_copy["region"].isin(regions)]
+    # Apply the filter for q1, q2 etc.
+    for q_code in question_codes:
+        # Set column names based on question code
+        canonical_code_column_name = f"q{q_code.value}_canonical_code"
+        lemmatized_column_name = f"q{q_code.value}_lemmatized"
 
-    # Filter response topics
-    if len(response_topics) > 0:
-        if only_responses_from_categories:
-            condition = ~df_copy["canonical_code"].isin(
-                {"xxxx"}
-            )  # dummy series always True
-        else:
-            condition = df_copy["canonical_code"].isin(response_topics) | df_copy[
-                "top_level"
-            ].isin(response_topics)
-        for response_topic in response_topics:
+        # Filter countries
+        if len(countries) > 0:
+            df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
+
+        # Filter regions
+        if len(regions) > 0:
+            df_copy = df_copy[df_copy["region"].isin(regions)]
+
+        # Filter response topics
+        if len(response_topics) > 0:
             if only_responses_from_categories:
-                condition &= df_copy["canonical_code"].str.contains(
-                    r"\b" + response_topic + r"\b", regex=True
-                )
+                condition = ~df_copy[canonical_code_column_name].isin(
+                    {"xxxx"}
+                )  # dummy series always True
             else:
-                condition |= df_copy["canonical_code"].str.contains(
-                    r"\b" + response_topic + r"\b", regex=True
+                condition = df_copy[canonical_code_column_name].isin(
+                    response_topics
+                ) | df_copy["q1_top_level"].isin(response_topics)
+            for response_topic in response_topics:
+                if only_responses_from_categories:
+                    condition &= df_copy[canonical_code_column_name].str.contains(
+                        r"\b" + response_topic + r"\b", regex=True
+                    )
+                else:
+                    condition |= df_copy[canonical_code_column_name].str.contains(
+                        r"\b" + response_topic + r"\b", regex=True
+                    )
+
+            df_copy = df_copy[condition]
+
+        # Filter genders
+        if len(genders) > 0:
+            df_copy = df_copy[df_copy["gender"].isin(genders)]
+
+        # Filter professions
+        if len(professions) > 0:
+            df_copy = df_copy[df_copy["profession"].isin(professions)]
+
+        # Filter keyword
+        if keyword_filter:
+            text_re = r"\b" + re.escape(keyword_filter)
+            df_copy = df_copy[
+                df_copy[lemmatized_column_name].str.contains(text_re, regex=True)
+            ]
+
+        # Filter keyword exclude
+        if keyword_exclude:
+            text_exclude_re = r"\b" + re.escape(keyword_exclude)
+            df_copy = df_copy[
+                ~df_copy[lemmatized_column_name].str.contains(
+                    text_exclude_re, regex=True
                 )
+            ]
 
-        df_copy = df_copy[condition]
-
-    # Filter genders
-    if len(genders) > 0:
-        df_copy = df_copy[df_copy["gender"].isin(genders)]
-
-    # Filter professions
-    if len(professions) > 0:
-        df_copy = df_copy[df_copy["profession"].isin(professions)]
-
-    # Filter keyword
-    if keyword_filter:
-        text_re = r"\b" + re.escape(keyword_filter)
-        df_copy = df_copy[df_copy["lemmatized"].str.contains(text_re, regex=True)]
-
-    # Filter keyword exclude
-    if keyword_exclude:
-        text_exclude_re = r"\b" + re.escape(keyword_exclude)
-        df_copy = df_copy[
-            ~df_copy["lemmatized"].str.contains(text_exclude_re, regex=True)
-        ]
-
-    # Filter ages
-    if len(ages) > 0:
-        df_copy = df_copy[df_copy["age"].isin(ages)]
+        # Filter ages
+        if len(ages) > 0:
+            df_copy = df_copy[df_copy["age"].isin(ages)]
 
     return df_copy
 

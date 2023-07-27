@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 
-@app.task(cron("0 */12 * * *"))
+@app.task(cron("*/3 * * * *"))
 async def do_every_12th_hour():
     """
     Load data from BigQuery
