@@ -7,9 +7,11 @@ import logging
 import os
 
 import numpy as np
+import pandas as pd
 
 from app import constants
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.age import Age
 from app.schemas.country import Country
@@ -87,13 +89,61 @@ def load_campaign_data(campaign_code: CampaignCode):
 
         return np.nan
 
+    def populate_q2_columns(row: pd.Series):
+        """Populate q2 columns"""
+
+        additional_fields = json.loads(row["additional_fields"])
+        q2_response_original_text = additional_fields.get("q2_response_original_text")
+        q2_response_english_text = additional_fields.get("q2_response_english_text")
+        q2_response_lemmatized_text = additional_fields.get(
+            "q2_response_lemmatized_text"
+        )
+        q2_response_nlu_category = additional_fields.get("q2_response_nlu_category")
+        q2_response_original_lang = additional_fields.get("q2_response_original_lang")
+
+        if q2_response_original_text and q2_response_english_text:
+            row[
+                "q2_raw_response"
+            ] = f"{q2_response_original_text} ({q2_response_english_text})"
+        elif q2_response_original_text:
+            row["q2_raw_response"] = q2_response_original_text
+
+        if q2_response_lemmatized_text:
+            row["q2_lemmatized"] = q2_response_lemmatized_text
+        if q2_response_nlu_category:
+            row["q2_canonical_code"] = q2_response_nlu_category
+        if q2_response_original_lang:
+            row["q2_original_language"] = q2_response_original_lang
+
+        return row
+
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
         campaign_code=campaign_code
     )
 
+    # Add additional columns for q2
+    df_responses["q2_raw_response"] = ""
+    df_responses["q2_lemmatized"] = ""
+    df_responses["q2_canonical_code"] = ""
+    df_responses["q2_original_language"] = ""
+    df_responses["q2_response_original_text"] = ""
+
+    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
+        has_q2 = True
+    else:
+        has_q2 = False
+
+    # Populate columns for q2
+    if has_q2:
+        df_responses = df_responses.apply(populate_q2_columns, axis=1)
+
     # Add tokenized column
     df_responses["tokenized"] = df_responses["lemmatized"].apply(lambda x: x.split(" "))
+    if campaign_code == CampaignCode.mexico:
+        df_responses["q2_tokenized"] = df_responses["q2_lemmatized"].apply(
+            lambda x: x.split(" ")
+        )
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
@@ -116,6 +166,10 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Remove the UNCODABLE responses
     df_responses = df_responses[~df_responses["canonical_code"].isin(["UNCODABLE"])]
+    if has_q2:
+        df_responses = df_responses[
+            ~df_responses["q2_canonical_code"].isin(["UNCODABLE"])
+        ]
 
     # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
     if campaign_code == CampaignCode.what_young_people_want:
@@ -128,6 +182,10 @@ def load_campaign_data(campaign_code: CampaignCode):
     df_responses["canonical_code"] = df_responses["canonical_code"].apply(
         lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
     )
+    if has_q2:
+        df_responses["q2_canonical_code"] = df_responses["q2_canonical_code"].apply(
+            lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
+        )
 
     # Add top_level column
     df_responses["top_level"] = df_responses["canonical_code"].apply(get_top_level)
@@ -161,7 +219,10 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_countries(countries=countries)
 
     # Get responses sample column ids
-    column_ids = [col["id"] for col in campaign_crud.get_responses_sample_columns()]
+    column_ids = [
+        col["id"]
+        for col in campaign_crud.get_responses_sample_columns(q_code=QuestionCode.q1)
+    ]
 
     # Set genders
     genders = []
@@ -191,19 +252,36 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 
     df = campaign_crud.get_dataframe()
 
+    # Question 1 ngrams
     (
-        unigram_count_dict,
-        bigram_count_dict,
-        trigram_count_dict,
-    ) = campaign_service.generate_ngrams(df=df)
+        q1_unigram_count_dict,
+        q1_bigram_count_dict,
+        q1_trigram_count_dict,
+    ) = campaign_service.generate_ngrams(df=df, q_code=QuestionCode.q1)
 
-    ngrams_unfiltered = {
-        "unigram": unigram_count_dict,
-        "bigram": bigram_count_dict,
-        "trigram": trigram_count_dict,
+    q1_ngrams_unfiltered = {
+        "unigram": q1_unigram_count_dict,
+        "bigram": q1_bigram_count_dict,
+        "trigram": q1_trigram_count_dict,
     }
 
-    campaign_crud.set_ngrams_unfiltered(ngrams_unfiltered=ngrams_unfiltered)
+    campaign_crud.set_q1_ngrams_unfiltered(ngrams_unfiltered=q1_ngrams_unfiltered)
+
+    if campaign_code == CampaignCode.mexico:
+        # Question 2 ngrams
+        (
+            q2_unigram_count_dict,
+            q2_bigram_count_dict,
+            q2_trigram_count_dict,
+        ) = campaign_service.generate_ngrams(df=df, q_code=QuestionCode.q2)
+
+        q2_ngrams_unfiltered = {
+            "unigram": q2_unigram_count_dict,
+            "bigram": q2_bigram_count_dict,
+            "trigram": q2_trigram_count_dict,
+        }
+
+        campaign_crud.set_q2_ngrams_unfiltered(ngrams_unfiltered=q2_ngrams_unfiltered)
 
 
 def load_all_campaigns_data():

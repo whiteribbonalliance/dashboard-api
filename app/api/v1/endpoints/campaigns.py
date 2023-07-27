@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.api import dependencies
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -12,6 +13,7 @@ from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
+from app import constants
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -40,6 +42,11 @@ async def read_campaign(
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
+    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
+        has_q2 = True
+    else:
+        has_q2 = False
+
     # Create service
     campaign_service = CampaignService(
         campaign_code=campaign_code,
@@ -50,20 +57,47 @@ async def read_campaign(
 
     # Top words and phrases
     top_words_and_phrases = {
-        "top_words": campaign_service.get_top_words(),
-        "two_word_phrases": campaign_service.get_two_word_phrases(),
-        "three_word_phrases": campaign_service.get_three_word_phrases(),
-        "wordcloud_words": campaign_service.get_wordcloud_words(),
+        "q1": {
+            "top_words": campaign_service.get_top_words(QuestionCode.q1),
+            "two_word_phrases": campaign_service.get_two_word_phrases(QuestionCode.q1),
+            "three_word_phrases": campaign_service.get_three_word_phrases(
+                QuestionCode.q1
+            ),
+            "wordcloud_words": campaign_service.get_wordcloud_words(QuestionCode.q1),
+        },
+        "q2": {
+            "top_words": campaign_service.get_top_words(QuestionCode.q2),
+            "two_word_phrases": campaign_service.get_two_word_phrases(QuestionCode.q2),
+            "three_word_phrases": campaign_service.get_three_word_phrases(
+                QuestionCode.q2
+            ),
+            "wordcloud_words": campaign_service.get_wordcloud_words(QuestionCode.q2),
+        }
+        if has_q2
+        else {},
     }
 
     # Responses sample
     responses_sample = {
-        "columns": campaign_service.get_responses_sample_columns(),
-        "data": campaign_service.get_responses_sample(),
+        "q1": {
+            "columns": campaign_service.get_responses_sample_columns(QuestionCode.q1),
+            "data": campaign_service.get_responses_sample(QuestionCode.q1),
+        },
+        "q2": {
+            "columns": campaign_service.get_responses_sample_columns(QuestionCode.q2),
+            "data": campaign_service.get_responses_sample(QuestionCode.q2),
+        }
+        if has_q2
+        else {},
     }
 
     # Responses breakdown
-    responses_breakdown = campaign_service.get_responses_breakdown()
+    responses_breakdown = {
+        "q1": campaign_service.get_responses_breakdown(QuestionCode.q1),
+        "q2": campaign_service.get_responses_breakdown(QuestionCode.q2)
+        if has_q2
+        else {},
+    }
 
     # Histogram
     histogram = campaign_service.get_histogram()

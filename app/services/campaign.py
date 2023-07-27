@@ -14,6 +14,7 @@ from app import constants
 from app.core.settings import settings
 from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.schemas.age import Age
 from app.schemas.country import Country
 from app.schemas.filter import Filter
@@ -88,30 +89,51 @@ class CampaignService:
         ):
             self.__filter_2_use_ngrams_unfiltered = False
 
-        # Ngrams 1
+        # Q1 ngrams 1
         if self.__filter_1:
-            self.__ngrams_1 = self.__get_ngrams_1(
+            self.__q1_ngrams_1 = self.__get_ngrams_1(
                 only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
                 keyword=self.__filter_1.keyword_filter,
+                q_code=QuestionCode.q1,
             )
         else:
-            self.__ngrams_1 = self.__get_ngrams_1(
+            self.__q1_ngrams_1 = self.__get_ngrams_1(
                 only_multi_word_phrases_containing_filter_term=False,
                 keyword="",
+                q_code=QuestionCode.q1,
             )
 
-        # Ngrams 2
-        self.__ngrams_2 = self.__get_ngrams_2()
+        # Q1 ngrams 2
+        self.__q1_ngrams_2 = self.__get_ngrams_2(q_code=QuestionCode.q1)
+
+        # Q2 ngrams 1
+        if self.__filter_1:
+            self.__q2_ngrams_1 = self.__get_ngrams_1(
+                only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
+                keyword=self.__filter_1.keyword_filter,
+                q_code=QuestionCode.q2,
+            )
+        else:
+            self.__q2_ngrams_1 = self.__get_ngrams_1(
+                only_multi_word_phrases_containing_filter_term=False,
+                keyword="",
+                q_code=QuestionCode.q2,
+            )
+
+        # Q2 ngrams 2
+        self.__q2_ngrams_2 = self.__get_ngrams_2(q_code=QuestionCode.q2)
 
         # Check if filters are identical or not
         self.filters_are_identical = filters.check_if_filters_are_identical(
             filter_1=filter_1, filter_2=filter_2
         )
 
-    def get_responses_sample_columns(self) -> list[dict]:
+    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
         """Get responses sample columns"""
 
-        responses_sample_columns = self.__crud.get_responses_sample_columns()
+        responses_sample_columns = self.__crud.get_responses_sample_columns(
+            q_code=q_code
+        )
 
         # Translate column names
         for column in responses_sample_columns:
@@ -122,20 +144,22 @@ class CampaignService:
 
         return responses_sample_columns
 
-    def get_responses_sample(self) -> list[dict]:
+    def get_responses_sample(self, q_code: QuestionCode) -> list[dict]:
         """Get responses sample"""
 
         # Get copy to not modify original
         df_1_copy = self.__get_df_1_copy()
 
-        response_sample_1 = self.__get_df_responses_sample(df=df_1_copy)
+        response_sample_1 = self.__get_df_responses_sample(df=df_1_copy, q_code=q_code)
 
         # Only set responses_sample_2 if filter 2 was applied
         if self.__filter_2:
             # Get copy to not modify original
             df_2_copy = self.__get_df_2_copy()
 
-            response_sample_2 = self.__get_df_responses_sample(df=df_2_copy)
+            response_sample_2 = self.__get_df_responses_sample(
+                df=df_2_copy, q_code=q_code
+            )
         else:
             response_sample_2 = []
 
@@ -146,7 +170,9 @@ class CampaignService:
 
         return responses_breakdown
 
-    def __get_df_responses_sample(self, df: pd.DataFrame) -> list[dict]:
+    def __get_df_responses_sample(
+        self, df: pd.DataFrame, q_code: QuestionCode
+    ) -> list[dict]:
         """Get df responses sample"""
 
         # Do not translate if this function is called while translating texts offline
@@ -170,7 +196,9 @@ class CampaignService:
                 n_sample = len(df.index)
             df_1_copy = df.sample(n=n_sample, random_state=1)
 
-        column_ids = [col["id"] for col in self.__crud.get_responses_sample_columns()]
+        column_ids = [
+            col["id"] for col in self.__crud.get_responses_sample_columns(q_code=q_code)
+        ]
 
         def get_descriptions(code: str, t: Callable) -> str:
             """Get descriptions"""
@@ -213,14 +241,24 @@ class CampaignService:
 
             df_tmp = df_1_copy.copy()
 
-            df_tmp["description"] = df_tmp["canonical_code"].apply(
+            # Set column names based on the question code
+            if q_code == QuestionCode.q2:
+                description_column_name = "q2_description"
+                canonical_code_column_name = "q2_canonical_code"
+                raw_response_column_name = "q2_raw_response"
+            else:
+                description_column_name = "description"
+                canonical_code_column_name = "canonical_code"
+                raw_response_column_name = "raw_response"
+
+            df_tmp[description_column_name] = df_tmp[canonical_code_column_name].apply(
                 lambda x: get_descriptions(x, t)
             )
 
             # Translate column data
             for column_id in column_ids:
                 # Skip 'description' as it is already translated
-                if column_id == "description":
+                if column_id == description_column_name:
                     continue
 
                 # Do not translate age e.g. '25-34'
@@ -229,7 +267,7 @@ class CampaignService:
                         lambda x: t(x) if helpers.contains_letters(x) else x
                     )
 
-                if column_id == "raw_response":
+                if column_id == raw_response_column_name:
                     # giz: Do not translate 'raw_response' if the language is 'es'
                     # giz: For other languages, only translate text between parentheses
                     if self.__campaign_code == CampaignCode.mexico:
@@ -260,15 +298,29 @@ class CampaignService:
 
         return responses_sample_data
 
-    def get_responses_breakdown(self) -> list:
+    def get_responses_breakdown(self, q_code: QuestionCode) -> list:
         """Get responses breakdown"""
+
+        # Set column names based on question code
+        if q_code == QuestionCode.q2:
+            canonical_code_column_name = "q2_canonical_code"
+            label_column_name = "q2_label"
+            count_column_name = "q2_count"
+            code_column_name = "q2_code"
+            description_column_name = "q2_description"
+        else:
+            canonical_code_column_name = "canonical_code"
+            label_column_name = "label"
+            count_column_name = "count"
+            code_column_name = "code"
+            description_column_name = "description"
 
         def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
 
             # Count occurrence of responses
             counter = Counter()
-            for canonical_code in df["canonical_code"]:
+            for canonical_code in df[canonical_code_column_name]:
                 for c in canonical_code.split("/"):
                     counter[c] += 1
 
@@ -279,25 +331,25 @@ class CampaignService:
                 )
 
                 # Set column names
-                df.columns = ["label", "count"]
+                df.columns = [label_column_name, count_column_name]
 
                 # Set code
-                df["code"] = df["label"].map(
+                df[code_column_name] = df[label_column_name].map(
                     code_hierarchy.get_mapping_to_code(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Set description column
-                df["description"] = df["label"].map(
+                df[description_column_name] = df[label_column_name].map(
                     code_hierarchy.get_mapping_to_description(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Translate descriptions
-                df["description"] = df["description"].apply(
-                    lambda description: self.__t(text=description, delimiter=",")
+                df[description_column_name] = df[description_column_name].apply(
+                    lambda x: self.__t(text=x, delimiter=",")
                 )
 
                 # Set top level column
@@ -305,7 +357,7 @@ class CampaignService:
                 #     code_hierarchy.get_mapping_to_top_level(campaign_code=self.__campaign_code))
 
                 # Drop label column
-                df = df.drop(["label"], axis=1)
+                df = df.drop([label_column_name], axis=1)
 
                 # Drop rows with nan values
                 df = df.dropna()
@@ -313,7 +365,7 @@ class CampaignService:
                 # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
                 if self.__campaign_code == CampaignCode.what_young_people_want:
                     n_rows_keep = 5
-                    df = df.sort_values(by="count", ascending=False)
+                    df = df.sort_values(by=count_column_name, ascending=False)
                     df = df.head(n_rows_keep)
             else:
                 df = pd.DataFrame()
@@ -331,15 +383,19 @@ class CampaignService:
         responses_breakdown_2 = get_df_responses_breakdown(df=df_2_copy)
 
         # Get all unique codes from responses breakdown
-        codes_1 = [x["code"] for x in responses_breakdown_1]
-        codes_2 = [x["code"] for x in responses_breakdown_2]
+        codes_1 = [x[code_column_name] for x in responses_breakdown_1]
+        codes_2 = [x[code_column_name] for x in responses_breakdown_2]
         all_codes = set(codes_1 + codes_2)
 
         # Responses breakdown
         responses_breakdown = []
         for code in all_codes:
-            responses_1 = [x for x in responses_breakdown_1 if x["code"] == code]
-            responses_2 = [x for x in responses_breakdown_2 if x["code"] == code]
+            responses_1 = [
+                x for x in responses_breakdown_1 if x[code_column_name] == code
+            ]
+            responses_2 = [
+                x for x in responses_breakdown_2 if x[code_column_name] == code
+            ]
 
             if responses_1:
                 response_1 = responses_1[0]
@@ -354,16 +410,16 @@ class CampaignService:
             # Set description
             description = ""
             if response_1:
-                description = response_1["description"]
+                description = response_1[description_column_name]
             if response_2:
-                description = response_2["description"]
+                description = response_2[description_column_name]
 
             responses_breakdown.append(
                 {
-                    "count_1": response_1.get("count") if response_1 else 0,
-                    "count_2": response_2.get("count") if response_2 else 0,
-                    "code": code,
-                    "description": description,
+                    "count_1": response_1.get(count_column_name) if response_1 else 0,
+                    "count_2": response_2.get(count_column_name) if response_2 else 0,
+                    f"{code_column_name}": code,
+                    f"{description_column_name}": description,
                 }
             )
 
@@ -374,10 +430,21 @@ class CampaignService:
 
         return responses_breakdown
 
-    def get_wordcloud_words(self) -> list[dict]:
+    def get_wordcloud_words(self, q_code: QuestionCode) -> list[dict]:
         """Get wordcloud words"""
 
-        unigram_count_dict, bigram_count_dict, trigram_count_dict = self.__ngrams_1
+        if q_code == QuestionCode.q2:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.__q2_ngrams_1
+        else:
+            (
+                unigram_count_dict,
+                bigram_count_dict,
+                trigram_count_dict,
+            ) = self.__q1_ngrams_1
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -405,11 +472,16 @@ class CampaignService:
 
         return wordcloud_words_list
 
-    def get_top_words(self) -> list:
+    def get_top_words(self, q_code: QuestionCode) -> list:
         """Get top words"""
 
-        unigram_count_dict_1 = self.__ngrams_1[0]
-        unigram_count_dict_2 = self.__ngrams_2[0]
+        # Set unigram count dict based on question code
+        if q_code == QuestionCode.q2:
+            unigram_count_dict_1 = self.__q2_ngrams_1[0]
+            unigram_count_dict_2 = self.__q2_ngrams_2[0]
+        else:
+            unigram_count_dict_1 = self.__q1_ngrams_1[0]
+            unigram_count_dict_2 = self.__q1_ngrams_2[0]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=unigram_count_dict_1,
@@ -418,11 +490,15 @@ class CampaignService:
 
         return top_words
 
-    def get_two_word_phrases(self) -> list:
+    def get_two_word_phrases(self, q_code: QuestionCode) -> list:
         """Get two word phrases"""
 
-        bigram_count_dict_1 = self.__ngrams_1[1]
-        bigram_count_dict_2 = self.__ngrams_2[1]
+        if q_code == QuestionCode.q2:
+            bigram_count_dict_1 = self.__q2_ngrams_1[1]
+            bigram_count_dict_2 = self.__q2_ngrams_2[1]
+        else:
+            bigram_count_dict_1 = self.__q1_ngrams_1[1]
+            bigram_count_dict_2 = self.__q1_ngrams_2[1]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=bigram_count_dict_1,
@@ -431,11 +507,15 @@ class CampaignService:
 
         return top_words
 
-    def get_three_word_phrases(self) -> list:
+    def get_three_word_phrases(self, q_code: QuestionCode) -> list:
         """Get three word phrases"""
 
-        trigram_count_dict_1 = self.__ngrams_1[2]
-        trigram_count_dict_2 = self.__ngrams_2[2]
+        if q_code == QuestionCode.q2:
+            trigram_count_dict_1 = self.__q2_ngrams_1[2]
+            trigram_count_dict_2 = self.__q2_ngrams_2[2]
+        else:
+            trigram_count_dict_1 = self.__q1_ngrams_1[2]
+            trigram_count_dict_2 = self.__q1_ngrams_2[2]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=trigram_count_dict_1,
@@ -582,6 +662,7 @@ class CampaignService:
     def generate_ngrams(
         self,
         df: pd.DataFrame,
+        q_code: QuestionCode,
         only_multi_word_phrases_containing_filter_term: bool = False,
         keyword: str = "",
     ):
@@ -602,7 +683,13 @@ class CampaignService:
         bigram_count_dict = Counter()
         trigram_count_dict = Counter()
 
-        for words_list in df["tokenized"]:
+        # Set column name based on question code
+        if q_code == QuestionCode.q2:
+            column_name = "q2_tokenized"
+        else:
+            column_name = "tokenized"
+
+        for words_list in df[column_name]:
             # Unigram
             for i in range(len(words_list)):
                 if words_list[i] not in stopwords:
@@ -645,19 +732,16 @@ class CampaignService:
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
     def __get_ngrams_1(
-        self, only_multi_word_phrases_containing_filter_term: bool, keyword: str
+        self,
+        only_multi_word_phrases_containing_filter_term: bool,
+        keyword: str,
+        q_code: QuestionCode,
     ) -> tuple:
         """Get ngrams 1"""
 
         # Return the cached ngrams (this is when filter 1 was not requested)
         if self.__filter_1_use_ngrams_unfiltered:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.__crud.get_ngrams_unfiltered()
-
-            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+            return self.__crud.get_ngrams_unfiltered(q_code=q_code)
 
         (
             unigram_count_dict,
@@ -667,28 +751,23 @@ class CampaignService:
             df=self.__get_df_1_copy(),
             only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term,
             keyword=keyword,
+            q_code=q_code,
         )
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def __get_ngrams_2(self) -> tuple:
+    def __get_ngrams_2(self, q_code: QuestionCode) -> tuple:
         """Get ngrams 2"""
 
         # Return the cached ngrams (this is when filter 2 was not requested)
         if self.__filter_2_use_ngrams_unfiltered:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.__crud.get_ngrams_unfiltered()
-
-            return unigram_count_dict, bigram_count_dict, trigram_count_dict
+            return self.__crud.get_ngrams_unfiltered(q_code=q_code)
 
         (
             unigram_count_dict,
             bigram_count_dict,
             trigram_count_dict,
-        ) = self.generate_ngrams(df=self.__get_df_2_copy())
+        ) = self.generate_ngrams(df=self.__get_df_2_copy(), q_code=q_code)
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 

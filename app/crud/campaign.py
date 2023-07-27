@@ -9,6 +9,7 @@ import pandas as pd
 
 from app import databank
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.schemas.age import Age
 from app.schemas.country import Country
 from app.schemas.gender import Gender
@@ -87,10 +88,19 @@ class CampaignCRUD:
 
         return copy.deepcopy(only_multi_word_phrases_containing_filter_term_options)
 
-    def get_responses_sample_columns(self) -> list[dict]:
+    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
         """Get responses sample columns"""
 
-        responses_sample_columns = self.__databank.responses_sample_columns
+        if q_code == QuestionCode.q2:
+            responses_sample_columns = self.__databank.responses_sample_columns
+            for column in responses_sample_columns:
+                if column.get("id") == "raw_response":
+                    column["id"] = "q2_raw_response"
+                if column.get("id") == "description":
+                    column["id"] = "q2_description"
+
+        else:
+            responses_sample_columns = self.__databank.responses_sample_columns
 
         return copy.deepcopy(responses_sample_columns)
 
@@ -117,10 +127,18 @@ class CampaignCRUD:
 
         return copy.copy(extra_stopwords)
 
-    def get_ngrams_unfiltered(self) -> tuple:
+    def get_ngrams_unfiltered(self, q_code: QuestionCode) -> tuple:
         """Get ngrams unfiltered"""
 
-        ngrams_unfiltered = self.__databank.ngrams_unfiltered
+        # Get ngrams unfiltered based on the question code
+        if q_code == QuestionCode.q2:
+            ngrams_unfiltered = self.__databank.q2_ngrams_unfiltered
+        else:
+            ngrams_unfiltered = self.__databank.q1_ngrams_unfiltered
+
+        if not ngrams_unfiltered:
+            return ()
+
         unigram_count_dict = ngrams_unfiltered.get("unigram")
         bigram_count_dict = ngrams_unfiltered.get("bigram")
         trigram_count_dict = ngrams_unfiltered.get("trigram")
@@ -145,10 +163,15 @@ class CampaignCRUD:
 
         return dataframe
 
-    def set_ngrams_unfiltered(self, ngrams_unfiltered: dict):
-        """Set ngrams unfiltered"""
+    def set_q1_ngrams_unfiltered(self, ngrams_unfiltered: dict):
+        """Set q1 ngrams unfiltered"""
 
-        self.__databank.ngrams_unfiltered = ngrams_unfiltered
+        self.__databank.q1_ngrams_unfiltered = ngrams_unfiltered
+
+    def set_q2_ngrams_unfiltered(self, ngrams_unfiltered: dict):
+        """Set q2 ngrams unfiltered"""
+
+        self.__databank.q2_ngrams_unfiltered = ngrams_unfiltered
 
     def set_ages(self, ages: list[Age]):
         """Set ages"""
