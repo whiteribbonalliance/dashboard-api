@@ -2,6 +2,7 @@ import re
 
 from app import constants
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 
 
 def contains_letters(text: str):

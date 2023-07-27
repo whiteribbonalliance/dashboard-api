@@ -27,6 +27,7 @@ from app.utils import code_hierarchy
 from app.utils import filters
 from app.utils import globals
 from app.utils import helpers
+from app.utils import q_col_names
 
 
 class CampaignService:
@@ -179,10 +180,10 @@ class CampaignService:
     ) -> list[dict]:
         """Get df responses sample"""
 
-        # Set column names based on the question code
-        description_column_name = f"q{q_code.value}_description"
-        canonical_code_column_name = f"q{q_code.value}_canonical_code"
-        raw_response_column_name = f"q{q_code.value}_raw_response"
+        # Set column names based on question code
+        description_col_name = q_col_names.get_description_col_name(q_code=q_code)
+        canonical_code_col_name = q_col_names.get_canonical_code_col_name(q_code=q_code)
+        raw_response_col_name = q_col_names.get_raw_response_col_name(q_code=q_code)
 
         # Do not translate if this function is called while translating texts offline
         if settings.OFFLINE_TRANSLATE_MODE:
@@ -250,14 +251,14 @@ class CampaignService:
 
             df_tmp = df_1_copy.copy()
 
-            df_tmp[description_column_name] = df_tmp[canonical_code_column_name].apply(
+            df_tmp[description_col_name] = df_tmp[canonical_code_col_name].apply(
                 lambda x: get_descriptions(x, t)
             )
 
             # Translate column data
             for column_id in column_ids:
                 # Skip 'description' as it is already translated
-                if column_id == description_column_name:
+                if column_id == description_col_name:
                     continue
 
                 # Do not translate age e.g. '25-34'
@@ -266,7 +267,7 @@ class CampaignService:
                         lambda x: t(x) if helpers.contains_letters(x) else x
                     )
 
-                if column_id == raw_response_column_name:
+                if column_id == raw_response_col_name:
                     # giz: Do not translate 'raw_response' if the language is 'es'
                     # giz: For other languages, only translate text between parentheses
                     if self.__campaign_code == CampaignCode.mexico:
@@ -301,18 +302,18 @@ class CampaignService:
         """Get responses breakdown"""
 
         # Set column names based on question code
-        canonical_code_column_name = f"q{q_code.value}_canonical_code"
-        label_column_name = f"q{q_code.value}_label"
-        count_column_name = f"q{q_code.value}_count"
-        code_column_name = f"q{q_code.value}_code"
-        description_column_name = f"q{q_code.value}_description"
+        canonical_code_col_name = q_col_names.get_canonical_code_col_name(q_code=q_code)
+        label_col_name = q_col_names.get_label_col_name(q_code=q_code)
+        count_col_name = q_col_names.get_count_col_name(q_code=q_code)
+        code_col_name = q_col_names.get_code_col_name(q_code=q_code)
+        description_col_name = q_col_names.get_description_col_name(q_code=q_code)
 
         def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
 
             # Count occurrence of responses
             counter = Counter()
-            for canonical_code in df[canonical_code_column_name]:
+            for canonical_code in df[canonical_code_col_name]:
                 for c in canonical_code.split("/"):
                     counter[c] += 1
 
@@ -323,29 +324,29 @@ class CampaignService:
                 )
 
                 # Set column names
-                df.columns = [label_column_name, count_column_name]
+                df.columns = [label_col_name, count_col_name]
 
                 # Set code
-                df[code_column_name] = df[label_column_name].map(
+                df[code_col_name] = df[label_col_name].map(
                     code_hierarchy.get_mapping_to_code(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Set description column
-                df[description_column_name] = df[label_column_name].map(
+                df[description_col_name] = df[label_col_name].map(
                     code_hierarchy.get_mapping_to_description(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Translate descriptions
-                df[description_column_name] = df[description_column_name].apply(
+                df[description_col_name] = df[description_col_name].apply(
                     lambda x: self.__t(text=x, delimiter=",")
                 )
 
                 # Drop label column
-                df = df.drop([label_column_name], axis=1)
+                df = df.drop([label_col_name], axis=1)
 
                 # Drop rows with nan values
                 df = df.dropna()
@@ -353,7 +354,7 @@ class CampaignService:
                 # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
                 if self.__campaign_code == CampaignCode.what_young_people_want:
                     n_rows_keep = 5
-                    df = df.sort_values(by=count_column_name, ascending=False)
+                    df = df.sort_values(by=count_col_name, ascending=False)
                     df = df.head(n_rows_keep)
             else:
                 df = pd.DataFrame()
@@ -371,19 +372,15 @@ class CampaignService:
         responses_breakdown_2 = get_df_responses_breakdown(df=df_2_copy)
 
         # Get all unique codes from responses breakdown
-        codes_1 = [x[code_column_name] for x in responses_breakdown_1]
-        codes_2 = [x[code_column_name] for x in responses_breakdown_2]
+        codes_1 = [x[code_col_name] for x in responses_breakdown_1]
+        codes_2 = [x[code_col_name] for x in responses_breakdown_2]
         all_codes = set(codes_1 + codes_2)
 
         # Responses breakdown
         responses_breakdown = []
         for code in all_codes:
-            responses_1 = [
-                x for x in responses_breakdown_1 if x[code_column_name] == code
-            ]
-            responses_2 = [
-                x for x in responses_breakdown_2 if x[code_column_name] == code
-            ]
+            responses_1 = [x for x in responses_breakdown_1 if x[code_col_name] == code]
+            responses_2 = [x for x in responses_breakdown_2 if x[code_col_name] == code]
 
             if responses_1:
                 response_1 = responses_1[0]
@@ -398,16 +395,16 @@ class CampaignService:
             # Set description
             description = ""
             if response_1:
-                description = response_1[description_column_name]
+                description = response_1[description_col_name]
             if response_2:
-                description = response_2[description_column_name]
+                description = response_2[description_col_name]
 
             responses_breakdown.append(
                 {
-                    "count_1": response_1.get(count_column_name) if response_1 else 0,
-                    "count_2": response_2.get(count_column_name) if response_2 else 0,
-                    f"{code_column_name}": code,
-                    f"{description_column_name}": description,
+                    "count_1": response_1.get(count_col_name) if response_1 else 0,
+                    "count_2": response_2.get(count_col_name) if response_2 else 0,
+                    f"{code_col_name}": code,
+                    f"{description_col_name}": description,
                 }
             )
 

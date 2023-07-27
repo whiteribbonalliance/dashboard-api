@@ -6,11 +6,12 @@ from google.cloud import bigquery
 from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
+
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
-from app import constants
 from app.utils import helpers
+from app.utils import q_col_names
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -90,9 +91,13 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
 
     # Add additional columns for q2
     if helpers.campaign_has_q2(campaign_code=campaign_code):
-        df_responses[f"q{QuestionCode.q2.value}_raw_response"] = ""
-        df_responses[f"q{QuestionCode.q2.value}_lemmatized"] = ""
-        df_responses[f"q{QuestionCode.q2.value}_canonical_code"] = ""
-        df_responses[f"q{QuestionCode.q2.value}_original_language"] = ""
+        df_responses[q_col_names.get_raw_response_col_name(q_code=QuestionCode.q2)] = ""
+        df_responses[q_col_names.get_lemmatized_col_name(q_code=QuestionCode.q2)] = ""
+        df_responses[
+            q_col_names.get_canonical_code_col_name(q_code=QuestionCode.q2)
+        ] = ""
+        df_responses[
+            q_col_names.get_original_language_col_name(q_code=QuestionCode.q2)
+        ] = ""
 
     return df_responses

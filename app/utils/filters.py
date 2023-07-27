@@ -9,6 +9,7 @@ from app.enums.question_code import QuestionCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
 from app.utils import helpers
+from app.utils import q_col_names
 
 inflect_engine = inflect.engine()
 
@@ -76,8 +77,10 @@ def apply_filter_to_df(
             continue
 
         # Set column names based on question code
-        canonical_code_column_name = f"q{q_code.value}_canonical_code"
-        lemmatized_column_name = f"q{q_code.value}_lemmatized"
+        canonical_code_column_name = q_col_names.get_canonical_code_col_name(
+            q_code=q_code
+        )
+        lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
 
         # Filter response topics
         if len(response_topics) > 0:

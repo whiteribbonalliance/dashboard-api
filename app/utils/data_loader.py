@@ -26,6 +26,7 @@ from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
 from app.utils import globals
 from app.utils import helpers
+from app.utils import q_col_names
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -37,6 +38,19 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     :param campaign_code: The campaign code
     """
+
+    q1_lemmatized_col_name = q_col_names.get_lemmatized_col_name(q_code=QuestionCode.q1)
+    q2_lemmatized_col_name = q_col_names.get_lemmatized_col_name(q_code=QuestionCode.q2)
+
+    q1_canonical_code_col_name = q_col_names.get_canonical_code_col_name(
+        q_code=QuestionCode.q1
+    )
+    q2_canonical_code_col_name = q_col_names.get_canonical_code_col_name(
+        q_code=QuestionCode.q2
+    )
+
+    q1_top_level_col_name = q_col_names.get_top_level_col_name(q_code=QuestionCode.q1)
+    q2_top_level_col_name = q_col_names.get_top_level_col_name(q_code=QuestionCode.q2)
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
@@ -90,31 +104,48 @@ def load_campaign_data(campaign_code: CampaignCode):
 
         return np.nan
 
-    def populate_q2_columns(row: pd.Series):
-        """Populate q2 columns"""
+    def populate_columns(row: pd.Series, q_code: QuestionCode):
+        """Populate columns"""
 
         additional_fields = json.loads(row["additional_fields"])
-        q2_response_original_text = additional_fields.get("q2_response_original_text")
-        q2_response_english_text = additional_fields.get("q2_response_english_text")
-        q2_response_lemmatized_text = additional_fields.get(
-            "q2_response_lemmatized_text"
+
+        response_original_text = additional_fields.get(
+            f"q{q_code.value}_response_original_text"
         )
-        q2_response_nlu_category = additional_fields.get("q2_response_nlu_category")
-        q2_response_original_lang = additional_fields.get("q2_response_original_lang")
+        response_english_text = additional_fields.get(
+            f"q{q_code.value}_response_english_text"
+        )
+        response_lemmatized_text = additional_fields.get(
+            f"q{q_code.value}_response_lemmatized_text"
+        )
+        response_nlu_category = additional_fields.get(
+            f"q{q_code.value}_response_nlu_category"
+        )
+        response_original_lang = additional_fields.get(
+            f"q{q_code.value}_response_original_lang"
+        )
 
-        if q2_response_original_text and q2_response_english_text:
+        if response_original_text and response_english_text:
             row[
-                "q2_raw_response"
-            ] = f"{q2_response_original_text} ({q2_response_english_text})"
-        elif q2_response_original_text:
-            row["q2_raw_response"] = q2_response_original_text
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = f"{response_original_text} ({response_english_text})"
+        elif response_original_text:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = response_original_text
 
-        if q2_response_lemmatized_text:
-            row["q2_lemmatized"] = q2_response_lemmatized_text
-        if q2_response_nlu_category:
-            row["q2_canonical_code"] = q2_response_nlu_category
-        if q2_response_original_lang:
-            row["q2_original_language"] = q2_response_original_lang
+        if response_lemmatized_text:
+            row[
+                q_col_names.get_lemmatized_col_name(q_code=q_code)
+            ] = response_lemmatized_text
+        if response_nlu_category:
+            row[
+                q_col_names.get_canonical_code_col_name(q_code=q_code)
+            ] = response_nlu_category
+        if response_original_lang:
+            row[
+                q_col_names.get_original_language_col_name(q_code=q_code)
+            ] = response_original_lang
 
         return row
 
@@ -123,20 +154,23 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
+    # Check if campaign has Q2
     has_q2 = helpers.campaign_has_q2(campaign_code=campaign_code)
 
     # Populate columns for q2
     if has_q2:
-        df_responses = df_responses.apply(populate_q2_columns, axis=1)
+        df_responses = df_responses.apply(
+            lambda x: populate_columns(x, QuestionCode.q2), axis=1
+        )
 
     # Add tokenized column
-    df_responses["q1_tokenized"] = df_responses["q1_lemmatized"].apply(
-        lambda x: x.split(" ")
-    )
+    df_responses[
+        q_col_names.get_tokenized_col_name(q_code=QuestionCode.q1)
+    ] = df_responses[q1_lemmatized_col_name].apply(lambda x: x.split(" "))
     if has_q2:
-        df_responses["q2_tokenized"] = df_responses["q2_lemmatized"].apply(
-            lambda x: x.split(" ")
-        )
+        df_responses[
+            q_col_names.get_tokenized_col_name(q_code=QuestionCode.q2)
+        ] = df_responses[q2_lemmatized_col_name].apply(lambda x: x.split(" "))
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
@@ -158,36 +192,38 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_ages(ages=ages)
 
     # Remove the UNCODABLE responses
-    df_responses = df_responses[~df_responses["q1_canonical_code"].isin(["UNCODABLE"])]
+    df_responses = df_responses[
+        ~df_responses[q1_canonical_code_col_name].isin(["UNCODABLE"])
+    ]
     if has_q2:
         df_responses = df_responses[
-            ~df_responses["q2_canonical_code"].isin(["UNCODABLE"])
+            ~df_responses[q2_canonical_code_col_name].isin(["UNCODABLE"])
         ]
 
     # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
     if campaign_code == CampaignCode.what_young_people_want:
         _map = {"ENVIRONMENT": "SAFETY"}
-        df_responses["q1_canonical_code"] = df_responses["q1_canonical_code"].apply(
-            lambda x: _map.get(x, x)
-        )
+        df_responses[q1_canonical_code_col_name] = df_responses[
+            q1_canonical_code_col_name
+        ].apply(lambda x: _map.get(x, x))
 
     # Rename canonical_code OTHERQUESTIONABLE to NOTRELATED
-    df_responses["q1_canonical_code"] = df_responses["q1_canonical_code"].apply(
-        lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
-    )
+    df_responses[q1_canonical_code_col_name] = df_responses[
+        q1_canonical_code_col_name
+    ].apply(lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x)
     if has_q2:
-        df_responses["q2_canonical_code"] = df_responses["q2_canonical_code"].apply(
-            lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
-        )
+        df_responses[q2_canonical_code_col_name] = df_responses[
+            q2_canonical_code_col_name
+        ].apply(lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x)
 
     # Add top_level column
-    df_responses["q1_top_level"] = df_responses["q1_canonical_code"].apply(
-        get_top_level
-    )
+    df_responses[q1_top_level_col_name] = df_responses[
+        q1_canonical_code_col_name
+    ].apply(get_top_level)
     if has_q2:
-        df_responses["q2_top_level"] = df_responses["q2_canonical_code"].apply(
-            get_top_level
-        )
+        df_responses[q2_top_level_col_name] = df_responses[
+            q2_canonical_code_col_name
+        ].apply(get_top_level)
 
     # Create countries
     countries = {}
