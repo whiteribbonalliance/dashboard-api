@@ -8,6 +8,7 @@ from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
+from app.utils import helpers
 
 inflect_engine = inflect.engine()
 
@@ -46,23 +47,37 @@ def apply_filter_to_df(
 
     df_copy = df.copy()
 
-    question_codes = [QuestionCode.q1]
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        question_codes.append(QuestionCode.q2)
+    # Filter countries
+    if len(countries) > 0:
+        df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
 
-    # Apply the filter for q1, q2 etc.
-    for q_code in question_codes:
+    # Filter regions
+    if len(regions) > 0:
+        df_copy = df_copy[df_copy["region"].isin(regions)]
+
+    # Filter genders
+    if len(genders) > 0:
+        df_copy = df_copy[df_copy["gender"].isin(genders)]
+
+    # Filter professions
+    if len(professions) > 0:
+        df_copy = df_copy[df_copy["profession"].isin(professions)]
+
+    # Filter ages
+    if len(ages) > 0:
+        df_copy = df_copy[df_copy["age"].isin(ages)]
+
+    # Apply the filter on specific columns for q1, q2 etc.
+    for q_code in QuestionCode:
+        # Check if the campaign has q2
+        if q_code == QuestionCode.q2 and not helpers.campaign_has_q2(
+            campaign_code=campaign_code
+        ):
+            continue
+
         # Set column names based on question code
         canonical_code_column_name = f"q{q_code.value}_canonical_code"
         lemmatized_column_name = f"q{q_code.value}_lemmatized"
-
-        # Filter countries
-        if len(countries) > 0:
-            df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
-
-        # Filter regions
-        if len(regions) > 0:
-            df_copy = df_copy[df_copy["region"].isin(regions)]
 
         # Filter response topics
         if len(response_topics) > 0:
@@ -86,14 +101,6 @@ def apply_filter_to_df(
 
             df_copy = df_copy[condition]
 
-        # Filter genders
-        if len(genders) > 0:
-            df_copy = df_copy[df_copy["gender"].isin(genders)]
-
-        # Filter professions
-        if len(professions) > 0:
-            df_copy = df_copy[df_copy["profession"].isin(professions)]
-
         # Filter keyword
         if keyword_filter:
             text_re = r"\b" + re.escape(keyword_filter)
@@ -109,10 +116,6 @@ def apply_filter_to_df(
                     text_exclude_re, regex=True
                 )
             ]
-
-        # Filter ages
-        if len(ages) > 0:
-            df_copy = df_copy[df_copy["age"].isin(ages)]
 
     return df_copy
 
