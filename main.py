@@ -37,7 +37,7 @@ app_fastapi.add_middleware(
     allow_headers=settings.CORS["allow_headers"],
 )
 
-app_fastapi.include_router(api_router, prefix=settings.API_V1)
+app_fastapi.include_router(api_router, prefix=settings.API_V1.value)
 
 
 class Server(uvicorn.Server):
