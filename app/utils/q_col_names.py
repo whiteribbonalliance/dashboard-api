@@ -1,3 +1,8 @@
+"""
+Column names for Q1, Q2 etc.
+e.g. q1_tokenized or q2_tokenized.
+"""
+
 from app.enums.question_code import QuestionCode
 
 

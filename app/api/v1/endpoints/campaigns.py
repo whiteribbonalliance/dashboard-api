@@ -42,7 +42,8 @@ async def read_campaign(
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    has_q2 = helpers.campaign_has_q2(campaign_code=campaign_code)
+    # Q codes available in a campaign
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
     # Create service
     campaign_service = CampaignService(
@@ -53,48 +54,41 @@ async def read_campaign(
     )
 
     # Top words and phrases
-    top_words_and_phrases = {
-        "q1": {
-            "top_words": campaign_service.get_top_words(QuestionCode.q1),
-            "two_word_phrases": campaign_service.get_two_word_phrases(QuestionCode.q1),
-            "three_word_phrases": campaign_service.get_three_word_phrases(
-                QuestionCode.q1
-            ),
-            "wordcloud_words": campaign_service.get_wordcloud_words(QuestionCode.q1),
-        },
-        "q2": {
-            "top_words": campaign_service.get_top_words(QuestionCode.q2),
-            "two_word_phrases": campaign_service.get_two_word_phrases(QuestionCode.q2),
-            "three_word_phrases": campaign_service.get_three_word_phrases(
-                QuestionCode.q2
-            ),
-            "wordcloud_words": campaign_service.get_wordcloud_words(QuestionCode.q2),
-        }
-        if has_q2
-        else {},
-    }
+    top_words_and_phrases = {}
+    for q_code in QuestionCode:
+        top_words_and_phrases[f"q{q_code.value}"] = (
+            {
+                "top_words": campaign_service.get_top_words(q_code=q_code),
+                "two_word_phrases": campaign_service.get_two_word_phrases(
+                    q_code=q_code
+                ),
+                "three_word_phrases": campaign_service.get_three_word_phrases(
+                    q_code=q_code
+                ),
+                "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
+            }
+            if q_code in campaign_q_codes
+            else {}
+        )
 
     # Responses sample
-    responses_sample = {
-        "q1": {
-            "columns": campaign_service.get_responses_sample_columns(QuestionCode.q1),
-            "data": campaign_service.get_responses_sample(QuestionCode.q1),
-        },
-        "q2": {
-            "columns": campaign_service.get_responses_sample_columns(QuestionCode.q2),
-            "data": campaign_service.get_responses_sample(QuestionCode.q2),
-        }
-        if has_q2
-        else {},
-    }
+    responses_sample = {}
+    for q_code in QuestionCode:
+        responses_sample[f"q{q_code.value}"] = (
+            {
+                "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
+                "data": campaign_service.get_responses_sample(q_code=q_code),
+            }
+            if q_code in campaign_q_codes
+            else {}
+        )
 
     # Responses breakdown
-    responses_breakdown = {
-        "q1": campaign_service.get_responses_breakdown(QuestionCode.q1),
-        "q2": campaign_service.get_responses_breakdown(QuestionCode.q2)
-        if has_q2
-        else {},
-    }
+    responses_breakdown = {}
+    for q_code in QuestionCode:
+        responses_breakdown[f"q{q_code.value}"] = {
+            "q1": campaign_service.get_responses_breakdown(q_code=q_code)
+        }
 
     # Histogram
     histogram = campaign_service.get_histogram()

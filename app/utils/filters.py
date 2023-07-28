@@ -69,13 +69,8 @@ def apply_filter_to_df(
         df_copy = df_copy[df_copy["age"].isin(ages)]
 
     # Apply the filter on specific columns for q1, q2 etc.
-    for q_code in QuestionCode:
-        # Check if the campaign has q2
-        if q_code == QuestionCode.q2 and not helpers.campaign_has_q2(
-            campaign_code=campaign_code
-        ):
-            continue
-
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+    for q_code in campaign_q_codes:
         # Set column names based on question code
         canonical_code_column_name = q_col_names.get_canonical_code_col_name(
             q_code=q_code

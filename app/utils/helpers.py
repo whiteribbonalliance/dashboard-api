@@ -22,10 +22,14 @@ def divide_list_into_chunks(my_list: list, n: int):
     return list(divide())
 
 
-def campaign_has_q2(campaign_code: CampaignCode) -> bool:
-    """Check if campaign has q2"""
+def get_campaign_q_codes(campaign_code: CampaignCode) -> list[QuestionCode]:
+    """Get campaign question codes"""
 
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        return True
+    # All campaigns have q1
+    q_codes = [QuestionCode.q1]
 
-    return False
+    # Campaign 'giz' has q2
+    if campaign_code == CampaignCode.mexico:
+        q_codes.append(QuestionCode.q2)
+
+    return q_codes
