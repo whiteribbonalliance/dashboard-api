@@ -88,18 +88,12 @@ class CampaignCRUD:
 
         return copy.deepcopy(only_multi_word_phrases_containing_filter_term_options)
 
-    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
+    def get_responses_sample_columns(self) -> list[dict]:
         """Get responses sample columns"""
 
         responses_sample_columns = copy.deepcopy(
             self.__databank.responses_sample_columns
         )
-
-        for column in responses_sample_columns:
-            if column.get("id") == "raw_response":
-                column["id"] = f"q{q_code.value}_raw_response"
-            if column.get("id") == "description":
-                column["id"] = f"q{q_code.value}_description"
 
         return responses_sample_columns
 

@@ -76,6 +76,7 @@ def apply_filter_to_df(
             q_code=q_code
         )
         lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
+        top_level_col_name = q_col_names.get_top_level_col_name(q_code=q_code)
 
         # Filter response topics
         if len(response_topics) > 0:
@@ -86,7 +87,7 @@ def apply_filter_to_df(
             else:
                 condition = df_copy[canonical_code_column_name].isin(
                     response_topics
-                ) | df_copy["q1_top_level"].isin(response_topics)
+                ) | df_copy[top_level_col_name].isin(response_topics)
             for response_topic in response_topics:
                 if only_responses_from_categories:
                     condition &= df_copy[canonical_code_column_name].str.contains(

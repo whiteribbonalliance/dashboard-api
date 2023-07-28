@@ -6,5 +6,5 @@ from enum import Enum
 
 
 class QuestionCode(Enum):
-    q1: str = "1"
-    q2: str = "2"
+    q1: str = "q1"
+    q2: str = "q2"

@@ -97,19 +97,19 @@ def load_campaign_data(campaign_code: CampaignCode):
         additional_fields = json.loads(row["additional_fields"])
 
         response_original_text = additional_fields.get(
-            f"q{_q_code.value}_response_original_text"
+            f"{_q_code.value}_response_original_text"
         )
         response_english_text = additional_fields.get(
-            f"q{_q_code.value}_response_english_text"
+            f"{_q_code.value}_response_english_text"
         )
         response_lemmatized_text = additional_fields.get(
-            f"q{_q_code.value}_response_lemmatized_text"
+            f"{_q_code.value}_response_lemmatized_text"
         )
         response_nlu_category = additional_fields.get(
-            f"q{_q_code.value}_response_nlu_category"
+            f"{_q_code.value}_response_nlu_category"
         )
         response_original_lang = additional_fields.get(
-            f"q{_q_code.value}_response_original_lang"
+            f"{_q_code.value}_response_original_lang"
         )
 
         if response_original_text and response_english_text:
@@ -239,10 +239,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_countries(countries=countries)
 
     # Get responses sample column ids
-    column_ids = [
-        col["id"]
-        for col in campaign_crud.get_responses_sample_columns(q_code=QuestionCode.q1)
-    ]
+    column_ids = [col["id"] for col in campaign_crud.get_responses_sample_columns()]
 
     # Set genders
     genders = []

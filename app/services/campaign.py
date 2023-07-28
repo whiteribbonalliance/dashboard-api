@@ -133,12 +133,10 @@ class CampaignService:
             filter_1=filter_1, filter_2=filter_2
         )
 
-    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
+    def get_responses_sample_columns(self) -> list[dict]:
         """Get responses sample columns"""
 
-        responses_sample_columns = self.__crud.get_responses_sample_columns(
-            q_code=q_code
-        )
+        responses_sample_columns = self.__crud.get_responses_sample_columns()
 
         # Translate column names
         for column in responses_sample_columns:
@@ -175,6 +173,23 @@ class CampaignService:
 
         return responses_breakdown
 
+    def __get_responses_sample_column_ids(self, q_code: QuestionCode = None) -> list:
+        """Get responses column ids"""
+
+        columns = self.__crud.get_responses_sample_columns()
+
+        if not q_code:
+            return [col["id"] for col in columns]
+
+        # Rename column e.g. 'raw_response' -> 'q1_raw_response'
+        for column in columns:
+            if column.get("id") == "raw_response":
+                column["id"] = f"{q_code.value}_raw_response"
+            if column.get("id") == "description":
+                column["id"] = f"{q_code.value}_description"
+
+        return [col["id"] for col in columns]
+
     def __get_df_responses_sample(
         self, df: pd.DataFrame, q_code: QuestionCode
     ) -> list[dict]:
@@ -206,9 +221,7 @@ class CampaignService:
                 n_sample = len(df.index)
             df_1_copy = df.sample(n=n_sample, random_state=1)
 
-        column_ids = [
-            col["id"] for col in self.__crud.get_responses_sample_columns(q_code=q_code)
-        ]
+        column_ids = self.__get_responses_sample_column_ids(q_code=q_code)
 
         def get_descriptions(code: str, t: Callable) -> str:
             """Get descriptions"""
@@ -294,7 +307,11 @@ class CampaignService:
         # Go through data and apply translations of extracted texts by sending the translate_text function
         df_1_copy = translate_or_extract_responses_sample(self.__t)
 
-        responses_sample_data = df_1_copy[column_ids].to_dict("records")
+        # Rename columns e.g. 'q1_raw_response' -> 'raw_response'
+        columns_to_rename = {x: x.replace(f"{q_code.value}_", "") for x in column_ids}
+        df_1_copy = df_1_copy.rename(columns=columns_to_rename)
+
+        responses_sample_data = df_1_copy[columns_to_rename.values()].to_dict("records")
 
         return responses_sample_data
 
@@ -403,8 +420,8 @@ class CampaignService:
                 {
                     "count_1": response_1.get(count_col_name) if response_1 else 0,
                     "count_2": response_2.get(count_col_name) if response_2 else 0,
-                    f"{code_col_name}": code,
-                    f"{description_col_name}": description,
+                    code_col_name.replace(f"{q_code.value}_", ""): code,
+                    description_col_name.replace(f"{q_code.value}_", ""): description,
                 }
             )
 
@@ -654,7 +671,7 @@ class CampaignService:
         """Generate ngrams"""
 
         # Set column name based on question code
-        tokenized_column_name = f"q{q_code.value}_tokenized"
+        tokenized_column_name = q_col_names.get_tokenized_col_name(q_code=q_code)
 
         # Stopwords
         all_stopwords = constants.STOPWORDS

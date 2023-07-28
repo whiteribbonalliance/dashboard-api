@@ -56,7 +56,7 @@ async def read_campaign(
     # Top words and phrases
     top_words_and_phrases = {}
     for q_code in QuestionCode:
-        top_words_and_phrases[f"q{q_code.value}"] = (
+        top_words_and_phrases[f"{q_code.value}"] = (
             {
                 "top_words": campaign_service.get_top_words(q_code=q_code),
                 "two_word_phrases": campaign_service.get_two_word_phrases(
@@ -74,9 +74,9 @@ async def read_campaign(
     # Responses sample
     responses_sample = {}
     for q_code in QuestionCode:
-        responses_sample[f"q{q_code.value}"] = (
+        responses_sample[f"{q_code.value}"] = (
             {
-                "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
+                "columns": campaign_service.get_responses_sample_columns(),
                 "data": campaign_service.get_responses_sample(q_code=q_code),
             }
             if q_code in campaign_q_codes
@@ -86,10 +86,10 @@ async def read_campaign(
     # Responses breakdown
     responses_breakdown = {}
     for q_code in QuestionCode:
-        responses_breakdown[f"q{q_code.value}"] = (
+        responses_breakdown[f"{q_code.value}"] = (
             campaign_service.get_responses_breakdown(q_code=q_code)
             if q_code in campaign_q_codes
-            else {}
+            else []
         )
 
     # Histogram
