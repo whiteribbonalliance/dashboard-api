@@ -86,9 +86,11 @@ async def read_campaign(
     # Responses breakdown
     responses_breakdown = {}
     for q_code in QuestionCode:
-        responses_breakdown[f"q{q_code.value}"] = {
-            "q1": campaign_service.get_responses_breakdown(q_code=q_code)
-        }
+        responses_breakdown[f"q{q_code.value}"] = (
+            {"q1": campaign_service.get_responses_breakdown(q_code=q_code)}
+            if q_code in campaign_q_codes
+            else {}
+        )
 
     # Histogram
     histogram = campaign_service.get_histogram()
