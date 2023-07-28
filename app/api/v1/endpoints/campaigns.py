@@ -87,7 +87,7 @@ async def read_campaign(
     responses_breakdown = {}
     for q_code in QuestionCode:
         responses_breakdown[f"q{q_code.value}"] = (
-            {"q1": campaign_service.get_responses_breakdown(q_code=q_code)}
+            campaign_service.get_responses_breakdown(q_code=q_code)
             if q_code in campaign_q_codes
             else {}
         )
