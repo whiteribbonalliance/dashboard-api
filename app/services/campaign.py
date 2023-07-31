@@ -93,39 +93,31 @@ class CampaignService:
         ):
             self.__filter_2_use_ngrams_unfiltered = False
 
-        # Q1 ngrams 1
-        if self.__filter_1:
-            self.__q1_ngrams_1 = self.__get_ngrams_1(
-                only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
-                keyword=self.__filter_1.keyword_filter,
-                q_code=QuestionCode.q1,
-            )
-        else:
-            self.__q1_ngrams_1 = self.__get_ngrams_1(
-                only_multi_word_phrases_containing_filter_term=False,
-                keyword="",
-                q_code=QuestionCode.q1,
-            )
+        # Campaign question codes
+        self.__campaign_q_codes = helpers.get_campaign_q_codes(
+            campaign_code=campaign_code
+        )
 
-        # Q1 ngrams 2
-        self.__q1_ngrams_2 = self.__get_ngrams_2(q_code=QuestionCode.q1)
+        # Ngrams
+        self.__ngrams_1 = {}
+        self.__ngrams_2 = {}
+        for q_code in self.__campaign_q_codes:
+            # Ngrams 1
+            if self.__filter_1:
+                self.__ngrams_1[q_code.value] = self.__get_ngrams_1(
+                    only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
+                    keyword=self.__filter_1.keyword_filter,
+                    q_code=q_code,
+                )
+            else:
+                self.__ngrams_1[q_code.value] = self.__get_ngrams_1(
+                    only_multi_word_phrases_containing_filter_term=False,
+                    keyword="",
+                    q_code=q_code,
+                )
 
-        # Q2 ngrams 1
-        if self.__filter_1:
-            self.__q2_ngrams_1 = self.__get_ngrams_1(
-                only_multi_word_phrases_containing_filter_term=self.__filter_1.only_multi_word_phrases_containing_filter_term,
-                keyword=self.__filter_1.keyword_filter,
-                q_code=QuestionCode.q2,
-            )
-        else:
-            self.__q2_ngrams_1 = self.__get_ngrams_1(
-                only_multi_word_phrases_containing_filter_term=False,
-                keyword="",
-                q_code=QuestionCode.q2,
-            )
-
-        # Q2 ngrams 2
-        self.__q2_ngrams_2 = self.__get_ngrams_2(q_code=QuestionCode.q2)
+            # Ngrams 2
+            self.__ngrams_2[q_code.value] = self.__get_ngrams_2(q_code=q_code)
 
         # Check if filters are identical or not
         self.filters_are_identical = filters.check_if_filters_are_identical(
@@ -219,6 +211,8 @@ class CampaignService:
             if len(df.index) < n_sample:
                 n_sample = len(df.index)
             df_1_copy = df.sample(n=n_sample, random_state=1)
+        else:
+            return []
 
         column_ids = self.__get_responses_sample_column_ids(q_code=q_code)
 
@@ -434,18 +428,11 @@ class CampaignService:
     def get_wordcloud_words(self, q_code: QuestionCode) -> list[dict]:
         """Get wordcloud words"""
 
-        if q_code == QuestionCode.q2:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.__q2_ngrams_1
-        else:
-            (
-                unigram_count_dict,
-                bigram_count_dict,
-                trigram_count_dict,
-            ) = self.__q1_ngrams_1
+        (
+            unigram_count_dict,
+            bigram_count_dict,
+            trigram_count_dict,
+        ) = self.__ngrams_1[q_code.value]
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -478,11 +465,11 @@ class CampaignService:
 
         # Set unigram count dict based on question code
         if q_code == QuestionCode.q2:
-            unigram_count_dict_1 = self.__q2_ngrams_1[0]
-            unigram_count_dict_2 = self.__q2_ngrams_2[0]
+            unigram_count_dict_1 = self.__ngrams_1[q_code.value][0]
+            unigram_count_dict_2 = self.__ngrams_2[q_code.value][0]
         else:
-            unigram_count_dict_1 = self.__q1_ngrams_1[0]
-            unigram_count_dict_2 = self.__q1_ngrams_2[0]
+            unigram_count_dict_1 = self.__ngrams_1[q_code.value][0]
+            unigram_count_dict_2 = self.__ngrams_2[q_code.value][0]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=unigram_count_dict_1,
@@ -494,12 +481,8 @@ class CampaignService:
     def get_two_word_phrases(self, q_code: QuestionCode) -> list:
         """Get two word phrases"""
 
-        if q_code == QuestionCode.q2:
-            bigram_count_dict_1 = self.__q2_ngrams_1[1]
-            bigram_count_dict_2 = self.__q2_ngrams_2[1]
-        else:
-            bigram_count_dict_1 = self.__q1_ngrams_1[1]
-            bigram_count_dict_2 = self.__q1_ngrams_2[1]
+        bigram_count_dict_1 = self.__ngrams_1[q_code.value][1]
+        bigram_count_dict_2 = self.__ngrams_2[q_code.value][1]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=bigram_count_dict_1,
@@ -511,12 +494,8 @@ class CampaignService:
     def get_three_word_phrases(self, q_code: QuestionCode) -> list:
         """Get three word phrases"""
 
-        if q_code == QuestionCode.q2:
-            trigram_count_dict_1 = self.__q2_ngrams_1[2]
-            trigram_count_dict_2 = self.__q2_ngrams_2[2]
-        else:
-            trigram_count_dict_1 = self.__q1_ngrams_1[2]
-            trigram_count_dict_2 = self.__q1_ngrams_2[2]
+        trigram_count_dict_1 = self.__ngrams_1[q_code.value][2]
+        trigram_count_dict_2 = self.__ngrams_2[q_code.value][2]
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=trigram_count_dict_1,
