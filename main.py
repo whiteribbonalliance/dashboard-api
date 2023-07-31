@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
 from app.core.settings import settings
-from app.services.scheduler import app as app_rocketry
+from app.scheduler import app as app_rocketry
 from app.utils import data_loader
 
 # Load initial data before starting the application
