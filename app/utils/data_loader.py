@@ -32,6 +32,111 @@ logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 
+def get_top_level(leaf_categories: str, campaign_code: CampaignCode) -> str:
+    mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
+        campaign_code=campaign_code
+    )
+    categories = leaf_categories.split("/")
+    top_levels = sorted(set([mapping_to_top_level.get(cat, cat) for cat in categories]))
+
+    return "/".join(top_levels)
+
+
+def get_age_bucket(age: str | int | None) -> str | None:
+    """Add age to a specific age bucket e.g. 30 -> '25-34'"""
+
+    if age is None:
+        return age
+
+    if isinstance(age, str):
+        if age.isnumeric():
+            age = int(age)
+        else:
+            # Non-numeric e.g. 'prefer not to say'
+            return age
+
+    if age >= 55:
+        return "55+"
+    if age >= 45:
+        return "45-54"
+    if age >= 35:
+        return "35-44"
+    if age >= 25:
+        return "25-34"
+    if age >= 20:
+        return "20-24"
+    if age >= 15:
+        return "15-19"
+
+    return "N/A"
+
+
+def filter_ages_10_to_24(age: str) -> str:
+    """Return age if between 10 and 24, else nan"""
+
+    if isinstance(age, str):
+        if age.isnumeric():
+            age_int = int(age)
+            if 10 <= age_int <= 24:
+                return age
+
+    return np.nan
+
+
+def populate_additional_q_columns(
+    row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
+):
+    """Populate additional question columns with data from additional_fields"""
+
+    additional_fields = json.loads(row["additional_fields"])
+
+    response_original_text = additional_fields.get(
+        f"{q_code.value}_response_original_text"
+    )
+    response_english_text = additional_fields.get(
+        f"{q_code.value}_response_english_text"
+    )
+    response_lemmatized_text = additional_fields.get(
+        f"{q_code.value}_response_lemmatized_text"
+    )
+    response_nlu_category = additional_fields.get(
+        f"{q_code.value}_response_nlu_category"
+    )
+    response_original_lang = additional_fields.get(
+        f"{q_code.value}_response_original_lang"
+    )
+
+    # For economic_empowerment_mexico append original_text and english_text
+    if campaign_code == CampaignCode.economic_empowerment_mexico:
+        if response_original_text and response_english_text:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = f"{response_original_text} ({response_english_text})"
+        elif response_original_text:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = response_original_text
+    else:
+        row[
+            q_col_names.get_raw_response_col_name(q_code=q_code)
+        ] = response_original_text
+
+    if response_lemmatized_text:
+        row[
+            q_col_names.get_lemmatized_col_name(q_code=q_code)
+        ] = response_lemmatized_text
+    if response_nlu_category:
+        row[
+            q_col_names.get_canonical_code_col_name(q_code=q_code)
+        ] = response_nlu_category
+    if response_original_lang:
+        row[
+            q_col_names.get_original_language_col_name(q_code=q_code)
+        ] = response_original_lang
+
+    return row
+
+
 def load_campaign_data(campaign_code: CampaignCode):
     """
     Load campaign data
@@ -40,101 +145,6 @@ def load_campaign_data(campaign_code: CampaignCode):
     """
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
-
-    def get_top_level(leaf_categories: str) -> str:
-        mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
-            campaign_code=campaign_code
-        )
-        categories = leaf_categories.split("/")
-        top_levels = sorted(
-            set([mapping_to_top_level.get(cat, cat) for cat in categories])
-        )
-
-        return "/".join(top_levels)
-
-    def get_age_bucket(age: str | int | None) -> str | None:
-        """Add age to a specific age bucket e.g. 30 -> '25-34'"""
-
-        if age is None:
-            return age
-
-        if isinstance(age, str):
-            if age.isnumeric():
-                age = int(age)
-            else:
-                # Non-numeric e.g. 'prefer not to say'
-                return age
-
-        if age >= 55:
-            return "55+"
-        if age >= 45:
-            return "45-54"
-        if age >= 35:
-            return "35-44"
-        if age >= 25:
-            return "25-34"
-        if age >= 20:
-            return "20-24"
-        if age >= 15:
-            return "15-19"
-
-        return "N/A"
-
-    def filter_ages_10_to_24(age: str) -> str:
-        """Return age if between 10 and 24, else nan"""
-
-        if isinstance(age, str):
-            if age.isnumeric():
-                age_int = int(age)
-                if 10 <= age_int <= 24:
-                    return age
-
-        return np.nan
-
-    def populate_additional_columns(row: pd.Series, _q_code: QuestionCode):
-        """Populate additional columns"""
-
-        additional_fields = json.loads(row["additional_fields"])
-
-        response_original_text = additional_fields.get(
-            f"{_q_code.value}_response_original_text"
-        )
-        response_english_text = additional_fields.get(
-            f"{_q_code.value}_response_english_text"
-        )
-        response_lemmatized_text = additional_fields.get(
-            f"{_q_code.value}_response_lemmatized_text"
-        )
-        response_nlu_category = additional_fields.get(
-            f"{_q_code.value}_response_nlu_category"
-        )
-        response_original_lang = additional_fields.get(
-            f"{_q_code.value}_response_original_lang"
-        )
-
-        if response_original_text and response_english_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=_q_code)
-            ] = f"{response_original_text} ({response_english_text})"
-        elif response_original_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=_q_code)
-            ] = response_original_text
-
-        if response_lemmatized_text:
-            row[
-                q_col_names.get_lemmatized_col_name(q_code=_q_code)
-            ] = response_lemmatized_text
-        if response_nlu_category:
-            row[
-                q_col_names.get_canonical_code_col_name(q_code=_q_code)
-            ] = response_nlu_category
-        if response_original_lang:
-            row[
-                q_col_names.get_original_language_col_name(q_code=_q_code)
-            ] = response_original_lang
-
-        return row
 
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
@@ -146,10 +156,14 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Populate columns for 'q_code >= q2'
     for q_code in campaign_q_codes:
+        # Q1 columns already have data
         if q_code == QuestionCode.q1:
             continue
         df_responses = df_responses.apply(
-            lambda x: populate_additional_columns(row=x, _q_code=q_code), axis=1
+            lambda x: populate_additional_q_columns(
+                row=x, campaign_code=campaign_code, q_code=q_code
+            ),
+            axis=1,
         )
 
     # Add tokenized column
@@ -163,12 +177,12 @@ def load_campaign_data(campaign_code: CampaignCode):
         lambda x: constants.COUNTRIES_DATA[x]["name"]
     )
 
-    # Only keep ages 10-24 for PMNCH
+    # Only keep ages 10-24 for what_young_people_want
     if campaign_code == CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
-    # Modify age into age bucket (skip if PMNCH)
+    # Modify age into age bucket (skip if what_young_people_want)
     if campaign_code != CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(get_age_bucket)
 
@@ -208,7 +222,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     for q_code in campaign_q_codes:
         df_responses[q_col_names.get_top_level_col_name(q_code=q_code)] = df_responses[
             q_col_names.get_canonical_code_col_name(q_code=q_code)
-        ].apply(get_top_level)
+        ].apply(lambda x: get_top_level(leaf_categories=x, campaign_code=campaign_code))
 
     # Create countries
     countries = {}
@@ -352,7 +366,10 @@ def load_coordinates():
             coordinates: dict = json.loads(file.read())
 
     # Get new coordinates (if coordinate is not in coordinates.json)
-    focused_on_country_campaigns_codes = [CampaignCode.mexico, CampaignCode.pakistan]
+    focused_on_country_campaigns_codes = [
+        CampaignCode.economic_empowerment_mexico,
+        CampaignCode.what_women_want_pakistan,
+    ]
     for campaign_code in focused_on_country_campaigns_codes:
         campaign_crud = CampaignCRUD(campaign_code=campaign_code)
         countries = campaign_crud.get_countries_list()

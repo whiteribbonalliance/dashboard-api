@@ -281,9 +281,9 @@ class CampaignService:
                     )
 
                 if column_id == raw_response_col_name:
-                    # giz: Do not translate 'raw_response' if the language is 'es'
-                    # giz: For other languages, only translate text between parentheses
-                    if self.__campaign_code == CampaignCode.mexico:
+                    # economic_empowerment_mexico: Do not translate 'raw_response' if the language is 'es'
+                    # economic_empowerment_mexico: For other languages, only translate text between parentheses
+                    if self.__campaign_code == CampaignCode.economic_empowerment_mexico:
                         if self.__language != "es":
                             df_tmp[column_id] = df_tmp[column_id].apply(
                                 translate_text_between_parentheses
@@ -368,7 +368,7 @@ class CampaignService:
                 # Drop rows with nan values
                 df = df.dropna()
 
-                # PMNCH: Sort the rows by count value (DESC) and keep the first n rows only
+                # what_young_people_want: Sort the rows by count value (DESC) and keep the first n rows only
                 if self.__campaign_code == CampaignCode.what_young_people_want:
                     n_rows_keep = 5
                     df = df.sort_values(by=count_col_name, ascending=False)
@@ -894,9 +894,9 @@ class CampaignService:
             ]
         elif self.__campaign_code == CampaignCode.healthwellbeing:
             options = [breakdown_age_option, breakdown_country_option]
-        elif self.__campaign_code == CampaignCode.mexico:
+        elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
             options = [breakdown_age_option]
-        elif self.__campaign_code == CampaignCode.pakistan:
+        elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
             options = [breakdown_age_option]
 
         return options
@@ -1000,8 +1000,8 @@ class CampaignService:
 
         # For these campaigns, use region as location
         if (
-            self.__campaign_code == CampaignCode.mexico
-            or self.__campaign_code == CampaignCode.pakistan
+            self.__campaign_code == CampaignCode.economic_empowerment_mexico
+            or self.__campaign_code == CampaignCode.what_women_want_pakistan
         ):
             # Get count of each region per country
             region_counts_1 = (

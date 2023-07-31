@@ -5,6 +5,6 @@ class CampaignCode(Enum):
     what_women_want: str = "wra03a"
     what_young_people_want: str = "pmn01a"
     midwives_voices: str = "midwife"
-    mexico: str = "giz"
-    pakistan: str = "wwwpakistan"
+    economic_empowerment_mexico: str = "giz"
+    what_women_want_pakistan: str = "wwwpakistan"
     healthwellbeing: str = "healthwellbeing"

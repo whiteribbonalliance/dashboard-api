@@ -56,7 +56,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     # Use BigQuery Storage client for faster results to dataframe
     bigquery_storage_client = get_bigquery_storage_client()
 
-    # PMNCH has a different minimum age
+    # what_young_people_want has a different minimum age
     if campaign_code == CampaignCode.what_young_people_want:
         min_age = "10"
     else:
@@ -89,10 +89,12 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
 
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
-    # Add additional columns
+    # Get question codes for campaign, e.g. if campaign has question 1 and question 2 -> ["q1", "q2"]
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+
+    # Add additional columns per question
     for q_code in campaign_q_codes:
-        # Q1 already has data
+        # Q1 columns already exists
         if q_code == QuestionCode.q1:
             continue
 
