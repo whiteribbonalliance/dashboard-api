@@ -51,8 +51,43 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     :param campaign_code: The campaign code
     """
 
-    import pandas as pd
-    df_responses = pd.read_pickle(f"../../{campaign_code.value}.pkl")
+    bigquery_client = get_bigquery_client()
+
+    # Use BigQuery Storage client for faster results to dataframe
+    bigquery_storage_client = get_bigquery_storage_client()
+
+    # what_young_people_want has a different minimum age
+    if campaign_code == CampaignCode.what_young_people_want:
+        min_age = "10"
+    else:
+        min_age = "15"
+
+    query_job = bigquery_client.query(
+        f"""
+        SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
+        response_original_lang as q1_original_language,
+        respondent_country_code as alpha2country,
+        response_nlu_category AS q1_canonical_code,
+        response_lemmatized_text as q1_lemmatized,
+        respondent_region_name as region,
+        coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
+        REGEXP_REPLACE(REGEXP_REPLACE(INITCAP(respondent_gender), 'Twospirit', 'Two Spirit'), 'Unspecified', 'Prefer Not To Say') as gender,
+        JSON_VALUE(respondent_additional_fields.profession) as profession,
+        respondent_additional_fields as additional_fields,
+        FROM deft-stratum-290216.{table_name}
+        WHERE campaign = '{campaign_code.value}'
+        AND response_original_text is not null
+        AND (respondent_age >= {min_age} OR respondent_age is null)
+        AND respondent_country_code is not null
+        AND response_nlu_category is not null
+        AND response_lemmatized_text is not null
+        AND LENGTH(response_original_text) > 3
+       """
+    )
+
+    results = query_job.result()
+
+    df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Get question codes for campaign, e.g. if campaign has question 1 and question 2 -> ["q1", "q2"]
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
