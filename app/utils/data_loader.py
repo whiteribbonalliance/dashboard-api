@@ -282,36 +282,25 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 
     df = campaign_crud.get_dataframe().copy()
 
-    # Q1 ngrams
-    (
-        q1_unigram_count_dict,
-        q1_bigram_count_dict,
-        q1_trigram_count_dict,
-    ) = campaign_service.generate_ngrams(df=df, q_code=QuestionCode.q1)
+    # Q codes available in a campaign
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
-    q1_ngrams_unfiltered = {
-        "unigram": q1_unigram_count_dict,
-        "bigram": q1_bigram_count_dict,
-        "trigram": q1_trigram_count_dict,
-    }
-
-    campaign_crud.set_q1_ngrams_unfiltered(ngrams_unfiltered=q1_ngrams_unfiltered)
-
-    if campaign_code in constants.CAMPAIGNS_WITH_Q2:
-        # Q2 ngrams
+    for q_code in campaign_q_codes:
         (
-            q2_unigram_count_dict,
-            q2_bigram_count_dict,
-            q2_trigram_count_dict,
-        ) = campaign_service.generate_ngrams(df=df, q_code=QuestionCode.q2)
+            unigram_count_dict,
+            bigram_count_dict,
+            trigram_count_dict,
+        ) = campaign_service.generate_ngrams(df=df, q_code=q_code)
 
-        q2_ngrams_unfiltered = {
-            "unigram": q2_unigram_count_dict,
-            "bigram": q2_bigram_count_dict,
-            "trigram": q2_trigram_count_dict,
+        ngrams_unfiltered = {
+            "unigram": unigram_count_dict,
+            "bigram": bigram_count_dict,
+            "trigram": trigram_count_dict,
         }
 
-        campaign_crud.set_q2_ngrams_unfiltered(ngrams_unfiltered=q2_ngrams_unfiltered)
+        campaign_crud.set_ngrams_unfiltered(
+            ngrams_unfiltered=ngrams_unfiltered, q_code=q_code
+        )
 
 
 def load_all_campaigns_data():

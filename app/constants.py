@@ -402,5 +402,3 @@ TRANSLATION_LANGUAGES = {
 }
 
 TRANSLATIONS_JSON = "translations.json"
-
-CAMPAIGNS_WITH_Q2 = {CampaignCode.economic_empowerment_mexico}

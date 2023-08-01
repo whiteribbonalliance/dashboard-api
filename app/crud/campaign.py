@@ -123,11 +123,7 @@ class CampaignCRUD:
     def get_ngrams_unfiltered(self, q_code: QuestionCode) -> tuple:
         """Get ngrams unfiltered"""
 
-        # Get ngrams unfiltered based on the question code
-        if q_code == QuestionCode.q2:
-            ngrams_unfiltered = self.__databank.q2_ngrams_unfiltered
-        else:
-            ngrams_unfiltered = self.__databank.q1_ngrams_unfiltered
+        ngrams_unfiltered = self.__databank.ngrams_unfiltered.get(q_code.value)
 
         if not ngrams_unfiltered:
             return ()
@@ -156,15 +152,10 @@ class CampaignCRUD:
 
         return dataframe
 
-    def set_q1_ngrams_unfiltered(self, ngrams_unfiltered: dict):
-        """Set q1 ngrams unfiltered"""
+    def set_ngrams_unfiltered(self, ngrams_unfiltered: dict, q_code: QuestionCode):
+        """Set ngrams unfiltered"""
 
-        self.__databank.q1_ngrams_unfiltered = ngrams_unfiltered
-
-    def set_q2_ngrams_unfiltered(self, ngrams_unfiltered: dict):
-        """Set q2 ngrams unfiltered"""
-
-        self.__databank.q2_ngrams_unfiltered = ngrams_unfiltered
+        self.__databank.ngrams_unfiltered[q_code.value] = ngrams_unfiltered
 
     def set_ages(self, ages: list[Age]):
         """Set ages"""
