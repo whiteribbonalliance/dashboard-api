@@ -171,6 +171,9 @@ def load_campaign_data(campaign_code: CampaignCode):
             q_col_names.get_lemmatized_col_name(q_code=q_code)
         ].apply(lambda x: x.split(" "))
 
+    # Apply strip function on alpha2 country codes
+    df_responses["alpha2country"] = df_responses["alpha2country"].apply(lambda x: x.strip())
+
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
         lambda x: constants.COUNTRIES_DATA[x]["name"]
