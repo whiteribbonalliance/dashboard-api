@@ -172,7 +172,9 @@ def load_campaign_data(campaign_code: CampaignCode):
         ].apply(lambda x: x.split(" "))
 
     # Apply strip function on alpha2 country codes
-    df_responses["alpha2country"] = df_responses["alpha2country"].apply(lambda x: x.strip())
+    df_responses["alpha2country"] = df_responses["alpha2country"].apply(
+        lambda x: x.strip()
+    )
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(

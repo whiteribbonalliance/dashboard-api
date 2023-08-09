@@ -62,6 +62,17 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     else:
         min_age = "15"
 
+    # Get question codes for campaign, e.g. if campaign has question 1 and question 2 -> ["q1", "q2"]
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+
+    # Campaigns with more than one question will have "additional_fields"
+    if len(campaign_q_codes) > 1:
+        additional_fields_query_part = (
+            "respondent_additional_fields as additional_fields,"
+        )
+    else:
+        additional_fields_query_part = ""
+
     query_job = bigquery_client.query(
         f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
@@ -73,7 +84,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         REGEXP_REPLACE(REGEXP_REPLACE(INITCAP(respondent_gender), 'Twospirit', 'Two Spirit'), 'Unspecified', 'Prefer Not To Say') as gender,
         JSON_VALUE(respondent_additional_fields.profession) as profession,
-        respondent_additional_fields as additional_fields,
+        {additional_fields_query_part}
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code.value}'
         AND response_original_text is not null
@@ -88,9 +99,6 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     results = query_job.result()
 
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
-
-    # Get question codes for campaign, e.g. if campaign has question 1 and question 2 -> ["q1", "q2"]
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
     # Add additional columns per question
     for q_code in campaign_q_codes:
