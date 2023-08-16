@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class Campaign(BaseModel):
     responses_sample: dict
     responses_breakdown: dict
+    living_settings_breakdown: list
     top_words_and_phrases: dict
     histogram: dict
     genders_breakdown: list[dict]

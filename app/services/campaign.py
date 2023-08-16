@@ -425,6 +425,34 @@ class CampaignService:
 
         return responses_breakdown
 
+    def get_living_settings_breakdown(self) -> list:
+        """Get living setting settings breakdown"""
+
+        df_1_copy = self.__get_df_1_copy()
+
+        def fix_value(v: str):
+            # If value in lower case is 'prefer not to say', then rename to 'Prefer not to say'
+            if v.lower() == "prefer not to say":
+                v = "Prefer not to say"
+
+            return v
+
+        df_1_copy["setting"] = df_1_copy["setting"].apply(fix_value)
+
+        living_settings_counts = (
+            df_1_copy["setting"].value_counts(ascending=True).to_dict()
+        )
+
+        living_settings_breakdown = []
+
+        for key, value in living_settings_counts.items():
+            if not key:
+                continue
+
+            living_settings_breakdown.append({"name": self.__t(key), "count": value})
+
+        return living_settings_breakdown
+
     def get_wordcloud_words(self, q_code: QuestionCode) -> list[dict]:
         """Get wordcloud words"""
 
@@ -890,6 +918,7 @@ class CampaignService:
         for key, value in gender_counts.items():
             if not key:
                 continue
+
             genders_breakdown.append({"name": self.__t(key), "count": value})
 
         return genders_breakdown

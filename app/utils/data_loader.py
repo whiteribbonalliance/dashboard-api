@@ -82,10 +82,10 @@ def filter_ages_10_to_24(age: str) -> str:
     return np.nan
 
 
-def populate_additional_q_columns(
+def fill_additional_q_columns(
     row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
 ):
-    """Populate additional question columns with data from additional_fields"""
+    """Fill additional question columns with data from additional_fields"""
 
     additional_fields = json.loads(row["additional_fields"])
 
@@ -136,6 +136,56 @@ def populate_additional_q_columns(
     return row
 
 
+def fill_additional_setting_column(row: pd.Series):
+    """Fill additional setting column"""
+
+    additional_fields = json.loads(row["additional_fields"])
+
+    setting = additional_fields.get("setting")
+
+    # Only campaign 'healthwellbeing' has additional field 'setting'
+    if setting:
+        row["setting"] = setting
+
+    return row
+
+
+def add_additional_fields_columns(
+    df: pd.DataFrame, campaign_code: CampaignCode
+) -> pd.DataFrame:
+    """Add columns from 'additional_fields'"""
+
+    # Q codes available in a campaign
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+
+    # Create additional column 'setting'
+    df["setting"] = ""
+
+    if campaign_code == CampaignCode.healthwellbeing:
+        # Fill additional column 'setting'
+        df = df.apply(
+            lambda x: fill_additional_setting_column(row=x),
+            axis=1,
+        )
+
+    for q_code in [x for x in campaign_q_codes if x != QuestionCode.q1]:
+        # Create additional columns per question
+        df[q_col_names.get_raw_response_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_lemmatized_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_canonical_code_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_original_language_col_name(q_code=q_code)] = ""
+
+        # Fill additional columns per question
+        df = df.apply(
+            lambda x: fill_additional_q_columns(
+                row=x, campaign_code=campaign_code, q_code=q_code
+            ),
+            axis=1,
+        )
+
+    return df
+
+
 def load_campaign_data(campaign_code: CampaignCode):
     """
     Load campaign data
@@ -143,27 +193,21 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
+    # CRUD
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+
+    # Q codes available in a campaign
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
         campaign_code=campaign_code
     )
 
-    # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
-
-    # Populate columns for 'q_code >= q2'
-    for q_code in campaign_q_codes:
-        # Q1 columns already have data
-        if q_code == QuestionCode.q1:
-            continue
-        df_responses = df_responses.apply(
-            lambda x: populate_additional_q_columns(
-                row=x, campaign_code=campaign_code, q_code=q_code
-            ),
-            axis=1,
-        )
+    # Add columns from 'additional_fields'
+    df_responses = add_additional_fields_columns(
+        df=df_responses, campaign_code=campaign_code
+    )
 
     # Add tokenized column
     for q_code in campaign_q_codes:

@@ -92,6 +92,9 @@ async def read_campaign(
             else []
         )
 
+    # Living settings breakdown
+    living_settings_breakdown = campaign_service.get_living_settings_breakdown()
+
     # Histogram
     histogram = campaign_service.get_histogram()
 
@@ -122,6 +125,7 @@ async def read_campaign(
     return Campaign(
         responses_sample=responses_sample,
         responses_breakdown=responses_breakdown,
+        living_settings_breakdown=living_settings_breakdown,
         top_words_and_phrases=top_words_and_phrases,
         histogram=histogram,
         genders_breakdown=genders_breakdown,
