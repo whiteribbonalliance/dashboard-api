@@ -824,7 +824,13 @@ class CampaignService:
         df_2_copy = self.__get_df_2_copy()
 
         # Get histogram for the keys used in the dictionary below
-        histogram = {"age": [], "gender": [], "profession": [], "canonical_country": []}
+        histogram = {
+            "age": [],
+            "age_range": [],
+            "gender": [],
+            "profession": [],
+            "canonical_country": [],
+        }
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
@@ -844,20 +850,30 @@ class CampaignService:
             )
             names = [name for name in names if name]
 
-            # Sort ages (values with ages first reverse sorted, then add other values back in e.g. 'prefer not to say')
-            if column_name == "age" and len(names) > 0:
-                names.sort(reverse=True)
+            # Sort age or age_range
+            # Move values such as 'prefer not to say' at last place in the list
+            if (column_name == "age" or column_name == "age_range") and len(names) > 0:
                 tmp_names = []
-                tmp_names_not_ages = []
+                tmp_names_not_an_age = []  # e.g. 'prefer not to say'
                 for name in names:
-                    try:
-                        if not name[0].isnumeric():
-                            tmp_names_not_ages.append(name)
-                        else:
-                            tmp_names.append(name)
-                    except KeyError:
+                    if len(name) < 1:
                         continue
-                names = tmp_names + tmp_names_not_ages
+                    if not name[0].isnumeric():
+                        tmp_names_not_an_age.append(name)
+                    else:
+                        tmp_names.append(name)
+
+                # Convert to int for sorting purposes
+                if column_name == "age":
+                    tmp_names = [int(x) for x in tmp_names]
+
+                tmp_names.sort(reverse=True)
+
+                # Convert back to str
+                if column_name == "age":
+                    tmp_names = [str(x) for x in tmp_names]
+
+                names = tmp_names + tmp_names_not_an_age
 
             # Set count values
             for name in names:
@@ -910,6 +926,11 @@ class CampaignService:
     def get_who_the_people_are_options(self) -> list[dict]:
         """Get who the people are options"""
 
+        if self.__campaign_code == CampaignCode.healthwellbeing:
+            breakdown_by_age_str = "Show breakdown by age range"
+        else:
+            breakdown_by_age_str = "Show breakdown by age"
+
         breakdown_country_option = {
             "value": "breakdown-country",
             "label": f"{self.__t('Show breakdown by country')}",
@@ -917,6 +938,10 @@ class CampaignService:
         breakdown_age_option = {
             "value": "breakdown-age",
             "label": f"{self.__t('Show breakdown by age')}",
+        }
+        breakdown_age_range_option = {
+            "value": "breakdown-age-range",
+            "label": f"{self.__t(breakdown_by_age_str)}",
         }
         breakdown_gender = {
             "value": "breakdown-gender",
@@ -930,21 +955,29 @@ class CampaignService:
         options = []
 
         if self.__campaign_code == CampaignCode.what_women_want:
-            options = [breakdown_age_option, breakdown_country_option]
+            options = [breakdown_age_range_option, breakdown_country_option]
         elif self.__campaign_code == CampaignCode.what_young_people_want:
-            options = [breakdown_age_option, breakdown_gender, breakdown_country_option]
+            options = [
+                breakdown_age_range_option,
+                breakdown_gender,
+                breakdown_country_option,
+            ]
         elif self.__campaign_code == CampaignCode.midwives_voices:
             options = [
-                breakdown_age_option,
+                breakdown_age_range_option,
                 breakdown_profession,
                 breakdown_country_option,
             ]
         elif self.__campaign_code == CampaignCode.healthwellbeing:
-            options = [breakdown_age_option, breakdown_country_option]
+            options = [
+                breakdown_age_option,
+                breakdown_age_range_option,
+                breakdown_country_option,
+            ]
         elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
-            options = [breakdown_age_option]
+            options = [breakdown_age_range_option]
         elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
-            options = [breakdown_age_option]
+            options = [breakdown_age_range_option]
 
         return options
 

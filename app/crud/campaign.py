@@ -11,6 +11,7 @@ from app import databank
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.age import Age
+from app.schemas.age_range import AgeRange
 from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
@@ -55,6 +56,13 @@ class CampaignCRUD:
         ages = self.__databank.ages
 
         return copy.copy(ages)
+
+    def get_age_ranges(self) -> list[AgeRange]:
+        """Get age ranges"""
+
+        age_ranges = self.__databank.age_ranges
+
+        return copy.copy(age_ranges)
 
     def get_genders(self) -> list[Gender]:
         """Get genders"""
@@ -161,6 +169,11 @@ class CampaignCRUD:
         """Set ages"""
 
         self.__databank.ages = ages
+
+    def set_age_ranges(self, age_ranges: list[AgeRange]):
+        """Set age ranges"""
+
+        self.__databank.age_ranges = age_ranges
 
     def set_countries(self, countries: dict[str, Country]):
         """Set countries"""

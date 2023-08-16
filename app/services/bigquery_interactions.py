@@ -53,8 +53,11 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     # Use BigQuery Storage client for faster results to dataframe
     bigquery_storage_client = get_bigquery_storage_client()
 
-    # what_young_people_want has a different minimum age
-    if campaign_code == CampaignCode.what_young_people_want:
+    # 'what_young_people_want' and 'healthwellbeing' has a different minimum age
+    if (
+        campaign_code == CampaignCode.what_young_people_want
+        or campaign_code == CampaignCode.healthwellbeing
+    ):
         min_age = "10"
     else:
         min_age = "15"

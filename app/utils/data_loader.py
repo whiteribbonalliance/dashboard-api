@@ -14,6 +14,7 @@ from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.age import Age
+from app.schemas.age_range import AgeRange
 from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
@@ -41,8 +42,8 @@ def get_top_level(leaf_categories: str, campaign_code: CampaignCode) -> str:
     return "/".join(top_levels)
 
 
-def get_age_bucket(age: str | int | None) -> str | None:
-    """Add age to a specific age bucket e.g. 30 -> '25-34'"""
+def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | None:
+    """Convert age to an age range e.g. '30' -> '25-34'"""
 
     if age is None:
         return age
@@ -51,21 +52,38 @@ def get_age_bucket(age: str | int | None) -> str | None:
         if age.isnumeric():
             age = int(age)
         else:
-            # Non-numeric e.g. 'prefer not to say'
-            return age
+            return age  # Non-numeric e.g. 'prefer not to say'
 
-    if age >= 55:
-        return "55+"
-    if age >= 45:
-        return "45-54"
-    if age >= 35:
-        return "35-44"
-    if age >= 25:
-        return "25-34"
-    if age >= 20:
-        return "20-24"
-    if age >= 15:
-        return "15-19"
+    if campaign_code == CampaignCode.healthwellbeing:
+        if age >= 65:
+            return "65+"
+        if age >= 56:
+            return "56-64"
+        if age >= 46:
+            return "46-55"
+        if age >= 36:
+            return "36-45"
+        if age >= 26:
+            return "26-35"
+        if age >= 21:
+            return "21-25"
+        if age >= 16:
+            return "16-20"
+        if age >= 10:
+            return "10-15"
+    else:
+        if age >= 55:
+            return "55+"
+        if age >= 45:
+            return "45-54"
+        if age >= 35:
+            return "35-44"
+        if age >= 25:
+            return "25-34"
+        if age >= 20:
+            return "20-24"
+        if age >= 15:
+            return "15-19"
 
     return "N/A"
 
@@ -230,14 +248,24 @@ def load_campaign_data(campaign_code: CampaignCode):
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
-    # Modify age into age bucket (skip if what_young_people_want)
-    if campaign_code != CampaignCode.what_young_people_want:
-        df_responses["age"] = df_responses["age"].apply(get_age_bucket)
-
     # Set ages
     ages = df_responses["age"].unique().tolist()
     ages = [Age(code=age, name=age) for age in ages if age is not None]
     campaign_crud.set_ages(ages=ages)
+
+    # Age range
+    df_responses["age_range"] = df_responses["age"].apply(
+        lambda x: get_age_range(age=x, campaign_code=campaign_code)
+    )
+
+    # Set age ranges
+    age_ranges = df_responses["age_range"].unique().tolist()
+    age_ranges = [
+        AgeRange(code=age_range, name=age_range)
+        for age_range in age_ranges
+        if age_range is not None
+    ]
+    campaign_crud.set_age_ranges(age_ranges=age_ranges)
 
     # Remove the UNCODABLE responses
     for q_code in campaign_q_codes:
