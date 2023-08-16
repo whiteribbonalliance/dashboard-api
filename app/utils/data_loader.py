@@ -36,8 +36,8 @@ def get_top_level(leaf_categories: str, campaign_code: CampaignCode) -> str:
     mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
         campaign_code=campaign_code
     )
-    categories = leaf_categories.split("/")
-    top_levels = sorted(set([mapping_to_top_level.get(cat, cat) for cat in categories]))
+    categories = [x for x in leaf_categories.split("/") if x]
+    top_levels = sorted(set([mapping_to_top_level.get(x, x) for x in categories]))
 
     return "/".join(top_levels)
 
@@ -52,7 +52,7 @@ def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | N
         if age.isnumeric():
             age = int(age)
         else:
-            return age  # Non-numeric e.g. 'prefer not to say'
+            return age  # Non-numeric e.g. 'prefer not to say' or already an age range
 
     if campaign_code == CampaignCode.healthwellbeing:
         if age >= 65:
@@ -254,9 +254,16 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_ages(ages=ages)
 
     # Age range
-    df_responses["age_range"] = df_responses["age"].apply(
-        lambda x: get_age_range(age=x, campaign_code=campaign_code)
-    )
+    # Note: Campaigns 'what_women_want' and 'midwives_voices' already contain 'age' as a range
+    if (
+        campaign_code == CampaignCode.what_women_want
+        or campaign_code == CampaignCode.midwives_voices
+    ):
+        df_responses["age_range"] = df_responses["age"]
+    else:
+        df_responses["age_range"] = df_responses["age"].apply(
+            lambda x: get_age_range(age=x, campaign_code=campaign_code)
+        )
 
     # Set age ranges
     age_ranges = df_responses["age_range"].unique().tolist()

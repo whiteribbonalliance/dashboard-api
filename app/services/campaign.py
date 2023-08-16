@@ -853,27 +853,38 @@ class CampaignService:
             # Sort age or age_range
             # Move values such as 'prefer not to say' at last place in the list
             if (column_name == "age" or column_name == "age_range") and len(names) > 0:
-                tmp_names = []
-                tmp_names_not_an_age = []  # e.g. 'prefer not to say'
+                tmp_ages = []
+                tmp_ages_not_a_number = []  # e.g. 'prefer not to say'
                 for name in names:
                     if len(name) < 1:
                         continue
-                    if not name[0].isnumeric():
-                        tmp_names_not_an_age.append(name)
+
+                    # e.g. '30' or '25-30'
+                    if name[0].isnumeric():
+                        tmp_ages.append(name)
+                    # e.g. 'prefer not to say'
                     else:
-                        tmp_names.append(name)
+                        tmp_ages_not_a_number.append(name)
 
                 # Convert to int for sorting purposes
                 if column_name == "age":
-                    tmp_names = [int(x) for x in tmp_names]
+                    tmp_ages_as_int = []
+                    for x in tmp_ages:
+                        if x.isnumeric():
+                            tmp_ages_as_int.append(int(x))
+                        else:
+                            tmp_ages_as_int.append(x)
 
-                tmp_names.sort(reverse=True)
+                    tmp_ages = tmp_ages_as_int
+
+                tmp_ages.sort(reverse=True)
+                tmp_ages_not_a_number.sort(reverse=True)
 
                 # Convert back to str
                 if column_name == "age":
-                    tmp_names = [str(x) for x in tmp_names]
+                    tmp_ages = [str(x) for x in tmp_ages]
 
-                names = tmp_names + tmp_names_not_an_age
+                names = tmp_ages + tmp_ages_not_a_number
 
             # Set count values
             for name in names:
@@ -955,16 +966,16 @@ class CampaignService:
         options = []
 
         if self.__campaign_code == CampaignCode.what_women_want:
-            options = [breakdown_age_range_option, breakdown_country_option]
+            options = [breakdown_age_option, breakdown_country_option]
         elif self.__campaign_code == CampaignCode.what_young_people_want:
             options = [
-                breakdown_age_range_option,
+                breakdown_age_option,
                 breakdown_gender,
                 breakdown_country_option,
             ]
         elif self.__campaign_code == CampaignCode.midwives_voices:
             options = [
-                breakdown_age_range_option,
+                breakdown_age_option,
                 breakdown_profession,
                 breakdown_country_option,
             ]
