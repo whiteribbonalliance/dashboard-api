@@ -429,6 +429,7 @@ class CampaignService:
         """Get living setting settings breakdown"""
 
         df_1_copy = self.__get_df_1_copy()
+        df_2_copy = self.__get_df_2_copy()
 
         def fix_value(v: str):
             # If value in lower case is 'prefer not to say', then rename to 'Prefer not to say'
@@ -438,18 +439,58 @@ class CampaignService:
             return v
 
         df_1_copy["setting"] = df_1_copy["setting"].apply(fix_value)
+        df_2_copy["setting"] = df_2_copy["setting"].apply(fix_value)
 
-        living_settings_counts = (
-            df_1_copy["setting"].value_counts(ascending=True).to_dict()
+        # Get row count
+        grouped_by_column_1 = df_1_copy.groupby("setting")["setting"].count()
+        grouped_by_column_2 = df_2_copy.groupby("setting")["setting"].count()
+
+        # Add count
+        names = list(
+            set(grouped_by_column_1.index.tolist() + grouped_by_column_2.index.tolist())
         )
+        names = [name for name in names if name]
 
         living_settings_breakdown = []
 
-        for key, value in living_settings_counts.items():
-            if not key:
-                continue
+        # Set count values
+        for name in names:
+            try:
+                count_1 = grouped_by_column_1[name].item()
+            except KeyError:
+                count_1 = 0
+            try:
+                count_2 = grouped_by_column_2[name].item()
+            except KeyError:
+                count_2 = 0
 
-            living_settings_breakdown.append({"name": self.__t(key), "count": value})
+            living_settings_breakdown.append(
+                {
+                    "name": self.__t(name) if helpers.contains_letters(name) else name,
+                    "count_1": count_1,
+                    "count_2": count_2,
+                }
+            )
+
+        # Sort by count value (DESC)
+        if not self.__filter_1 and not self.__filter_2:
+            living_settings_breakdown = sorted(
+                living_settings_breakdown,
+                key=operator.itemgetter("count_1"),
+                reverse=True,
+            )
+        elif self.__filter_1 and not self.__filter_2:
+            living_settings_breakdown = sorted(
+                living_settings_breakdown,
+                key=operator.itemgetter("count_2"),
+                reverse=True,
+            )
+        elif not self.__filter_1 and self.__filter_2:
+            living_settings_breakdown = sorted(
+                living_settings_breakdown,
+                key=operator.itemgetter("count_1"),
+                reverse=True,
+            )
 
         return living_settings_breakdown
 
