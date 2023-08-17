@@ -124,6 +124,39 @@ class CampaignService:
             filter_1=filter_1, filter_2=filter_2
         )
 
+        # Get unique parent categories from response_topics
+        self.__response_topics_unique_parent_categories = (
+            self.__get_unique_parent_categories_from_response_topics()
+        )
+
+    def __get_unique_parent_categories_from_response_topics(self) -> set:
+        """
+        Get unique parent categories from response topics
+        Will also check for the parent category of sub-categories
+        """
+
+        parent_categories = set()
+
+        mapping_code_to_parent_category = (
+            code_hierarchy.get_mapping_code_to_parent_category(
+                campaign_code=self.__campaign_code
+            )
+        )
+
+        if self.__filter_1:
+            for category in self.__filter_1.response_topics:
+                parent_category = mapping_code_to_parent_category.get(category)
+                if parent_category:
+                    parent_categories.add(parent_category)
+
+        if self.__filter_2:
+            for category in self.__filter_2.response_topics:
+                parent_category = mapping_code_to_parent_category.get(category)
+                if parent_category:
+                    parent_categories.add(parent_category)
+
+        return parent_categories
+
     def get_responses_sample_columns(self) -> list[dict]:
         """Get responses sample columns"""
 
@@ -321,16 +354,51 @@ class CampaignService:
         def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
 
-            # Count occurrence of responses
-            counter = Counter()
-            for canonical_code in df[canonical_code_col_name]:
-                for c in canonical_code.split("/"):
-                    counter[c] += 1
+            # Count occurrence of response topics (categories)
+            category_counter = Counter()
 
-            if len(counter) > 0:
+            # Campaign 'healthwellbeing' will handle responses breakdown differently
+            # If there is only one parent category, then only include its sub-categories in the response
+            # If there is more than one parent category, only include the parent categories in the response
+            if self.__campaign_code == CampaignCode.healthwellbeing:
+                # Add a column with the parent category of the category
+                df["tmp_parent_category"] = df[canonical_code_col_name].map(
+                    code_hierarchy.get_mapping_code_to_parent_category(
+                        campaign_code=self.__campaign_code
+                    )
+                )
+
+                # Only include sub-categories from the parent category
+                if len(self.__response_topics_unique_parent_categories) == 1:
+                    parent_category = list(
+                        self.__response_topics_unique_parent_categories
+                    )[0]
+                    df = df[(df["tmp_parent_category"] == parent_category)]
+                    for canonical_code in df[canonical_code_col_name]:
+                        for c in canonical_code.split("/"):
+                            category_counter[c] += 1
+
+                # Only include parent categories
+                else:
+                    for canonical_code in df["tmp_parent_category"]:
+                        for c in canonical_code.split("/"):
+                            category_counter[c] += 1
+
+            # Other campaigns
+            else:
+                # Include all categories
+                for canonical_code in df[canonical_code_col_name]:
+                    for c in canonical_code.split("/"):
+                        category_counter[c] += 1
+
+            if len(category_counter) > 0:
                 # Create dataframe with items from counter
                 df = pd.DataFrame(
-                    sorted(counter.items(), key=operator.itemgetter(1), reverse=True)
+                    sorted(
+                        category_counter.items(),
+                        key=operator.itemgetter(1),
+                        reverse=True,
+                    )
                 )
 
                 # Set column names

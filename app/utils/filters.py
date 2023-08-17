@@ -1,3 +1,4 @@
+import copy
 import re
 
 import inflect
@@ -229,41 +230,51 @@ def check_if_filters_are_identical(
     Some filters are nested lists, so they should be un-nested before performing the check.
     """
 
-    if not filter_1 and not filter_2:
+    if filter_1:
+        _filter_1 = copy.deepcopy(filter_1)
+    else:
+        _filter_1 = None
+
+    if filter_2:
+        _filter_2 = copy.deepcopy(filter_2)
+    else:
+        _filter_2 = None
+
+    if not _filter_1 and not _filter_2:
         return True
-    if filter_1 and not filter_2:
+    if _filter_1 and not _filter_2:
         return False
-    if filter_2 and not filter_1:
+    if _filter_2 and not _filter_1:
         return False
 
-    filter_1.countries = flatten(filter_1.countries)
-    filter_2.countries = flatten(filter_2.countries)
+    _filter_1.countries = flatten(_filter_1.countries)
+    _filter_2.countries = flatten(_filter_2.countries)
 
-    filter_1.regions = flatten(filter_1.regions)
-    filter_2.regions = flatten(filter_2.regions)
+    _filter_1.regions = flatten(_filter_1.regions)
+    _filter_2.regions = flatten(_filter_2.regions)
 
-    filter_1.response_topics = flatten(filter_1.response_topics)
-    filter_2.response_topics = flatten(filter_2.response_topics)
+    _filter_1.response_topics = flatten(_filter_1.response_topics)
+    _filter_2.response_topics = flatten(_filter_2.response_topics)
 
-    filter_1.genders = flatten(filter_1.genders)
-    filter_2.genders = flatten(filter_2.genders)
+    _filter_1.genders = flatten(_filter_1.genders)
+    _filter_2.genders = flatten(_filter_2.genders)
 
-    filter_1.professions = flatten(filter_1.professions)
-    filter_2.professions = flatten(filter_2.professions)
+    _filter_1.professions = flatten(_filter_1.professions)
+    _filter_2.professions = flatten(_filter_2.professions)
 
     return (
-        filter_1.countries == filter_2.countries
-        and filter_1.regions == filter_2.regions
-        and filter_1.response_topics == filter_2.response_topics
-        and filter_1.only_responses_from_categories
-        == filter_2.only_responses_from_categories
-        and filter_1.only_multi_word_phrases_containing_filter_term
-        == filter_2.only_multi_word_phrases_containing_filter_term
-        and filter_1.ages == filter_2.ages
-        and filter_1.genders == filter_2.genders
-        and filter_1.professions == filter_2.professions
-        and filter_1.keyword_filter == filter_2.keyword_filter
-        and filter_1.keyword_exclude == filter_2.keyword_exclude
+        _filter_1.countries == _filter_2.countries
+        and _filter_1.regions == _filter_2.regions
+        and _filter_1.response_topics == _filter_2.response_topics
+        and _filter_1.only_responses_from_categories
+        == _filter_2.only_responses_from_categories
+        and _filter_1.only_multi_word_phrases_containing_filter_term
+        == _filter_2.only_multi_word_phrases_containing_filter_term
+        and _filter_1.ages == _filter_2.ages
+        and _filter_1.genders == _filter_2.genders
+        and _filter_1.professions == _filter_2.professions
+        and _filter_1.keyword_filter == _filter_2.keyword_filter
+        and _filter_1.keyword_exclude == _filter_2.keyword_exclude
     )
 
 
