@@ -32,14 +32,16 @@ logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 
-def get_top_level(leaf_categories: str, campaign_code: CampaignCode) -> str:
-    mapping_to_top_level = code_hierarchy.get_mapping_to_top_level(
+def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str:
+    mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
         campaign_code=campaign_code
     )
-    categories = [x for x in leaf_categories.split("/") if x]
-    top_levels = sorted(set([mapping_to_top_level.get(x, x) for x in categories]))
+    categories = [x for x in sub_categories.split("/") if x]
+    parent_categories = sorted(
+        set([mapping_to_parent_category.get(x, x) for x in categories])
+    )
 
-    return "/".join(top_levels)
+    return "/".join(parent_categories)
 
 
 def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | None:
@@ -301,11 +303,13 @@ def load_campaign_data(campaign_code: CampaignCode):
             lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
         )
 
-    # Add top_level column
+    # Add parent_category column
     for q_code in campaign_q_codes:
-        df_responses[q_col_names.get_top_level_col_name(q_code=q_code)] = df_responses[
-            q_col_names.get_canonical_code_col_name(q_code=q_code)
-        ].apply(lambda x: get_top_level(leaf_categories=x, campaign_code=campaign_code))
+        df_responses[
+            q_col_names.get_parent_category_col_name(q_code=q_code)
+        ] = df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)].apply(
+            lambda x: get_parent_category(sub_categories=x, campaign_code=campaign_code)
+        )
 
     # Create countries
     countries = {}

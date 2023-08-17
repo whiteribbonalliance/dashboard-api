@@ -76,7 +76,9 @@ def apply_filter_to_df(
             q_code=q_code
         )
         lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
-        top_level_col_name = q_col_names.get_top_level_col_name(q_code=q_code)
+        parent_category_col_name = q_col_names.get_parent_category_col_name(
+            q_code=q_code
+        )
 
         # Filter response topics
         if len(response_topics) > 0:
@@ -87,7 +89,7 @@ def apply_filter_to_df(
             else:
                 condition = df_copy[canonical_code_column_name].isin(
                     response_topics
-                ) | df_copy[top_level_col_name].isin(response_topics)
+                ) | df_copy[parent_category_col_name].isin(response_topics)
             for response_topic in response_topics:
                 if only_responses_from_categories:
                     condition &= df_copy[canonical_code_column_name].str.contains(
@@ -176,7 +178,7 @@ def generate_description_of_filter(
     if ages is not None and len(ages) > 0:
         description += generate_age_description(ages=ages)
 
-    mapping_to_description = code_hierarchy.get_mapping_to_description(
+    mapping_to_description = code_hierarchy.get_mapping_code_to_description(
         campaign_code=campaign_code
     )
     response_topics_mentioned = list(

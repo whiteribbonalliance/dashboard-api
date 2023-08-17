@@ -24,10 +24,10 @@ def get_canonical_code_col_name(q_code: QuestionCode) -> str:
     return f"{q_code.value}_canonical_code"
 
 
-def get_top_level_col_name(q_code: QuestionCode) -> str:
-    """Get top level column name"""
+def get_parent_category_col_name(q_code: QuestionCode) -> str:
+    """Get parent category column name"""
 
-    return f"{q_code.value}_top_level"
+    return f"{q_code.value}_parent_category"
 
 
 def get_raw_response_col_name(q_code: QuestionCode) -> str:

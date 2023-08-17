@@ -219,7 +219,7 @@ class CampaignService:
         def get_descriptions(code: str, t: Callable) -> str:
             """Get descriptions"""
 
-            mapping_to_description = code_hierarchy.get_mapping_to_description(
+            mapping_to_description = code_hierarchy.get_mapping_code_to_description(
                 campaign_code=self.__campaign_code
             )
 
@@ -338,14 +338,14 @@ class CampaignService:
 
                 # Set code
                 df[code_col_name] = df[label_col_name].map(
-                    code_hierarchy.get_mapping_to_code(
+                    code_hierarchy.get_mapping_code_to_code(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Set description column
                 df[description_col_name] = df[label_col_name].map(
-                    code_hierarchy.get_mapping_to_description(
+                    code_hierarchy.get_mapping_code_to_description(
                         campaign_code=self.__campaign_code
                     )
                 )
@@ -628,9 +628,20 @@ class CampaignService:
 
         hierarchy = self.__crud.get_category_hierarchy()
         response_topics = []
-        for top_level, leaves in hierarchy.items():
-            for code, name in leaves.items():
-                response_topics.append(ResponseTopic(code=code, name=self.__t(name)))
+        for parent_category, sub_categories in hierarchy.items():
+            # Add the parent category (skip if 'NA')
+            if parent_category != "NA":
+                # Parent category has no description
+                response_topics.append(
+                    ResponseTopic(code=parent_category, name=self.__t(parent_category))
+                )
+
+            # Add the sub-category (skip if 'NA')
+            for code, description in sub_categories.items():
+                # Sub-category has description
+                response_topics.append(
+                    ResponseTopic(code=code, name=self.__t(description))
+                )
 
         return response_topics
 
