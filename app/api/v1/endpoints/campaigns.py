@@ -178,7 +178,11 @@ async def read_filter_options(
     # Response topic options
     response_topics = campaign_service.get_response_topics()
     response_topic_options = [
-        {"value": response_topic.code, "label": response_topic.name}
+        {
+            "value": response_topic.code,
+            "label": response_topic.name,
+            "metadata": "is_parent" if response_topic.is_parent else "is_not_parent",
+        }
         for response_topic in response_topics
     ]
 

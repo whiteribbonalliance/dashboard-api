@@ -21,11 +21,14 @@ def get_mapping_code_to_description(campaign_code: CampaignCode) -> dict:
     """Get mapping 'code to description'"""
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    parent_categories_descriptions = campaign_crud.get_parent_categories_descriptions()
 
     category_hierarchy = campaign_crud.get_category_hierarchy()
     mapping_code_to_description = {}
     for parent_category, sub_categories in category_hierarchy.items():
-        mapping_code_to_description[parent_category] = parent_category
+        mapping_code_to_description[
+            parent_category
+        ] = parent_categories_descriptions.get(parent_category, parent_category)
         for code, description in sub_categories.items():
             mapping_code_to_description[code] = description
 

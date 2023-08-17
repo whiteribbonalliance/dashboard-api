@@ -160,6 +160,13 @@ class CampaignCRUD:
 
         return dataframe
 
+    def get_parent_categories_descriptions(self) -> dict:
+        """Get parent categories descriptions"""
+
+        parent_categories_descriptions = self.__databank.parent_categories_descriptions
+
+        return copy.deepcopy(parent_categories_descriptions)
+
     def set_ngrams_unfiltered(self, ngrams_unfiltered: dict, q_code: QuestionCode):
         """Set ngrams unfiltered"""
 

@@ -695,16 +695,28 @@ class CampaignService:
         """Get response topics"""
 
         hierarchy = self.__crud.get_category_hierarchy()
+        parent_categories_descriptions = (
+            self.__crud.get_parent_categories_descriptions()
+        )
         response_topics = []
+
         for parent_category, sub_categories in hierarchy.items():
             # Add the parent category (skip if 'NA')
             if parent_category != "NA":
                 # Parent category has no description
                 response_topics.append(
-                    ResponseTopic(code=parent_category, name=self.__t(parent_category))
+                    ResponseTopic(
+                        code=parent_category,
+                        name=self.__t(
+                            parent_categories_descriptions.get(
+                                parent_category, parent_category
+                            )
+                        ),
+                        is_parent=True,
+                    )
                 )
 
-            # Add the sub-category (skip if 'NA')
+            # Add the sub-category
             for code, description in sub_categories.items():
                 # Sub-category has description
                 response_topics.append(
