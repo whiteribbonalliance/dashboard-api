@@ -359,7 +359,7 @@ class CampaignService:
 
             # Campaign 'healthwellbeing' will handle responses breakdown differently
             # If there is only one parent category, then only include its sub-categories in the response
-            # If there is more than one parent category, only include the parent categories in the response
+            # Else, only include the parent categories in the response
             if self.__campaign_code == CampaignCode.healthwellbeing:
                 # Add a column with the parent category of the category
                 df["tmp_parent_category"] = df[canonical_code_col_name].map(
