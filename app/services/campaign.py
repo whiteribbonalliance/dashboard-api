@@ -565,11 +565,15 @@ class CampaignService:
     def get_wordcloud_words(self, q_code: QuestionCode) -> list[dict]:
         """Get wordcloud words"""
 
+        ngram_count_dict = self.__ngrams_1.get(q_code.value)
+        if not ngram_count_dict:
+            return []
+
         (
             unigram_count_dict,
             bigram_count_dict,
             trigram_count_dict,
-        ) = self.__ngrams_1[q_code.value]
+        ) = ngram_count_dict
 
         # Get words for wordcloud
         wordcloud_words = (
@@ -602,11 +606,14 @@ class CampaignService:
 
         # Set unigram count dict based on question code
         if q_code == QuestionCode.q2:
-            unigram_count_dict_1 = self.__ngrams_1[q_code.value][0]
-            unigram_count_dict_2 = self.__ngrams_2[q_code.value][0]
+            unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+            unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
         else:
-            unigram_count_dict_1 = self.__ngrams_1[q_code.value][0]
-            unigram_count_dict_2 = self.__ngrams_2[q_code.value][0]
+            unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+            unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
+
+        unigram_count_dict_1 = unigram_count_dict_1[0] if unigram_count_dict_1 else ()
+        unigram_count_dict_2 = unigram_count_dict_2[0] if unigram_count_dict_2 else ()
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=unigram_count_dict_1,
@@ -618,8 +625,11 @@ class CampaignService:
     def get_two_word_phrases(self, q_code: QuestionCode) -> list:
         """Get two word phrases"""
 
-        bigram_count_dict_1 = self.__ngrams_1[q_code.value][1]
-        bigram_count_dict_2 = self.__ngrams_2[q_code.value][1]
+        bigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+        bigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
+
+        bigram_count_dict_1 = bigram_count_dict_1[1] if bigram_count_dict_1 else {}
+        bigram_count_dict_2 = bigram_count_dict_2[1] if bigram_count_dict_2 else {}
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=bigram_count_dict_1,
@@ -631,8 +641,11 @@ class CampaignService:
     def get_three_word_phrases(self, q_code: QuestionCode) -> list:
         """Get three word phrases"""
 
-        trigram_count_dict_1 = self.__ngrams_1[q_code.value][2]
-        trigram_count_dict_2 = self.__ngrams_2[q_code.value][2]
+        trigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+        trigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
+
+        trigram_count_dict_1 = trigram_count_dict_1[2] if trigram_count_dict_1 else {}
+        trigram_count_dict_2 = trigram_count_dict_2[2] if trigram_count_dict_2 else {}
 
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=trigram_count_dict_1,

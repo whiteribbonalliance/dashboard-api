@@ -2,6 +2,7 @@
 Requests the dataframe of a campaign from BigQuery and stores the data into the databank
 """
 
+import copy
 import json
 import logging
 import os
@@ -9,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from app import constants, globals
+from app import constants, globals, databank
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
@@ -213,8 +214,19 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
+    # Create a copy of the databank to write campaign data to
+    # If writing of the data succeeds, then the current databank will be replaced with the databank copy at the end of
+    # this function
+    # This is to make sure new data loads correctly into the databank
+    # If an error occurs while loading new data, then the current databank stays as is and the error is logged
+    databank_copy = copy.deepcopy(
+        databank.get_campaign_databank(campaign_code=campaign_code)
+    )
+
     # CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = CampaignCRUD(
+        campaign_code=campaign_code, databank_copy=databank_copy
+    )
 
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
@@ -361,6 +373,9 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set dataframe
     campaign_crud.set_dataframe(df=df_responses)
 
+    # Set databank copy as current databank
+    databank.set_campaign_databank(campaign_code=campaign_code, databank=databank_copy)
+
 
 def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
     """Load campaign ngrams unfiltered"""
@@ -396,22 +411,21 @@ def load_all_campaigns_data():
 
     for campaign_code in CampaignCode:
         print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")
-        load_campaign_data(campaign_code=campaign_code)
 
-
-def load_all_campaigns_ngrams_unfiltered():
-    """Load all campaigns ngrams"""
-
-    for campaign_code in CampaignCode:
-        print(f"INFO:\t  Loading ngrams cache for campaign {campaign_code.value}...")
-        load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
+        try:
+            load_campaign_data(campaign_code=campaign_code)
+        except (Exception,):
+            logger.exception(
+                f"""Error loading data for campaign {campaign_code.value}."""
+            )
+        else:
+            load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
 
 def load_data():
     """Load data"""
 
     load_all_campaigns_data()
-    load_all_campaigns_ngrams_unfiltered()
 
     # Clear the API cache
     ApiCache().clear_cache()

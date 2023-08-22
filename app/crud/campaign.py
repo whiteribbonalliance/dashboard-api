@@ -8,6 +8,7 @@ import inflect
 import pandas as pd
 
 from app import databank
+from app.databank import Databank
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.age import Age
@@ -21,8 +22,15 @@ inflect_engine = inflect.engine()
 
 
 class CampaignCRUD:
-    def __init__(self, campaign_code: CampaignCode):
-        self.__databank = databank.get_campaign_databank(campaign_code=campaign_code)
+    def __init__(self, campaign_code: CampaignCode, databank_copy: Databank = None):
+        # If databank copy is supplied, CRUD will read/write data to the databank copy instead,
+        # while leaving the original campaign's databank intact
+        if databank_copy:
+            self.__databank = databank_copy
+        else:
+            self.__databank = databank.get_campaign_databank(
+                campaign_code=campaign_code
+            )
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
