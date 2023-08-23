@@ -16,12 +16,11 @@ from logging import Handler, Formatter
 NEW_RELIC_HEADERS = {
     "Api-Key": os.environ.get("NEWRELIC_API_KEY"),
     "Content-Encoding": "gzip",
-    "Content-Type": "application/json",
+    "Content-Type": "application/gzip",
 }
 
-PROJECT_NAME = os.environ.get("PROJECT_NAME")
-SERVICE_NAME = os.environ.get("SERVICE_NAME")
-NEW_RELIC_URL = "https://log-api.newrelic.com/log/v1"
+PROJECT_NAME = "wra-global-dashboard-api"
+NEW_RELIC_URL = "https://log-api.eu.newrelic.com/log/v1"
 
 
 # ----------------------------------------------------------------------------------------------------------------------------
@@ -46,8 +45,7 @@ class NewRelicFormatter(Formatter):
             for key, value in record.__dict__.items()
             if key not in ("args", "message", "msg")
         }
-        attributes["PROJECT_NAME"] = PROJECT_NAME
-        attributes["SERVICE_NAME"] = SERVICE_NAME
+        attributes["projectName"] = PROJECT_NAME
         payload = {
             "message": message,
             "attributes": attributes,
