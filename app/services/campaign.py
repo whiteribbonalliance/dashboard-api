@@ -350,6 +350,9 @@ class CampaignService:
         count_col_name = q_col_names.get_count_col_name(q_code=q_code)
         code_col_name = q_col_names.get_code_col_name(q_code=q_code)
         description_col_name = q_col_names.get_description_col_name(q_code=q_code)
+        parent_category_col_name = q_col_names.get_parent_category_col_name(
+            q_code=q_code
+        )
 
         def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
             """Get df responses breakdown"""
@@ -361,26 +364,19 @@ class CampaignService:
             # If there is only one parent category, then only include its sub-categories in the response
             # Else, only include the parent categories in the response
             if self.__campaign_code == CampaignCode.healthwellbeing:
-                # Add a column with the parent category of the category
-                df["tmp_parent_category"] = df[canonical_code_col_name].map(
-                    code_hierarchy.get_mapping_code_to_parent_category(
-                        campaign_code=self.__campaign_code
-                    )
-                )
-
                 # Only include sub-categories from the parent category
                 if len(self.__response_topics_unique_parent_categories) == 1:
                     parent_category = list(
                         self.__response_topics_unique_parent_categories
                     )[0]
-                    df = df[(df["tmp_parent_category"] == parent_category)]
+                    df = df[(df[parent_category_col_name] == parent_category)]
                     for canonical_code in df[canonical_code_col_name]:
                         for c in canonical_code.split("/"):
                             category_counter[c] += 1
 
                 # Only include parent categories
                 else:
-                    for canonical_code in df["tmp_parent_category"]:
+                    for canonical_code in df[parent_category_col_name]:
                         for c in canonical_code.split("/"):
                             category_counter[c] += 1
 
@@ -501,7 +497,7 @@ class CampaignService:
 
         def fix_value(v: str):
             # If value in lower case is 'prefer not to say', then rename to 'Prefer not to say'
-            if v.lower() == "prefer not to say":
+            if v and v.lower() == "prefer not to say":
                 v = "Prefer not to say"
 
             return v

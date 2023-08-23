@@ -103,6 +103,32 @@ def filter_ages_10_to_24(age: str) -> str:
     return np.nan
 
 
+def add_additional_fields_columns(
+    df: pd.DataFrame, campaign_code: CampaignCode
+) -> pd.DataFrame:
+    """Add columns from 'additional_fields'"""
+
+    # Q codes available in a campaign
+    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+
+    for q_code in [x for x in campaign_q_codes if x != QuestionCode.q1]:
+        # Create additional columns per question
+        df[q_col_names.get_raw_response_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_lemmatized_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_canonical_code_col_name(q_code=q_code)] = ""
+        df[q_col_names.get_original_language_col_name(q_code=q_code)] = ""
+
+        # Fill additional columns per question
+        df = df.apply(
+            lambda x: fill_additional_q_columns(
+                row=x, campaign_code=campaign_code, q_code=q_code
+            ),
+            axis=1,
+        )
+
+    return df
+
+
 def fill_additional_q_columns(
     row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
 ):
@@ -157,56 +183,6 @@ def fill_additional_q_columns(
     return row
 
 
-def fill_additional_setting_column(row: pd.Series):
-    """Fill additional setting column"""
-
-    additional_fields = json.loads(row["additional_fields"])
-
-    setting = additional_fields.get("setting")
-
-    # Only campaign 'healthwellbeing' has additional field 'setting'
-    if setting:
-        row["setting"] = setting
-
-    return row
-
-
-def add_additional_fields_columns(
-    df: pd.DataFrame, campaign_code: CampaignCode
-) -> pd.DataFrame:
-    """Add columns from 'additional_fields'"""
-
-    # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
-
-    # Create additional column 'setting'
-    df["setting"] = ""
-
-    if campaign_code == CampaignCode.healthwellbeing:
-        # Fill additional column 'setting'
-        df = df.apply(
-            lambda x: fill_additional_setting_column(row=x),
-            axis=1,
-        )
-
-    for q_code in [x for x in campaign_q_codes if x != QuestionCode.q1]:
-        # Create additional columns per question
-        df[q_col_names.get_raw_response_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_lemmatized_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_canonical_code_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_original_language_col_name(q_code=q_code)] = ""
-
-        # Fill additional columns per question
-        df = df.apply(
-            lambda x: fill_additional_q_columns(
-                row=x, campaign_code=campaign_code, q_code=q_code
-            ),
-            axis=1,
-        )
-
-    return df
-
-
 def load_campaign_data(campaign_code: CampaignCode):
     """
     Load campaign data
@@ -214,18 +190,18 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
-    # Create a copy of the databank to write campaign data to
+    # Create a temporary copy of the databank to write campaign data to
     # If writing of the data succeeds, then the current databank will be replaced with the databank copy at the end of
     # this function
     # This is to make sure new data loads correctly into the databank
     # If an error occurs while loading new data, then the current databank stays as is and the error is logged
-    databank_copy = copy.deepcopy(
+    tmp_databank = copy.deepcopy(
         databank.get_campaign_databank(campaign_code=campaign_code)
     )
 
     # CRUD
     campaign_crud = CampaignCRUD(
-        campaign_code=campaign_code, databank_copy=databank_copy
+        campaign_code=campaign_code, mock_databank=tmp_databank
     )
 
     # Q codes available in a campaign
@@ -373,8 +349,8 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set dataframe
     campaign_crud.set_dataframe(df=df_responses)
 
-    # Set databank copy as current databank
-    databank.set_campaign_databank(campaign_code=campaign_code, databank=databank_copy)
+    # Set tmp databank as current databank
+    databank.set_campaign_databank(campaign_code=campaign_code, databank=tmp_databank)
 
 
 def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
@@ -416,7 +392,7 @@ def load_all_campaigns_data():
             load_campaign_data(campaign_code=campaign_code)
         except (Exception,):
             logger.exception(
-                f"""Error loading data for campaign {campaign_code.value}."""
+                f"""Error loading data for campaign {campaign_code.value}"""
             )
         else:
             load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
@@ -465,7 +441,6 @@ def load_coordinates():
         countries = campaign_crud.get_countries_list()
 
         if len(countries) < 1:
-            logger.warning(f"Campaign {campaign_code.value} has no countries")
             continue
 
         country_alpha2_code = countries[0].alpha2_code

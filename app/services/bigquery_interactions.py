@@ -73,6 +73,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         REGEXP_REPLACE(REGEXP_REPLACE(INITCAP(respondent_gender), 'Twospirit', 'Two Spirit'), 'Unspecified', 'Prefer Not To Say') as gender,
         JSON_VALUE(respondent_additional_fields.profession) as profession,
+        JSON_VALUE(respondent_additional_fields.setting) as setting,
         respondent_additional_fields as additional_fields,
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code.value}'

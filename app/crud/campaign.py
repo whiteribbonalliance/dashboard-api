@@ -22,11 +22,10 @@ inflect_engine = inflect.engine()
 
 
 class CampaignCRUD:
-    def __init__(self, campaign_code: CampaignCode, databank_copy: Databank = None):
-        # If databank copy is supplied, CRUD will read/write data to the databank copy instead,
-        # while leaving the original campaign's databank intact
-        if databank_copy:
-            self.__databank = databank_copy
+    def __init__(self, campaign_code: CampaignCode, mock_databank: Databank = None):
+        # If the databank mock is supplied, CRUD will read/write data to the databank mock instead
+        if mock_databank:
+            self.__databank = mock_databank
         else:
             self.__databank = databank.get_campaign_databank(
                 campaign_code=campaign_code
