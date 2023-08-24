@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 import os
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -104,10 +105,10 @@ def filter_ages_10_to_24(age: str) -> str:
     return np.nan
 
 
-def add_additional_fields_columns(
+def add_additional_q_columns(
     df: pd.DataFrame, campaign_code: CampaignCode
 ) -> pd.DataFrame:
-    """Add columns from 'additional_fields'"""
+    """Add additional columns (q1_, q2_ etc.) from 'additional_fields'"""
 
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
@@ -133,7 +134,7 @@ def add_additional_fields_columns(
 def fill_additional_q_columns(
     row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
 ):
-    """Fill additional question columns with data from additional_fields"""
+    """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
 
     additional_fields = json.loads(row["additional_fields"])
 
@@ -213,8 +214,14 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
-    # Add columns from 'additional_fields'
-    df_responses = add_additional_fields_columns(
+    # Capitalize 'issue' for campaign 'healthwellbeing'
+    if campaign_code == CampaignCode.healthwellbeing:
+        df_responses["issue"] = df_responses["issue"].apply(
+            lambda x: x.capitalize() if x else np.nan
+        )
+
+    # Add additional columns (q1_, q2_, etc.) from 'additional_fields'
+    df_responses = add_additional_q_columns(
         df=df_responses, campaign_code=campaign_code
     )
 
