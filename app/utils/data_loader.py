@@ -45,7 +45,7 @@ def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str
 
 
 def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | None:
-    """Convert age to an age range e.g. '30' -> '25-34'"""
+    """Convert age to an age range e.g. '30' to '25-34'"""
 
     if age is None:
         return age
