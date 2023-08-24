@@ -73,6 +73,8 @@ def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | N
             return "16-20"
         if age >= 10:
             return "10-15"
+        if age >= 0:
+            return "< 10"
     else:
         if age >= 55:
             return "55+"
