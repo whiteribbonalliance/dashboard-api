@@ -6,7 +6,6 @@ import copy
 import json
 import logging
 import os
-from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -110,6 +109,57 @@ def add_additional_q_columns(
 ) -> pd.DataFrame:
     """Add additional columns (q1_, q2_ etc.) from 'additional_fields'"""
 
+    def fill_additional_q_columns(row: pd.Series, _q_code: QuestionCode):
+        """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
+
+        additional_fields = json.loads(row["additional_fields"])
+
+        response_original_text = additional_fields.get(
+            f"{_q_code.value}_response_original_text"
+        )
+        response_english_text = additional_fields.get(
+            f"{_q_code.value}_response_english_text"
+        )
+        response_lemmatized_text = additional_fields.get(
+            f"{_q_code.value}_response_lemmatized_text"
+        )
+        response_nlu_category = additional_fields.get(
+            f"{_q_code.value}_response_nlu_category"
+        )
+        response_original_lang = additional_fields.get(
+            f"{_q_code.value}_response_original_lang"
+        )
+
+        # For economic_empowerment_mexico append original_text and english_text
+        if campaign_code == CampaignCode.economic_empowerment_mexico:
+            if response_original_text and response_english_text:
+                row[
+                    q_col_names.get_raw_response_col_name(q_code=_q_code)
+                ] = f"{response_original_text} ({response_english_text})"
+            elif response_original_text:
+                row[
+                    q_col_names.get_raw_response_col_name(q_code=_q_code)
+                ] = response_original_text
+        else:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=_q_code)
+            ] = response_original_text
+
+        if response_lemmatized_text:
+            row[
+                q_col_names.get_lemmatized_col_name(q_code=_q_code)
+            ] = response_lemmatized_text
+        if response_nlu_category:
+            row[
+                q_col_names.get_canonical_code_col_name(q_code=_q_code)
+            ] = response_nlu_category
+        if response_original_lang:
+            row[
+                q_col_names.get_original_language_col_name(q_code=_q_code)
+            ] = response_original_lang
+
+        return row
+
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
@@ -122,67 +172,11 @@ def add_additional_q_columns(
 
         # Fill additional columns per question
         df = df.apply(
-            lambda x: fill_additional_q_columns(
-                row=x, campaign_code=campaign_code, q_code=q_code
-            ),
+            lambda x: fill_additional_q_columns(row=x, _q_code=q_code),
             axis=1,
         )
 
     return df
-
-
-def fill_additional_q_columns(
-    row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
-):
-    """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
-
-    additional_fields = json.loads(row["additional_fields"])
-
-    response_original_text = additional_fields.get(
-        f"{q_code.value}_response_original_text"
-    )
-    response_english_text = additional_fields.get(
-        f"{q_code.value}_response_english_text"
-    )
-    response_lemmatized_text = additional_fields.get(
-        f"{q_code.value}_response_lemmatized_text"
-    )
-    response_nlu_category = additional_fields.get(
-        f"{q_code.value}_response_nlu_category"
-    )
-    response_original_lang = additional_fields.get(
-        f"{q_code.value}_response_original_lang"
-    )
-
-    # For economic_empowerment_mexico append original_text and english_text
-    if campaign_code == CampaignCode.economic_empowerment_mexico:
-        if response_original_text and response_english_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=q_code)
-            ] = f"{response_original_text} ({response_english_text})"
-        elif response_original_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=q_code)
-            ] = response_original_text
-    else:
-        row[
-            q_col_names.get_raw_response_col_name(q_code=q_code)
-        ] = response_original_text
-
-    if response_lemmatized_text:
-        row[
-            q_col_names.get_lemmatized_col_name(q_code=q_code)
-        ] = response_lemmatized_text
-    if response_nlu_category:
-        row[
-            q_col_names.get_canonical_code_col_name(q_code=q_code)
-        ] = response_nlu_category
-    if response_original_lang:
-        row[
-            q_col_names.get_original_language_col_name(q_code=q_code)
-        ] = response_original_lang
-
-    return row
 
 
 def load_campaign_data(campaign_code: CampaignCode):
@@ -229,7 +223,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     for q_code in campaign_q_codes:
         df_responses[q_col_names.get_tokenized_col_name(q_code=q_code)] = df_responses[
             q_col_names.get_lemmatized_col_name(q_code=q_code)
-        ].apply(lambda x: x.split(" "))
+        ].apply(lambda x: x.split(" ") if x else x)
 
     # Apply strip function on alpha2 country codes
     df_responses["alpha2country"] = df_responses["alpha2country"].apply(
@@ -405,6 +399,8 @@ def load_all_campaigns_data():
         else:
             load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
+    print(f"INFO:\t  Loading data completed.")
+
 
 def load_data():
     """Load data"""
@@ -422,6 +418,8 @@ def load_translations_cache():
 
     # Creating the singleton instance will automatically load the cache
     TranslationsCache()
+
+    print("INFO:\t  Loading translations cache completed.")
 
 
 def load_coordinates():
@@ -492,3 +490,5 @@ def load_coordinates():
             file.write(json.dumps(coordinates, indent=2))
 
     globals.coordinates = coordinates
+
+    print(f"INFO:\t  Loading coordinates completed.")
