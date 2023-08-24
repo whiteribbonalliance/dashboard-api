@@ -67,7 +67,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         response_original_lang as q1_original_language,
         respondent_country_code as alpha2country,
         response_nlu_category AS q1_canonical_code,
-        respondent_nlu_categories AS q1_canonical_codes
+        respondent_nlu_categories AS q1_canonical_codes,
         response_lemmatized_text as q1_lemmatized,
         respondent_region_name as region,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
