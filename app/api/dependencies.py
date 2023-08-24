@@ -27,6 +27,6 @@ async def common_parameters(
 async def common_parameters_health_check(campaign: str) -> CommonParametersHealthCheck:
     """Return the common parameters"""
 
-    campaign_code_verified = verify_campaign(campaign=campaign)
+    campaign_code_verified = helpers.check_campaign(campaign=campaign)
 
     return CommonParametersHealthCheck(campaign_code=campaign_code_verified)
