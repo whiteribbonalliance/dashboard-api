@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app import helpers
 from app.api import dependencies
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
@@ -13,7 +14,6 @@ from app.schemas.common_parameters import CommonParameters
 from app.schemas.filter_options import FilterOptions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app.utils import helpers
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

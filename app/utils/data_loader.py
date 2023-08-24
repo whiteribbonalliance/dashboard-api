@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from app import constants, globals, databank
+from app import constants, globals, databank, helpers
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
@@ -26,7 +26,6 @@ from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
-from app.utils import helpers
 from app.utils import q_col_names
 
 logger = logging.getLogger(__name__)

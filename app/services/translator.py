@@ -5,11 +5,10 @@ from html import unescape
 from google.cloud import translate_v2
 from google.oauth2 import service_account
 
-from app import constants
+from app import constants, helpers
 from app.core.settings import settings
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
-from app.utils import helpers
 from app.utils.singleton_meta import SingletonMeta
 
 logger = logging.getLogger(__name__)

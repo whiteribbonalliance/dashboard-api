@@ -10,7 +10,7 @@ from typing import Callable
 
 import pandas as pd
 
-from app import constants, globals
+from app import constants, globals, helpers
 from app.core.settings import settings
 from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
@@ -25,7 +25,6 @@ from app.services import googlemaps_interactions
 from app.services.translator import Translator
 from app.utils import code_hierarchy
 from app.utils import filters
-from app.utils import helpers
 from app.utils import q_col_names
 
 
