@@ -1105,6 +1105,11 @@ class CampaignService:
 
             genders_breakdown.append({"name": self.__t(key), "count": value})
 
+        # Sort
+        genders_breakdown = sorted(
+            genders_breakdown, key=lambda x: x["count"], reverse=True
+        )
+
         return genders_breakdown
 
     def get_world_bubble_maps_coordinates(self) -> dict:
