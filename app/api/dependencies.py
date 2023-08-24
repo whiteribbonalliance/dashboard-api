@@ -28,5 +28,7 @@ async def common_parameters_health_check(campaign: str) -> CommonParametersHealt
     """Return the common parameters"""
 
     campaign_code_verified = helpers.check_campaign(campaign=campaign)
+    if not campaign_code_verified:
+        raise ResourceNotFoundHTTPException("Campaign not found")
 
     return CommonParametersHealthCheck(campaign_code=campaign_code_verified)
