@@ -7,11 +7,11 @@ import requests
 import logging
 from logging import Handler, Formatter
 
-
 # ----------------------------------------------------------------------------------------------------------------------------
 # Inits
 # ----------------------------------------------------------------------------------------------------------------------------
 
+STAGE = os.getenv("STAGE")
 
 NEW_RELIC_HEADERS = {
     "Api-Key": os.environ.get("NEWRELIC_API_KEY"),
@@ -31,7 +31,9 @@ NEW_RELIC_URL = "https://log-api.eu.newrelic.com/log/v1"
 class NewRelicHandler(Handler):
     def emit(self, record):
         log_payload = self.format(record)
-        requests.post(NEW_RELIC_URL, data=log_payload, headers=NEW_RELIC_HEADERS)
+
+        if STAGE == "prod":
+            requests.post(NEW_RELIC_URL, data=log_payload, headers=NEW_RELIC_HEADERS)
 
 
 class NewRelicFormatter(Formatter):
