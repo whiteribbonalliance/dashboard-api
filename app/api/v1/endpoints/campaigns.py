@@ -10,7 +10,7 @@ from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters import CommonParameters
+from app.schemas.common_parameters_campaigns import CommonParametersCampaigns
 from app.schemas.filter_options import FilterOptions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
@@ -31,7 +31,7 @@ api_cache = ApiCache()
 @api_cache.cache_response
 async def read_campaign(
     common_parameters: Annotated[
-        CommonParameters, Depends(dependencies.common_parameters)
+        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
     ],
     campaign_req: CampaignRequest,
 ):
@@ -148,7 +148,7 @@ async def read_campaign(
 @api_cache.cache_response
 async def read_filter_options(
     common_parameters: Annotated[
-        CommonParameters, Depends(dependencies.common_parameters)
+        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
     ]
 ):
     """Read filter options for campaign"""
@@ -233,7 +233,7 @@ async def read_filter_options(
 @api_cache.cache_response
 async def read_who_the_people_are_options(
     common_parameters: Annotated[
-        CommonParameters, Depends(dependencies.common_parameters)
+        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
     ]
 ):
     """Read who the people are options for campaign"""
