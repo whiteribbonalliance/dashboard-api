@@ -197,7 +197,7 @@ class CampaignService:
         return responses_breakdown
 
     def __get_responses_sample_column_ids(self, q_code: QuestionCode = None) -> list:
-        """Get responses column ids"""
+        """Get responses sample column ids"""
 
         columns = self.__crud.get_responses_sample_columns()
 
