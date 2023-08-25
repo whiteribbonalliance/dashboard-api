@@ -589,7 +589,7 @@ class CampaignService:
         wordcloud_words = wordcloud_words[:n_words_to_keep]
 
         wordcloud_words_list = [
-            {"text": self.__t(key), "value": item}
+            {"text": self.__t(key.lower()), "value": item}
             for key, item in dict(wordcloud_words).items()
         ]
 
@@ -689,7 +689,7 @@ class CampaignService:
 
         top_words = [
             {
-                "word": self.__t(text=word, delimiter=" "),
+                "word": self.__t(text=word.lower(), delimiter=" "),
                 "count_1": freq_list_top_1[(len(word_list) - 1) - index],
                 "count_2": freq_list_top_2[(len(word_list) - 1) - index],
             }

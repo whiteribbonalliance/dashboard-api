@@ -144,7 +144,7 @@ def fill_additional_q_columns(
     if campaign_code == CampaignCode.healthwellbeing and q_code == QuestionCode.q2:
         # Get issue
         issue = (
-            str(additional_fields.get("issue")).lower()
+            str(additional_fields.get("issue")).capitalize()
             if additional_fields.get("issue")
             else ""
         )
