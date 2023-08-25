@@ -156,14 +156,19 @@ class CampaignService:
 
         return parent_categories
 
-    def get_responses_sample_columns(self) -> list[dict]:
+    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
         """Get responses sample columns"""
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()
 
-        # For 'healthwellbeing' remove 'description' column
-        if self.__campaign_code == CampaignCode.healthwellbeing:
-            responses_sample_columns = [x for x in responses_sample_columns if x.get("id") != "description"]
+        # For 'healthwellbeing' remove 'description' column if q2
+        if (
+            self.__campaign_code == CampaignCode.healthwellbeing
+            and q_code == QuestionCode.q2
+        ):
+            responses_sample_columns = [
+                x for x in responses_sample_columns if x.get("id") != "description"
+            ]
 
         # Translate column names
         for column in responses_sample_columns:

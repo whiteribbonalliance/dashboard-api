@@ -76,7 +76,7 @@ async def read_campaign(
     for q_code in QuestionCode:
         responses_sample[f"{q_code.value}"] = (
             {
-                "columns": campaign_service.get_responses_sample_columns(),
+                "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
                 "data": campaign_service.get_responses_sample(q_code=q_code),
             }
             if q_code in campaign_q_codes
