@@ -161,6 +161,10 @@ class CampaignService:
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()
 
+        # For 'healthwellbeing' remove 'description' column
+        if self.__campaign_code == CampaignCode.healthwellbeing:
+            responses_sample_columns = [x for x in responses_sample_columns if x.get("id") != "description"]
+
         # Translate column names
         for column in responses_sample_columns:
             if not column.get("name"):
