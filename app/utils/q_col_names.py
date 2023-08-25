@@ -1,5 +1,5 @@
 """
-Column names for Q1, Q2 etc.
+Column names for q1, q2 etc.
 e.g. q1_tokenized or q2_tokenized.
 """
 

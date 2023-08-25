@@ -138,3 +138,11 @@ dmypy.json
 /front_translations/*
 !front_translations/.gitkeep
 !front_translations/to_translate.json
+
+# Pickle files
+giz.pkl
+healthwellbeing.pkl
+midwife.pkl
+pmn01a.pkl
+wra03a.pkl
+wwwpakistan.pkl

@@ -834,31 +834,36 @@ class CampaignService:
         bigram_count_dict = Counter()
         trigram_count_dict = Counter()
 
-        for words_list in df[tokenized_column_name]:
+        for word_list in df[tokenized_column_name]:
             # Unigram
-            for i in range(len(words_list)):
-                if words_list[i] not in stopwords:
-                    unigram_count_dict[words_list[i]] += 1
+            for i in range(len(word_list)):
+                if word_list[i] not in stopwords:
+                    word_single = word_list[i]
+                    word_single = word_single.strip()
+                    if not word_single:
+                        continue
+                    unigram_count_dict[word_single] += 1
 
             # Bigram
-            for i in range(len(words_list) - 1):
-                if (
-                    words_list[i] not in stopwords
-                    and words_list[i + 1] not in stopwords
-                ):
-                    word_pair = f"{words_list[i]} {words_list[i + 1]}"
+            for i in range(len(word_list) - 1):
+                if word_list[i] not in stopwords and word_list[i + 1] not in stopwords:
+                    word_pair = f"{word_list[i]} {word_list[i + 1]}"
+                    word_pair = word_pair.strip()
+                    if len(word_pair.split()) < 2:
+                        continue
                     bigram_count_dict[word_pair] += 1
 
             # Trigram
-            for i in range(len(words_list) - 2):
+            for i in range(len(word_list) - 2):
                 if (
-                    words_list[i] not in stopwords
-                    and words_list[i + 1] not in stopwords
-                    and words_list[i + 2] not in stopwords
+                    word_list[i] not in stopwords
+                    and word_list[i + 1] not in stopwords
+                    and word_list[i + 2] not in stopwords
                 ):
-                    word_trio = (
-                        f"{words_list[i]} {words_list[i + 1]} {words_list[i + 2]}"
-                    )
+                    word_trio = f"{word_list[i]} {word_list[i + 1]} {word_list[i + 2]}"
+                    word_trio = word_trio.strip()
+                    if len(word_trio.split()) < 3:
+                        continue
                     trigram_count_dict[word_trio] += 1
 
         unigram_count_dict = dict(unigram_count_dict)

@@ -1,12 +1,13 @@
 """Fetch campaign data from BigQuery"""
 
 import logging
+import os
 
 from google.cloud import bigquery
 from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
-
+import pandas as pd
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 
@@ -48,6 +49,10 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     :param campaign_code: The campaign code
     """
 
+    # Load from .pkl file
+    if os.getenv("LOAD_FROM_LOCAL_PKL_FILE", "").lower() == "true":
+        return pd.read_pickle(f"{campaign_code.value}.pkl")
+
     bigquery_client = get_bigquery_client()
 
     # Use BigQuery Storage client for faster results to dataframe
@@ -65,16 +70,15 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
         response_original_lang as q1_original_language,
-        respondent_country_code as alpha2country,
         response_nlu_category AS q1_canonical_code,
         respondent_nlu_categories AS q1_canonical_codes,
         response_lemmatized_text as q1_lemmatized,
+        respondent_country_code as alpha2country,
         respondent_region_name as region,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         REGEXP_REPLACE(REGEXP_REPLACE(INITCAP(respondent_gender), 'Twospirit', 'Two Spirit'), 'Unspecified', 'Prefer Not To Say') as gender,
         JSON_VALUE(respondent_additional_fields.profession) as profession,
         JSON_VALUE(respondent_additional_fields.setting) as setting,
-        JSON_VALUE(respondent_additional_fields.issue) as issue,
         respondent_additional_fields as additional_fields,
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code.value}'
@@ -90,5 +94,9 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     results = query_job.result()
 
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
+
+    # Save to .pkl file
+    if os.getenv("SAVE_TO_PKL_FILE", "").lower() == "true":
+        df_responses.to_pickle(f"{campaign_code.value}.pkl")
 
     return df_responses

@@ -1,5 +1,5 @@
 """
-Requests the dataframe of a campaign from BigQuery and stores the data into the databank
+Requests the dataframe of a campaign from BigQuery and stores the data into the database
 """
 
 import copy
@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from app import constants, globals, databank, helpers
+from app import constants, globals, databases, helpers
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
@@ -33,6 +33,8 @@ init_custom_logger(logger)
 
 
 def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str:
+    """Get parent category"""
+
     mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
         campaign_code=campaign_code
     )
@@ -104,61 +106,10 @@ def filter_ages_10_to_24(age: str) -> str:
     return np.nan
 
 
-def add_additional_q_columns(
+def create_additional_q_columns(
     df: pd.DataFrame, campaign_code: CampaignCode
 ) -> pd.DataFrame:
-    """Add additional columns (q1_, q2_ etc.) from 'additional_fields'"""
-
-    def fill_additional_q_columns(row: pd.Series, _q_code: QuestionCode):
-        """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
-
-        additional_fields = json.loads(row["additional_fields"])
-
-        response_original_text = additional_fields.get(
-            f"{_q_code.value}_response_original_text"
-        )
-        response_english_text = additional_fields.get(
-            f"{_q_code.value}_response_english_text"
-        )
-        response_lemmatized_text = additional_fields.get(
-            f"{_q_code.value}_response_lemmatized_text"
-        )
-        response_nlu_category = additional_fields.get(
-            f"{_q_code.value}_response_nlu_category"
-        )
-        response_original_lang = additional_fields.get(
-            f"{_q_code.value}_response_original_lang"
-        )
-
-        # For economic_empowerment_mexico append original_text and english_text
-        if campaign_code == CampaignCode.economic_empowerment_mexico:
-            if response_original_text and response_english_text:
-                row[
-                    q_col_names.get_raw_response_col_name(q_code=_q_code)
-                ] = f"{response_original_text} ({response_english_text})"
-            elif response_original_text:
-                row[
-                    q_col_names.get_raw_response_col_name(q_code=_q_code)
-                ] = response_original_text
-        else:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=_q_code)
-            ] = response_original_text
-
-        if response_lemmatized_text:
-            row[
-                q_col_names.get_lemmatized_col_name(q_code=_q_code)
-            ] = response_lemmatized_text
-        if response_nlu_category:
-            row[
-                q_col_names.get_canonical_code_col_name(q_code=_q_code)
-            ] = response_nlu_category
-        if response_original_lang:
-            row[
-                q_col_names.get_original_language_col_name(q_code=_q_code)
-            ] = response_original_lang
-
-        return row
+    """Create additional columns (q1_, q2_ etc.) from 'additional_fields'"""
 
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
@@ -172,11 +123,83 @@ def add_additional_q_columns(
 
         # Fill additional columns per question
         df = df.apply(
-            lambda x: fill_additional_q_columns(row=x, _q_code=q_code),
+            lambda x: fill_additional_q_columns(
+                row=x, campaign_code=campaign_code, q_code=q_code
+            ),
             axis=1,
         )
 
     return df
+
+
+def fill_additional_q_columns(
+    row: pd.Series, campaign_code: CampaignCode, q_code: QuestionCode
+):
+    """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
+
+    # 'additional_fields' can contain the response fields for q2, q3 etc.
+    additional_fields = json.loads(row.get("additional_fields", "{}"))
+
+    # If 'healthwellbeing' use the field 'issue' as the text at q2, other columns will use q1 by default
+    if campaign_code == CampaignCode.healthwellbeing and q_code == QuestionCode.q2:
+        # Get issue
+        issue = (
+            str(additional_fields.get("issue")).lower()
+            if additional_fields.get("issue")
+            else ""
+        )
+
+        response_original_text = issue
+        response_english_text = issue
+        response_lemmatized_text = issue
+        response_nlu_category = row.get("q1_canonical_code", "")
+        response_original_lang = row.get("q1_original_language", "")
+    else:
+        response_original_text = additional_fields.get(
+            f"{q_code.value}_response_original_text"
+        )
+        response_english_text = additional_fields.get(
+            f"{q_code.value}_response_english_text"
+        )
+        response_lemmatized_text = additional_fields.get(
+            f"{q_code.value}_response_lemmatized_text"
+        )
+        response_nlu_category = additional_fields.get(
+            f"{q_code.value}_response_nlu_category"
+        )
+        response_original_lang = additional_fields.get(
+            f"{q_code.value}_response_original_lang"
+        )
+
+    # For 'economic_empowerment_mexico' append 'original_text' and 'english_text'
+    if campaign_code == CampaignCode.economic_empowerment_mexico:
+        if response_original_text and response_english_text:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = f"{response_original_text} ({response_english_text})"
+        elif response_original_text:
+            row[
+                q_col_names.get_raw_response_col_name(q_code=q_code)
+            ] = response_original_text
+    else:
+        row[
+            q_col_names.get_raw_response_col_name(q_code=q_code)
+        ] = response_original_text
+
+    if response_lemmatized_text:
+        row[
+            q_col_names.get_lemmatized_col_name(q_code=q_code)
+        ] = response_lemmatized_text
+    if response_nlu_category:
+        row[
+            q_col_names.get_canonical_code_col_name(q_code=q_code)
+        ] = response_nlu_category
+    if response_original_lang:
+        row[
+            q_col_names.get_original_language_col_name(q_code=q_code)
+        ] = response_original_lang
+
+    return row
 
 
 def load_campaign_data(campaign_code: CampaignCode):
@@ -186,19 +209,14 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
-    # Create a temporary copy of the databank to write campaign data to
-    # If writing of the data succeeds, then the current databank will be replaced with the databank copy at the end of
-    # this function
-    # This is to make sure new data loads correctly into the databank
-    # If an error occurs while loading new data, then the current databank stays as is and the error is logged
-    tmp_databank = copy.deepcopy(
-        databank.get_campaign_databank(campaign_code=campaign_code)
-    )
+    # Create a tmp copy of the db to write campaign data to
+    # If writing of the data succeeds, then the current db will be replaced with the tmp db at the end of this function
+    # This is to make sure new data loads correctly into the db
+    # If an error occurs while loading new data, then the current db stays as is and the error is logged
+    db_tmp = copy.deepcopy(databases.get_campaign_db(campaign_code=campaign_code))
 
     # CRUD
-    campaign_crud = CampaignCRUD(
-        campaign_code=campaign_code, mock_databank=tmp_databank
-    )
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code, db=db_tmp)
 
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
@@ -208,14 +226,8 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
-    # Capitalize 'issue' for campaign 'healthwellbeing'
-    if campaign_code == CampaignCode.healthwellbeing:
-        df_responses["issue"] = df_responses["issue"].apply(
-            lambda x: x.capitalize() if x else np.nan
-        )
-
-    # Add additional columns (q1_, q2_, etc.) from 'additional_fields'
-    df_responses = add_additional_q_columns(
+    # Create additional q columns (q1_, q2_, etc.)
+    df_responses = create_additional_q_columns(
         df=df_responses, campaign_code=campaign_code
     )
 
@@ -223,7 +235,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     for q_code in campaign_q_codes:
         df_responses[q_col_names.get_tokenized_col_name(q_code=q_code)] = df_responses[
             q_col_names.get_lemmatized_col_name(q_code=q_code)
-        ].apply(lambda x: x.split(" ") if x else x)
+        ].apply(lambda x: str(x).split(" ") if x else x)
 
     # Apply strip function on alpha2 country codes
     df_responses["alpha2country"] = df_responses["alpha2country"].apply(
@@ -351,8 +363,8 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set dataframe
     campaign_crud.set_dataframe(df=df_responses)
 
-    # Set tmp databank as current databank
-    databank.set_campaign_databank(campaign_code=campaign_code, databank=tmp_databank)
+    # Set tmp db as current db
+    databases.set_campaign_db(campaign_code=campaign_code, db=db_tmp)
 
 
 def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):

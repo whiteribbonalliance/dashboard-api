@@ -29,8 +29,11 @@ def get_campaign_q_codes(campaign_code: CampaignCode) -> list[QuestionCode]:
     # All campaigns have q1
     q_codes = [QuestionCode.q1]
 
-    # Campaign economic_empowerment_mexico has q2
-    if campaign_code == CampaignCode.economic_empowerment_mexico:
+    # Campaigns with q2
+    if (
+        campaign_code == CampaignCode.economic_empowerment_mexico
+        or campaign_code == CampaignCode.healthwellbeing
+    ):
         q_codes.append(QuestionCode.q2)
 
     return q_codes
