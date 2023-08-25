@@ -213,6 +213,30 @@ class CampaignService:
 
         return [col["id"] for col in columns]
 
+    def __get_code_descriptions(self, code: str, t: Callable) -> str:
+        """Get code descriptions"""
+
+        mapping_to_description = code_hierarchy.get_mapping_code_to_description(
+            campaign_code=self.__campaign_code
+        )
+
+        descriptions = mapping_to_description.get(
+            code,
+            " / ".join(
+                sorted(set([mapping_to_description.get(x, x) for x in code.split("/")]))
+            ),
+        )
+
+        # Translate
+        if t.__name__ == self.__translator.translate_text.__name__:
+            descriptions = t(text=descriptions, delimiter=",")
+
+        # Else extract
+        else:
+            descriptions = t(descriptions)
+
+        return descriptions
+
     def __get_df_responses_sample(
         self, df: pd.DataFrame, q_code: QuestionCode
     ) -> list[dict]:
@@ -226,6 +250,9 @@ class CampaignService:
         # Do not translate if this function is called while translating texts offline
         if settings.OFFLINE_TRANSLATE_MODE:
             return []
+
+        # Remove rows were raw_response is empty
+        df = df[df[raw_response_col_name] != ""]
 
         # Limit the sample for languages that are not English
         if self.__language == "en":
@@ -242,39 +269,13 @@ class CampaignService:
         if len(df.index) > 0:
             if len(df.index) < n_sample:
                 n_sample = len(df.index)
-            df_1_copy = df.sample(n=n_sample, random_state=1)
+            df = df.sample(n=n_sample, random_state=1)
         else:
             return []
 
         column_ids = self.__get_responses_sample_column_ids(q_code=q_code)
 
-        def get_descriptions(code: str, t: Callable) -> str:
-            """Get descriptions"""
-
-            mapping_to_description = code_hierarchy.get_mapping_code_to_description(
-                campaign_code=self.__campaign_code
-            )
-
-            descriptions = mapping_to_description.get(
-                code,
-                " / ".join(
-                    sorted(
-                        set([mapping_to_description.get(x, x) for x in code.split("/")])
-                    )
-                ),
-            )
-
-            # Translate
-            if t.__name__ == self.__translator.translate_text.__name__:
-                descriptions = t(text=descriptions, delimiter=",")
-
-            # Else extract
-            else:
-                descriptions = t(descriptions)
-
-            return descriptions
-
-        def translate_or_extract_responses_sample(t: Callable) -> pd.DataFrame:
+        def translate_responses_sample(t: Callable) -> pd.DataFrame:
             def translate_text_between_parentheses(text: str) -> str:
                 """Find text between parentheses and translate it"""
 
@@ -287,10 +288,8 @@ class CampaignService:
 
                 return text
 
-            df_tmp = df_1_copy.copy()
-
-            df_tmp[description_col_name] = df_tmp[canonical_code_col_name].apply(
-                lambda x: get_descriptions(x, t)
+            df[description_col_name] = df[canonical_code_col_name].apply(
+                lambda x: self.__get_code_descriptions(x, t)
             )
 
             # Translate column data
@@ -301,7 +300,7 @@ class CampaignService:
 
                 # Do not translate age e.g. '25-34'
                 if column_id == "age":
-                    df_tmp[column_id] = df_tmp[column_id].apply(
+                    df[column_id] = df[column_id].apply(
                         lambda x: t(x) if helpers.contains_letters(x) else x
                     )
 
@@ -310,13 +309,13 @@ class CampaignService:
                     # economic_empowerment_mexico: For other languages, only translate text between parentheses
                     if self.__campaign_code == CampaignCode.economic_empowerment_mexico:
                         if self.__language != "es":
-                            df_tmp[column_id] = df_tmp[column_id].apply(
+                            df[column_id] = df[column_id].apply(
                                 translate_text_between_parentheses
                             )
                     else:
-                        df_tmp[column_id] = df_tmp[column_id].apply(lambda x: t(x))
+                        df[column_id] = df[column_id].apply(lambda x: t(x))
 
-            return df_tmp
+            return df
 
         # Only translate if language is not 'en'
         # Go through data initially to extract texts (to apply translations in chunks for faster results)
@@ -324,19 +323,19 @@ class CampaignService:
         # Go through data again to apply the translations on data
         if self.__language != "en":
             # Go through data and extract texts to be translated by sending the add_text_to_extract function
-            translate_or_extract_responses_sample(self.__translator.add_text_to_extract)
+            translate_responses_sample(self.__translator.add_text_to_extract)
 
             # Translate extracted texts
             self.__translator.translate_extracted_texts(skip_saving_to_json=True)
 
         # Go through data and apply translations of extracted texts by sending the translate_text function
-        df_1_copy = translate_or_extract_responses_sample(self.__t)
+        df = translate_responses_sample(self.__t)
 
         # Rename columns e.g. 'q1_raw_response' -> 'raw_response'
         columns_to_rename = {x: x.replace(f"{q_code.value}_", "") for x in column_ids}
-        df_1_copy = df_1_copy.rename(columns=columns_to_rename)
+        df = df.rename(columns=columns_to_rename)
 
-        responses_sample_data = df_1_copy[columns_to_rename.values()].to_dict("records")
+        responses_sample_data = df[columns_to_rename.values()].to_dict("records")
 
         return responses_sample_data
 
