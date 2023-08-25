@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, status
 from app import helpers
 from app.api import dependencies
 from app.enums.campaign_code import CampaignCode
-from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -39,6 +38,7 @@ async def read_campaign(
 
     campaign_code = common_parameters.campaign_code
     language = common_parameters.language
+    q_code = common_parameters.q_code
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
@@ -54,43 +54,35 @@ async def read_campaign(
     )
 
     # Top words and phrases
-    top_words_and_phrases = {}
-    for q_code in QuestionCode:
-        top_words_and_phrases[f"{q_code.value}"] = (
-            {
-                "top_words": campaign_service.get_top_words(q_code=q_code),
-                "two_word_phrases": campaign_service.get_two_word_phrases(
-                    q_code=q_code
-                ),
-                "three_word_phrases": campaign_service.get_three_word_phrases(
-                    q_code=q_code
-                ),
-                "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
-            }
-            if q_code in campaign_q_codes
-            else {}
-        )
+    top_words_and_phrases = (
+        {
+            "top_words": campaign_service.get_top_words(q_code=q_code),
+            "two_word_phrases": campaign_service.get_two_word_phrases(q_code=q_code),
+            "three_word_phrases": campaign_service.get_three_word_phrases(
+                q_code=q_code
+            ),
+            "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
+        }
+        if q_code in campaign_q_codes
+        else {}
+    )
 
     # Responses sample
-    responses_sample = {}
-    for q_code in QuestionCode:
-        responses_sample[f"{q_code.value}"] = (
-            {
-                "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
-                "data": campaign_service.get_responses_sample(q_code=q_code),
-            }
-            if q_code in campaign_q_codes
-            else {}
-        )
+    responses_sample = (
+        {
+            "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
+            "data": campaign_service.get_responses_sample(q_code=q_code),
+        }
+        if q_code in campaign_q_codes
+        else {}
+    )
 
     # Responses breakdown
-    responses_breakdown = {}
-    for q_code in QuestionCode:
-        responses_breakdown[f"{q_code.value}"] = (
-            campaign_service.get_responses_breakdown(q_code=q_code)
-            if q_code in campaign_q_codes
-            else []
-        )
+    responses_breakdown = (
+        campaign_service.get_responses_breakdown(q_code=q_code)
+        if q_code in campaign_q_codes
+        else []
+    )
 
     # Living settings breakdown
     living_settings_breakdown = campaign_service.get_living_settings_breakdown()

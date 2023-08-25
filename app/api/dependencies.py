@@ -7,7 +7,7 @@ from app.schemas.common_parameters_health_check import CommonParametersHealthChe
 
 
 async def common_parameters_campaigns(
-    request: Request, campaign: str, lang: str = "en"
+    request: Request, campaign: str, q_code: str = "q1", lang: str = "en"
 ) -> CommonParametersCampaigns:
     """Return the common parameters"""
 
@@ -17,9 +17,16 @@ async def common_parameters_campaigns(
 
     language_verified = helpers.check_language(lang=lang)
 
+    q_code_verified = helpers.check_q_code_campaign(
+        campaign_code=campaign_code_verified, q_code=q_code
+    )
+    if not q_code_verified:
+        raise ResourceNotFoundHTTPException("Campaign q_code not found")
+
     return CommonParametersCampaigns(
         campaign_code=campaign_code_verified,
         language=language_verified,
+        q_code=q_code_verified,
         request=request,
     )
 

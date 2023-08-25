@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class Campaign(BaseModel):
     responses_sample: dict
-    responses_breakdown: dict
+    responses_breakdown: list
     living_settings_breakdown: list
     top_words_and_phrases: dict
     histogram: dict

@@ -1,8 +1,11 @@
 import json
 
 from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 
 CAMPAIGN_CODES = [campaign.value for campaign in CampaignCode]
+
+QUESTION_CODES = [q.value for q in QuestionCode]
 
 # Load stopwords from file
 with open("stopwords.json", "r", encoding="utf8") as file:

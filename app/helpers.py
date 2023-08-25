@@ -55,3 +55,11 @@ def check_campaign(campaign: str) -> CampaignCode:
         for campaign_code in CampaignCode:
             if campaign_code.value == campaign:
                 return campaign_code
+
+
+def check_q_code_campaign(campaign_code: CampaignCode, q_code: str) -> QuestionCode:
+    """Check if question code exists for campaign and return the code"""
+
+    for q in get_campaign_q_codes(campaign_code=campaign_code):
+        if q.value == q_code:
+            return q
