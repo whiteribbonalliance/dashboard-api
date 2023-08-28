@@ -10,7 +10,7 @@ from app.scheduler import app as app_rocketry
 from app.utils import data_loader
 
 # Load initial data before starting the application
-data_loader.load_data()
+data_loader.init_load_campaigns_data()
 data_loader.load_coordinates()
 data_loader.load_translations_cache()
 

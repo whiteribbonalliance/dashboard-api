@@ -17,11 +17,13 @@ async def common_parameters_campaigns(
 
     language_verified = helpers.check_language(lang=lang)
 
-    q_code_verified = helpers.check_q_code_campaign(
-        campaign_code=campaign_code_verified, q_code=q_code
+    q_code_verified = helpers.check_q_code_for_campaign(
+        q_code=q_code, campaign_code=campaign_code_verified
     )
     if not q_code_verified:
-        raise ResourceNotFoundHTTPException("Campaign q_code not found")
+        raise ResourceNotFoundHTTPException(
+            "Campaign does not have the provided q_code"
+        )
 
     return CommonParametersCampaigns(
         campaign_code=campaign_code_verified,

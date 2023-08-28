@@ -12,12 +12,12 @@ from app.api.v1.endpoints.campaigns import (
 )
 from app.core.settings import settings
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters import CommonParameters
+from app.schemas.common_parameters_campaigns import CommonParametersCampaigns
 from app.services.translator import Translator
 from app.utils import data_loader
 
 settings.OFFLINE_TRANSLATE_MODE = True
-data_loader.load_data()
+data_loader.init_load_campaigns_data()
 count_chars_only = False
 translator = Translator()
 
@@ -37,7 +37,7 @@ async def translate():
             else:
                 print(f"Translating texts for {campaign_code}-{language}...")
 
-            common_parameters = CommonParameters(
+            common_parameters = CommonParametersCampaigns(
                 request=None, campaign_code=campaign_code, language=language
             )
             campaign_req = CampaignRequest()

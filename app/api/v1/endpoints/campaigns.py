@@ -3,8 +3,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app import helpers
+from app import auth_handler
 from app.api import dependencies
+from app import databases
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -39,11 +40,9 @@ async def read_campaign(
     campaign_code = common_parameters.campaign_code
     language = common_parameters.language
     q_code = common_parameters.q_code
+
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
-
-    # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
     # Create service
     campaign_service = CampaignService(
@@ -54,35 +53,21 @@ async def read_campaign(
     )
 
     # Top words and phrases
-    top_words_and_phrases = (
-        {
-            "top_words": campaign_service.get_top_words(q_code=q_code),
-            "two_word_phrases": campaign_service.get_two_word_phrases(q_code=q_code),
-            "three_word_phrases": campaign_service.get_three_word_phrases(
-                q_code=q_code
-            ),
-            "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
-        }
-        if q_code in campaign_q_codes
-        else {}
-    )
+    top_words_and_phrases = {
+        "top_words": campaign_service.get_top_words(q_code=q_code),
+        "two_word_phrases": campaign_service.get_two_word_phrases(q_code=q_code),
+        "three_word_phrases": campaign_service.get_three_word_phrases(q_code=q_code),
+        "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
+    }
 
     # Responses sample
-    responses_sample = (
-        {
-            "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
-            "data": campaign_service.get_responses_sample(q_code=q_code),
-        }
-        if q_code in campaign_q_codes
-        else {}
-    )
+    responses_sample = {
+        "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
+        "data": campaign_service.get_responses_sample(q_code=q_code),
+    }
 
     # Responses breakdown
-    responses_breakdown = (
-        campaign_service.get_responses_breakdown(q_code=q_code)
-        if q_code in campaign_q_codes
-        else []
-    )
+    responses_breakdown = campaign_service.get_responses_breakdown(q_code=q_code)
 
     # Living settings breakdown
     living_settings_breakdown = campaign_service.get_living_settings_breakdown()
@@ -240,3 +225,12 @@ async def read_who_the_people_are_options(
     options = campaign_service.get_who_the_people_are_options()
 
     return options
+
+
+@router.get("/{campaign}/data", status_code=status.HTTP_200_OK)
+async def read_user(
+    username: str = Depends(auth_handler.auth_wrapper_access_token),
+):
+    """Read campaign data"""
+
+    return {"test": username}

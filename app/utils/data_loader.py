@@ -396,8 +396,8 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
         )
 
 
-def load_all_campaigns_data():
-    """Load all campaigns data"""
+def load_campaigns_data():
+    """Load campaigns data"""
 
     for campaign_code in CampaignCode:
         print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")
@@ -411,13 +411,13 @@ def load_all_campaigns_data():
         else:
             load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
-    print(f"INFO:\t  Loading data completed.")
+    print(f"INFO:\t  Loading campaigns data completed.")
 
 
-def load_data():
-    """Load data"""
+def init_load_campaigns_data():
+    """initialize Load campaigns data"""
 
-    load_all_campaigns_data()
+    load_campaigns_data()
 
     # Clear the API cache
     ApiCache().clear_cache()
