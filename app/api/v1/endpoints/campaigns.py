@@ -274,11 +274,14 @@ async def campaign_data_download_url(
     tmp_uploading_xlsx_filepath = f"/tmp/uploading_{xlsx_filename}"
     storage_xlsx_filepath = f"/wra/{xlsx_filename}"
 
+    # File exists in storage bucket
     if storage_interactions.file_exists(filename=storage_xlsx_filepath):
         # Get storage url
         url = storage_interactions.get_file_url(filename=storage_xlsx_filepath)
 
         return Url(url=url)
+
+    # File does not exist in storage bucket
     else:
         if not os.path.isfile(tmp_xlsx_filepath):
             # Cleanup
