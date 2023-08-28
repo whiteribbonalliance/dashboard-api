@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 from app import http_exceptions
 
 ACCESS_TOKEN_SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY")
-ACCESS_TOKEN_EXPIRE_DAYS = 15
+ACCESS_TOKEN_EXPIRE_DAYS = 30
 ALGORITHM = "HS256"
 
 oauth2_scheme_access = OAuth2PasswordBearer(tokenUrl="/auth/login")

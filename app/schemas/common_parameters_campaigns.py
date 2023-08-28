@@ -8,7 +8,7 @@ from app.enums.question_code import QuestionCode
 class CommonParametersCampaigns(BaseModel):
     campaign_code: CampaignCode
     language: str
-    request: Request
+    request: Request | None
     q_code: QuestionCode
 
     class Config:

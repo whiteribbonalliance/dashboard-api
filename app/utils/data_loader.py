@@ -22,6 +22,7 @@ from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.services import bigquery_interactions
 from app.services import googlemaps_interactions
+from app.services import storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
@@ -231,6 +232,9 @@ def load_campaign_data(campaign_code: CampaignCode):
         df=df_responses, campaign_code=campaign_code
     )
 
+    # Drop 'additional_fields'
+    df_responses = df_responses.drop("additional_fields", axis=1)
+
     # Add tokenized column
     for q_code in campaign_q_codes:
         df_responses[q_col_names.get_tokenized_col_name(q_code=q_code)] = df_responses[
@@ -414,13 +418,18 @@ def load_campaigns_data():
     print(f"INFO:\t  Loading campaigns data completed.")
 
 
-def init_load_campaigns_data():
+def init_load_campaigns_data(clear_api_cache: bool = False, clear_bucket: bool = False):
     """initialize Load campaigns data"""
 
     load_campaigns_data()
 
     # Clear the API cache
-    ApiCache().clear_cache()
+    if clear_api_cache:
+        ApiCache().clear_cache()
+
+    # Clear bucket
+    if clear_bucket:
+        storage_interactions.clear_bucket()
 
 
 def load_translations_cache():

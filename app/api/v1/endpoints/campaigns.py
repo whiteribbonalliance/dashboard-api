@@ -1,17 +1,23 @@
 import logging
+import os.path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app import auth_handler
-from app.api import dependencies
 from app import databases
+from app import http_exceptions
+from app.api import dependencies
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaigns import CommonParametersCampaigns
+from app.schemas.common_parameters_campaigns_download import (
+    CommonParametersCampaignsDownload,
+)
 from app.schemas.filter_options import FilterOptions
+from app.schemas.url import Url
+from app.services import storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 
@@ -204,7 +210,7 @@ async def read_filter_options(
 
 @router.get(
     path="/{campaign}/who-the-people-are-options",
-    response_model=list,
+    response_model=list[dict],
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
@@ -227,10 +233,76 @@ async def read_who_the_people_are_options(
     return options
 
 
-@router.get("/{campaign}/data", status_code=status.HTTP_200_OK)
-async def read_user(
-    username: str = Depends(auth_handler.auth_wrapper_access_token),
+@router.get(
+    "/{campaign}/download-url",
+    # response_model=Url,
+    status_code=status.HTTP_200_OK,
+)
+async def campaign_data_download_url(
+    common_parameters: Annotated[
+        CommonParametersCampaignsDownload,
+        Depends(dependencies.common_parameters_campaigns_download),
+    ]
 ):
-    """Read campaign data"""
+    """Read campaign data download url"""
 
-    return {"test": username}
+    campaign_code = common_parameters.campaign_code
+    username = common_parameters.username
+    from_date = common_parameters.from_date
+    to_date = common_parameters.to_date
+
+    # Get user
+    users = databases.get_users()
+    db_user = users.get(username)
+    if not db_user:
+        raise http_exceptions.UnauthorizedHTTPException("Unknown user")
+
+    # Check if user has access to campaign
+    if campaign_code not in db_user.campaign_access:
+        raise http_exceptions.UnauthorizedHTTPException(
+            "User has no access to campaign"
+        )
+
+    # Get campaign db
+    db = databases.get_campaign_db(campaign_code=campaign_code)
+
+    # Get dataframe
+    df = db.dataframe
+
+    xlsx_filename = f"{campaign_code.value}.xlsx"
+    tmp_xlsx_filepath = f"/tmp/{xlsx_filename}"
+    tmp_uploading_xlsx_filepath = f"/tmp/uploading_{xlsx_filename}"
+    storage_xlsx_filepath = f"/wra/{xlsx_filename}"
+
+    if storage_interactions.file_exists(filename=storage_xlsx_filepath):
+        # Get storage url
+        url = storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+
+        return Url(url=url)
+    else:
+        if not os.path.isfile(tmp_xlsx_filepath):
+            # Cleanup
+            if os.path.isfile(tmp_uploading_xlsx_filepath):
+                os.remove(tmp_uploading_xlsx_filepath)
+
+            # Save dataframe to xlsx file
+            df.to_excel(
+                excel_writer=tmp_uploading_xlsx_filepath, index=False, header=True
+            )
+
+            # Rename
+            os.rename(src=tmp_uploading_xlsx_filepath, dst=tmp_xlsx_filepath)
+
+        # Upload to storage
+        storage_interactions.upload_file(
+            source_filename=tmp_xlsx_filepath,
+            destination_filename=storage_xlsx_filepath,
+        )
+
+        # Remove from tmp
+        os.remove(tmp_xlsx_filepath)
+
+        # Get storage url
+        url = storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+
+        return Url(url=url)

@@ -11,6 +11,7 @@ from app.api.v1.endpoints.campaigns import (
     read_who_the_people_are_options,
 )
 from app.core.settings import settings
+from app.enums.question_code import QuestionCode
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaigns import CommonParametersCampaigns
 from app.services.translator import Translator
@@ -38,7 +39,10 @@ async def translate():
                 print(f"Translating texts for {campaign_code}-{language}...")
 
             common_parameters = CommonParametersCampaigns(
-                request=None, campaign_code=campaign_code, language=language
+                request=None,
+                campaign_code=campaign_code,
+                language=language,
+                q_code=QuestionCode.q1,
             )
             campaign_req = CampaignRequest()
 
