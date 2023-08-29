@@ -22,19 +22,19 @@ class ApiCache(metaclass=SingletonMeta):
         @wraps(func)
         async def wrapper(*args: tuple, **kwargs: dict):
             # Get path from request
-            if kwargs.get("common_parameters").request:
-                path = kwargs.get("common_parameters").request.url.path
+            if kwargs.get("parameters").request:
+                path = kwargs.get("parameters").request.url.path
             else:
                 path = ""
 
             # Set request as None as it is not needed anymore
-            kwargs.get("common_parameters").request = None
+            kwargs.get("parameters").request = None
 
             # Create a jsonable dict from kwargs
             kwargs_jsonable = jsonable_encoder(kwargs)
 
             # Remove request
-            kwargs_jsonable.get("common_parameters").pop("request")
+            kwargs_jsonable.get("parameters").pop("request")
 
             # Add path to jsonable kwargs
             kwargs_jsonable["path"] = path

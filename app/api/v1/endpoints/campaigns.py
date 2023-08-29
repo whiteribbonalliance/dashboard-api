@@ -1,8 +1,11 @@
 import logging
 import os.path
+from io import BytesIO
 from typing import Annotated
 
+import pandas as pd
 from fastapi import APIRouter, Depends, status
+from fastapi.responses import StreamingResponse
 
 from app import databases
 from app import http_exceptions
@@ -12,10 +15,10 @@ from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
-from app.schemas.common_parameters_campaign_download_url import (
-    CommonParametersCampaignDownloadUrl,
-)
 from app.schemas.filter_options import FilterOptions
+from app.schemas.parameters_campaign_download_url import (
+    ParametersCampaignDownloadUrl,
+)
 from app.schemas.url import Url
 from app.services import cloud_storage_interactions
 from app.services.api_cache import ApiCache
@@ -36,16 +39,16 @@ api_cache = ApiCache()
 )
 @api_cache.cache_response
 async def read_campaign(
-    common_parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
+    parameters: Annotated[
+        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ],
     campaign_req: CampaignRequest,
 ):
     """Read a campaign"""
 
-    campaign_code = common_parameters.campaign_code
-    language = common_parameters.language
-    q_code = common_parameters.q_code
+    campaign_code = parameters.campaign_code
+    language = parameters.language
+    q_code = parameters.q_code
 
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
@@ -130,14 +133,14 @@ async def read_campaign(
 )
 @api_cache.cache_response
 async def read_filter_options(
-    common_parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
+    parameters: Annotated[
+        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ]
 ):
     """Read filter options for campaign"""
 
-    campaign_code = common_parameters.campaign_code
-    language = common_parameters.language
+    campaign_code = parameters.campaign_code
+    language = parameters.language
 
     # Create service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -215,14 +218,14 @@ async def read_filter_options(
 )
 @api_cache.cache_response
 async def read_who_the_people_are_options(
-    common_parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
+    parameters: Annotated[
+        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ]
 ):
     """Read who the people are options for campaign"""
 
-    campaign_code = common_parameters.campaign_code
-    language = common_parameters.language
+    campaign_code = parameters.campaign_code
+    language = parameters.language
 
     # Create service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -239,17 +242,17 @@ async def read_who_the_people_are_options(
     status_code=status.HTTP_200_OK,
 )
 async def campaign_download_url(
-    common_parameters: Annotated[
-        CommonParametersCampaignDownloadUrl,
-        Depends(dependencies.common_parameters_campaign_download_url),
+    parameters: Annotated[
+        ParametersCampaignDownloadUrl,
+        Depends(dependencies.dep_parameters_campaign_download_url),
     ]
 ):
     """Read campaign data download url"""
 
-    campaign_code = common_parameters.campaign_code
-    username = common_parameters.username
-    from_date = common_parameters.from_date
-    to_date = common_parameters.to_date
+    campaign_code = parameters.campaign_code
+    username = parameters.username
+    from_date = parameters.from_date
+    to_date = parameters.to_date
 
     # Cleanup
     cloud_storage_interactions.cleanup()
@@ -277,7 +280,7 @@ async def campaign_download_url(
     df = db.dataframe
 
     # File name
-    xlsx_filename = f"{campaign_code.value}.xlsx"
+    xlsx_filename = f"wra_{campaign_code.value}.xlsx"
 
     # Filter by date
     date_format = "%Y_%m_%d"
@@ -286,11 +289,11 @@ async def campaign_download_url(
             (df["ingestion_time"].dt.date >= from_date)
             & (df["ingestion_time"].dt.date <= to_date)
         ]
-        xlsx_filename = f"{campaign_code.value}_from_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
+        xlsx_filename = f"wra_{campaign_code.value}_from_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
 
     # File paths
     tmp_xlsx_filepath = f"/tmp/{xlsx_filename}"
-    tmp_uploading_xlsx_filepath = f"/tmp/uploading_{xlsx_filename}"
+    tmp_creating_xlsx_filepath = f"/tmp/wra_creating_{xlsx_filename}"
     storage_xlsx_filepath = f"/wra/{xlsx_filename}"
 
     # Raise exception if df has no data
@@ -311,8 +314,8 @@ async def campaign_download_url(
                     os.mkdir("/tmp")
 
             # Cleanup
-            if os.path.isfile(tmp_uploading_xlsx_filepath):
-                os.remove(tmp_uploading_xlsx_filepath)
+            if os.path.isfile(tmp_creating_xlsx_filepath):
+                os.remove(tmp_creating_xlsx_filepath)
 
             # Convert date to string
             df["ingestion_time"] = df["ingestion_time"].apply(
@@ -321,11 +324,11 @@ async def campaign_download_url(
 
             # Save dataframe to xlsx file
             df.to_excel(
-                excel_writer=tmp_uploading_xlsx_filepath, index=False, header=True
+                excel_writer=tmp_creating_xlsx_filepath, index=False, header=True
             )
 
             # Rename
-            os.rename(src=tmp_uploading_xlsx_filepath, dst=tmp_xlsx_filepath)
+            os.rename(src=tmp_creating_xlsx_filepath, dst=tmp_xlsx_filepath)
 
         # Upload to storage
         cloud_storage_interactions.upload_file(
@@ -340,3 +343,43 @@ async def campaign_download_url(
         url = cloud_storage_interactions.get_file_url(filename=storage_xlsx_filepath)
 
     return Url(url=url)
+
+
+@router.get(
+    "/{campaign}/country-breakdown",
+    response_class=StreamingResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def campaign_country_breakdown(
+    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
+):
+    """Read country breakdown"""
+
+    # Get campaign db
+    db = databases.get_campaign_db(campaign_code=campaign_code)
+    if not db:
+        raise http_exceptions.InternalServerErrorHTTPException(
+            "Campaign database not found"
+        )
+
+    # Get dataframe
+    df = db.dataframe
+
+    # Country breakdown
+    df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
+
+    # Rename column
+    df = df.rename(columns={"canonical_country": "country"})
+
+    # To xlsx
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer) as writer:
+        df.to_excel(excel_writer=writer, index=False, header=True)
+
+    return StreamingResponse(
+        BytesIO(buffer.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_country_breakdown.xlsx"
+        },
+    )

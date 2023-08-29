@@ -1,12 +1,15 @@
-from fastapi import Request
+from datetime import date
+
 from pydantic import BaseModel
 
 from app.enums.campaign_code import CampaignCode
 
 
-class CommonParametersCampaignHealthCheck(BaseModel):
+class ParametersCampaignCountryBreakdown(BaseModel):
     campaign_code: CampaignCode
-    request: Request | None
+    username: str
+    from_date: date | None
+    to_date: date | None
 
     class Config:
         arbitrary_types_allowed = True

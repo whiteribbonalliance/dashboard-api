@@ -1,7 +1,8 @@
+import glob
+import os
 import re
 
 from app import constants
-from app.constants import CAMPAIGN_CODES
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 
@@ -39,22 +40,22 @@ def get_campaign_q_codes(campaign_code: CampaignCode) -> list[QuestionCode]:
     return q_codes
 
 
-def check_language(lang: str) -> str:
-    """Check if language exists, If not, default to 'en'"""
+async def check_campaign(campaign: str) -> CampaignCode:
+    """Check if campaign exists"""
+
+    if campaign.lower() in [c.lower() for c in constants.CAMPAIGN_CODES]:
+        for campaign_code in CampaignCode:
+            if campaign_code.value == campaign:
+                return campaign_code
+
+
+async def check_language(lang: str) -> str:
+    """Check if language exists, if not, default to 'en'"""
 
     if lang in constants.TRANSLATION_LANGUAGES:
         return lang
     else:
         return "en"
-
-
-def check_campaign(campaign: str) -> CampaignCode:
-    """Check if campaign str exists and return its campaign code"""
-
-    if campaign.lower() in [c.lower() for c in CAMPAIGN_CODES]:
-        for campaign_code in CampaignCode:
-            if campaign_code.value == campaign:
-                return campaign_code
 
 
 def check_q_code_for_campaign(q_code: str, campaign_code: CampaignCode) -> QuestionCode:
@@ -63,3 +64,13 @@ def check_q_code_for_campaign(q_code: str, campaign_code: CampaignCode) -> Quest
     for q in get_campaign_q_codes(campaign_code=campaign_code):
         if q.value == q_code:
             return q
+
+
+def clear_tmp_dir():
+    """Clear tmp dir"""
+
+    if not os.path.isdir("/tmp"):
+        return
+
+    for filename in glob.glob("/tmp/wra_*"):
+        os.remove(filename)

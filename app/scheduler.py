@@ -8,7 +8,7 @@ from fastapi import concurrency
 from rocketry import Rocketry
 from rocketry.conds import cron
 
-from app.services import cloud_storage_interactions
+from app import helpers
 from app.logginglib import init_custom_logger
 from app.utils import data_loader
 
@@ -34,3 +34,17 @@ async def do_every_12th_hour_reload_data():
         await concurrency.run_in_threadpool(data_loader.load_coordinates)
     except (Exception,) as e:
         logger.error(f"Error while trying to load data: {str(e)}")
+
+
+@app.task(cron("0 * * * *"))
+async def do_every_hour_clear_tmp_dir():
+    """
+    Clear tmp dir
+
+    Runs every hour
+    """
+
+    try:
+        await concurrency.run_in_threadpool(helpers.clear_tmp_dir)
+    except (Exception,) as e:
+        logger.error(f"Error while clearing tmp dir: {str(e)}")

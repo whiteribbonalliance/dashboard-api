@@ -49,11 +49,9 @@ async def translate():
             # Extract texts from each endpoint
             # With OFFLINE_TRANSLATE_MODE = True, texts will be extracted into Translator when calling
             # the functions below
-            await read_campaign(
-                common_parameters=common_parameters, campaign_req=campaign_req
-            )
-            await read_filter_options(common_parameters=common_parameters)
-            await read_who_the_people_are_options(common_parameters=common_parameters)
+            await read_campaign(parameters=common_parameters, campaign_req=campaign_req)
+            await read_filter_options(parameters=common_parameters)
+            await read_who_the_people_are_options(parameters=common_parameters)
 
             # Translate extracted texts
             translator.translate_extracted_texts(count_chars_only=count_chars_only)

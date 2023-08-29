@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.enums.campaign_code import CampaignCode
 
 
-class CommonParametersCampaignDownloadUrl(BaseModel):
+class ParametersCampaignDownloadUrl(BaseModel):
     campaign_code: CampaignCode
     username: str
     from_date: date | None
