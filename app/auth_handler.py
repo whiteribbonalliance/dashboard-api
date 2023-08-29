@@ -11,7 +11,7 @@ ACCESS_TOKEN_SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 ALGORITHM = "HS256"
 
-oauth2_scheme_access = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme_access = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def create_access_token(data: dict) -> str:
@@ -57,7 +57,7 @@ def decode_access_token(token: str) -> dict:
         raise http_exceptions.UnauthorizedHTTPException("Authentication failed")
 
 
-def auth_wrapper_access_token(token: str = Depends(oauth2_scheme_access)) -> int:
+def auth_wrapper_access_token(token: str = Depends(oauth2_scheme_access)) -> str:
     """
     Authorization wrapper for access token
     Validate the access token and return the username

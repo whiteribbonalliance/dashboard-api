@@ -1,3 +1,5 @@
+"""Googlemaps interactions"""
+
 import os
 
 import googlemaps

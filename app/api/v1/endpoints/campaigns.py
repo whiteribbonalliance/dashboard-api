@@ -11,13 +11,13 @@ from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters_campaigns import CommonParametersCampaigns
-from app.schemas.common_parameters_campaigns_download import (
-    CommonParametersCampaignsDownload,
+from app.schemas.common_parameters_campaign import CommonParametersCampaign
+from app.schemas.common_parameters_campaign_download_url import (
+    CommonParametersCampaignDownloadUrl,
 )
 from app.schemas.filter_options import FilterOptions
 from app.schemas.url import Url
-from app.services import storage_interactions
+from app.services import cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 
@@ -37,7 +37,7 @@ api_cache = ApiCache()
 @api_cache.cache_response
 async def read_campaign(
     common_parameters: Annotated[
-        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
+        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
     ],
     campaign_req: CampaignRequest,
 ):
@@ -131,7 +131,7 @@ async def read_campaign(
 @api_cache.cache_response
 async def read_filter_options(
     common_parameters: Annotated[
-        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
+        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
     ]
 ):
     """Read filter options for campaign"""
@@ -216,7 +216,7 @@ async def read_filter_options(
 @api_cache.cache_response
 async def read_who_the_people_are_options(
     common_parameters: Annotated[
-        CommonParametersCampaigns, Depends(dependencies.common_parameters_campaigns)
+        CommonParametersCampaign, Depends(dependencies.common_parameters_campaign)
     ]
 ):
     """Read who the people are options for campaign"""
@@ -233,15 +233,15 @@ async def read_who_the_people_are_options(
     return options
 
 
-@router.get(
+@router.post(
     "/{campaign}/download-url",
-    # response_model=Url,
+    response_model=Url,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_data_download_url(
+async def campaign_download_url(
     common_parameters: Annotated[
-        CommonParametersCampaignsDownload,
-        Depends(dependencies.common_parameters_campaigns_download),
+        CommonParametersCampaignDownloadUrl,
+        Depends(dependencies.common_parameters_campaign_download_url),
     ]
 ):
     """Read campaign data download url"""
@@ -250,6 +250,9 @@ async def campaign_data_download_url(
     username = common_parameters.username
     from_date = common_parameters.from_date
     to_date = common_parameters.to_date
+
+    # Cleanup
+    cloud_storage_interactions.cleanup()
 
     # Get user
     users = databases.get_users()
@@ -265,28 +268,56 @@ async def campaign_data_download_url(
 
     # Get campaign db
     db = databases.get_campaign_db(campaign_code=campaign_code)
+    if not db:
+        raise http_exceptions.InternalServerErrorHTTPException(
+            "Campaign database not found"
+        )
 
     # Get dataframe
     df = db.dataframe
 
+    # File name
     xlsx_filename = f"{campaign_code.value}.xlsx"
+
+    # Filter by date
+    date_format = "%Y_%m_%d"
+    if from_date and to_date:
+        df = df[
+            (df["ingestion_time"].dt.date >= from_date)
+            & (df["ingestion_time"].dt.date <= to_date)
+        ]
+        xlsx_filename = f"{campaign_code.value}_from_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
+
+    # File paths
     tmp_xlsx_filepath = f"/tmp/{xlsx_filename}"
     tmp_uploading_xlsx_filepath = f"/tmp/uploading_{xlsx_filename}"
     storage_xlsx_filepath = f"/wra/{xlsx_filename}"
 
-    # File exists in storage bucket
-    if storage_interactions.file_exists(filename=storage_xlsx_filepath):
+    # Raise exception if df has no data
+    if len(df.index) < 1:
+        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+
+    # If file exists in Cloud Storage bucket
+    if cloud_storage_interactions.file_exists(filename=storage_xlsx_filepath):
         # Get storage url
-        url = storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+        url = cloud_storage_interactions.get_file_url(filename=storage_xlsx_filepath)
 
-        return Url(url=url)
-
-    # File does not exist in storage bucket
+    # If file does not exist in Cloud Storage bucket
     else:
         if not os.path.isfile(tmp_xlsx_filepath):
+            # Create '/tmp' dir (only if 'dev' because this dir already exists when in production if using App Engine)
+            if os.getenv("STAGE") == "dev":
+                if not os.path.isdir("/tmp"):
+                    os.mkdir("/tmp")
+
             # Cleanup
             if os.path.isfile(tmp_uploading_xlsx_filepath):
                 os.remove(tmp_uploading_xlsx_filepath)
+
+            # Convert date to string
+            df["ingestion_time"] = df["ingestion_time"].apply(
+                lambda x: x.strftime(date_format) if x else ""
+            )
 
             # Save dataframe to xlsx file
             df.to_excel(
@@ -297,7 +328,7 @@ async def campaign_data_download_url(
             os.rename(src=tmp_uploading_xlsx_filepath, dst=tmp_xlsx_filepath)
 
         # Upload to storage
-        storage_interactions.upload_file(
+        cloud_storage_interactions.upload_file(
             source_filename=tmp_xlsx_filepath,
             destination_filename=storage_xlsx_filepath,
         )
@@ -306,6 +337,6 @@ async def campaign_data_download_url(
         os.remove(tmp_xlsx_filepath)
 
         # Get storage url
-        url = storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+        url = cloud_storage_interactions.get_file_url(filename=storage_xlsx_filepath)
 
-        return Url(url=url)
+    return Url(url=url)

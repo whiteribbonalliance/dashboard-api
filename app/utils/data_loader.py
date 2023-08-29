@@ -21,8 +21,8 @@ from app.schemas.gender import Gender
 from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.services import bigquery_interactions
+from app.services import cloud_storage_interactions
 from app.services import googlemaps_interactions
-from app.services import storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
@@ -400,6 +400,14 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
         )
 
 
+def load_initial_data():
+    """Load initial data"""
+
+    load_campaigns_data()
+    load_coordinates()
+    load_translations_cache()
+
+
 def load_campaigns_data():
     """Load campaigns data"""
 
@@ -408,18 +416,17 @@ def load_campaigns_data():
 
         try:
             load_campaign_data(campaign_code=campaign_code)
+            load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
         except (Exception,):
             logger.exception(
                 f"""Error loading data for campaign {campaign_code.value}"""
             )
-        else:
-            load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
 
     print(f"INFO:\t  Loading campaigns data completed.")
 
 
-def init_load_campaigns_data(clear_api_cache: bool = False, clear_bucket: bool = False):
-    """initialize Load campaigns data"""
+def reload_campaigns_data(clear_api_cache: bool, clear_bucket: bool):
+    """Reload campaigns data"""
 
     load_campaigns_data()
 
@@ -429,7 +436,7 @@ def init_load_campaigns_data(clear_api_cache: bool = False, clear_bucket: bool =
 
     # Clear bucket
     if clear_bucket:
-        storage_interactions.clear_bucket()
+        cloud_storage_interactions.clear_bucket()
 
 
 def load_translations_cache():

@@ -8,6 +8,7 @@ from fastapi import concurrency
 from rocketry import Rocketry
 from rocketry.conds import cron
 
+from app.services import cloud_storage_interactions
 from app.logginglib import init_custom_logger
 from app.utils import data_loader
 
@@ -18,7 +19,7 @@ init_custom_logger(logger)
 
 
 @app.task(cron("0 */12 * * *"))
-async def do_every_12th_hour():
+async def do_every_12th_hour_reload_data():
     """
     Load data from BigQuery
     Load coordinates
@@ -28,7 +29,7 @@ async def do_every_12th_hour():
 
     try:
         await concurrency.run_in_threadpool(
-            data_loader.init_load_campaigns_data, True, True
+            data_loader.reload_campaigns_data, True, True
         )
         await concurrency.run_in_threadpool(data_loader.load_coordinates)
     except (Exception,) as e:

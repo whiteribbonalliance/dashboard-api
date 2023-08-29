@@ -1,4 +1,4 @@
-"""Fetch campaign data from BigQuery"""
+"""BigQuery interactions"""
 
 import logging
 import os
@@ -80,6 +80,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         JSON_VALUE(respondent_additional_fields.profession) as profession,
         JSON_VALUE(respondent_additional_fields.setting) as setting,
         respondent_additional_fields as additional_fields,
+        ingestion_time as ingestion_time,
         FROM deft-stratum-290216.{table_name}
         WHERE campaign = '{campaign_code.value}'
         AND response_original_text is not null

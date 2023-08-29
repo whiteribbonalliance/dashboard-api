@@ -50,3 +50,12 @@ class NotAllowedHTTPException(HTTPException):
         if not detail:
             detail = "Not allowed"
         super().__init__(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=detail)
+
+
+class InternalServerErrorHTTPException(HTTPException):
+    def __init__(self, detail: str = None):
+        if not detail:
+            detail = "Internal server error"
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail
+        )

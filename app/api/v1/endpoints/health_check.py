@@ -6,7 +6,9 @@ from fastapi.responses import JSONResponse
 import app.api.v1.endpoints.campaigns as api_campaigns
 from app.api import dependencies
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters_health_check import CommonParametersHealthCheck
+from app.schemas.common_parameters_campaign_health_check import (
+    CommonParametersCampaignHealthCheck,
+)
 from app.utils import filters
 
 router = APIRouter(prefix="/health-check")
@@ -20,8 +22,8 @@ def health_check():
 @router.get(path="/{campaign}", status_code=status.HTTP_200_OK)
 async def health_check(
     common_parameters: Annotated[
-        CommonParametersHealthCheck,
-        Depends(dependencies.common_parameters_health_check),
+        CommonParametersCampaignHealthCheck,
+        Depends(dependencies.common_parameters_campaign_health_check),
     ]
 ):
     """Health check for campaign"""
@@ -29,7 +31,7 @@ async def health_check(
     campaign_code = common_parameters.campaign_code
     request = common_parameters.request
 
-    common_parameters_campaigns = await dependencies.common_parameters_campaigns(
+    common_parameters_campaigns = await dependencies.common_parameters_campaign(
         request=request, campaign=campaign_code.value, lang="en"
     )
     campaign_req = CampaignRequest(

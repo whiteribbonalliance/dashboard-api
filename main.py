@@ -9,10 +9,8 @@ from app.core.settings import settings
 from app.scheduler import app as app_rocketry
 from app.utils import data_loader
 
-# Load initial data before starting the application
-data_loader.init_load_campaigns_data()
-data_loader.load_coordinates()
-data_loader.load_translations_cache()
+# Load initial data
+data_loader.load_initial_data()
 
 description = """
 What Women Want Dashboard API.
