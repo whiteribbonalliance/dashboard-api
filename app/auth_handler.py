@@ -5,13 +5,13 @@ from fastapi import Depends
 from jose import jwt, JWTError
 
 from app import http_exceptions
-from app.oauth2_with_cookie import OAuth2PasswordBearerWithCookie
+from app.oauth2_password_bearer_with_cookie import OAuth2PasswordBearerWithCookie
 
 ACCESS_TOKEN_SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 ALGORITHM = "HS256"
 
-oauth2_scheme_access = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_access = OAuth2PasswordBearerWithCookie(token_url="/api/v1/auth/login")
 
 
 def create_access_token(data: dict) -> str:

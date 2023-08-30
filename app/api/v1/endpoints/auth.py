@@ -13,7 +13,7 @@ DOMAIN = settings.DOMAIN
 SECURE_COOKIE = settings.SECURE_COOKIE
 
 
-@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
+@router.post("/login", status_code=status.HTTP_200_OK)
 async def login(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -45,7 +45,7 @@ async def login(
         domain=DOMAIN,
     )
 
-    return Token(access_token=access_token)
+    return {"detail": "Login success"}
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
@@ -55,3 +55,5 @@ async def logout(response: Response):
     response.delete_cookie(
         key="token", httponly=True, secure=SECURE_COOKIE, domain=DOMAIN
     )
+
+    return {"detail": "Logout success"}
