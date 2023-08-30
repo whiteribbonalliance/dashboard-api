@@ -290,30 +290,32 @@ async def campaign_download_url(
         xlsx_filename = f"wra_{campaign_code.value}_from_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
 
     # File paths
-    tmp_xlsx_filepath = f"/tmp/{xlsx_filename}"
-    tmp_creating_xlsx_filepath = f"/tmp/wra_creating_{xlsx_filename}"
-    storage_xlsx_filepath = f"/wra/{xlsx_filename}"
+    xlsx_filepath = f"/tmp/{xlsx_filename}"
+    creating_xlsx_filepath = f"/tmp/wra_creating_{xlsx_filename}"
+    cloud_storage_xlsx_filepath = f"{xlsx_filename}"
 
     # Raise exception if df has no data
     if len(df.index) < 1:
         raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
-    # If file exists in Cloud Storage bucket
-    if cloud_storage_interactions.file_exists(filename=storage_xlsx_filepath):
+    # If file exists in Cloud Storage
+    if cloud_storage_interactions.file_exists(filename=cloud_storage_xlsx_filepath):
         # Get storage url
-        url = cloud_storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+        url = cloud_storage_interactions.get_file_url(
+            filename=cloud_storage_xlsx_filepath
+        )
 
-    # If file does not exist in Cloud Storage bucket
+    # If file does not exist in Cloud Storage
     else:
-        if not os.path.isfile(tmp_xlsx_filepath):
+        if not os.path.isfile(xlsx_filepath):
             # Create '/tmp' dir (only if 'dev' because this dir already exists when in production if using App Engine)
             if os.getenv("STAGE") == "dev":
                 if not os.path.isdir("/tmp"):
                     os.mkdir("/tmp")
 
             # Cleanup
-            if os.path.isfile(tmp_creating_xlsx_filepath):
-                os.remove(tmp_creating_xlsx_filepath)
+            if os.path.isfile(creating_xlsx_filepath):
+                os.remove(creating_xlsx_filepath)
 
             # Convert date to string
             df["ingestion_time"] = df["ingestion_time"].apply(
@@ -321,24 +323,24 @@ async def campaign_download_url(
             )
 
             # Save dataframe to xlsx file
-            df.to_excel(
-                excel_writer=tmp_creating_xlsx_filepath, index=False, header=True
-            )
+            df.to_excel(excel_writer=creating_xlsx_filepath, index=False, header=True)
 
             # Rename
-            os.rename(src=tmp_creating_xlsx_filepath, dst=tmp_xlsx_filepath)
+            os.rename(src=creating_xlsx_filepath, dst=xlsx_filepath)
 
         # Upload to storage
         cloud_storage_interactions.upload_file(
-            source_filename=tmp_xlsx_filepath,
-            destination_filename=storage_xlsx_filepath,
+            source_filename=xlsx_filepath,
+            destination_filename=cloud_storage_xlsx_filepath,
         )
 
         # Remove from tmp
-        os.remove(tmp_xlsx_filepath)
+        os.remove(xlsx_filepath)
 
         # Get storage url
-        url = cloud_storage_interactions.get_file_url(filename=storage_xlsx_filepath)
+        url = cloud_storage_interactions.get_file_url(
+            filename=cloud_storage_xlsx_filepath
+        )
 
     return Url(url=url)
 
