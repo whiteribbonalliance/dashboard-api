@@ -362,6 +362,9 @@ async def campaign_country_breakdown(
     # Country breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
 
+    # Sort
+    df = df.sort_values(by="count", ascending=False)
+
     # Rename column
     df = df.rename(columns={"canonical_country": "country"})
 
