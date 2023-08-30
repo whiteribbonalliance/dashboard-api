@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
 class DevSettings(Settings):
     # Development app config
+    DOMAIN = "127.0.0.1"
+    SECURE_COOKIE = False
     SERVER_HOST = "0.0.0.0"
     DEBUG = True
     PORT = 8000
@@ -31,6 +33,8 @@ class DevSettings(Settings):
 
 class ProdSettings(Settings):
     # Production app config
+    DOMAIN = "localhost"
+    SECURE_COOKIE = True
     SERVER_HOST = "0.0.0.0"
     DEBUG = False
     PORT = 8080
