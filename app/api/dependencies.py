@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 
-def dep_campaign_code(campaign_code: CampaignCode = Depends(helpers.check_campaign)):
+async def dep_campaign_code(
+    campaign_code: CampaignCode = Depends(helpers.check_campaign),
+):
     """Return the campaign code"""
 
     if not campaign_code:

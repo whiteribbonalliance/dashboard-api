@@ -351,7 +351,7 @@ async def campaign_download_url(
 async def campaign_country_breakdown(
     campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
 ):
-    """Read country breakdown"""
+    """Read campaign country breakdown"""
 
     # CRUD
     crud = CampaignCRUD(campaign_code=campaign_code)
@@ -361,6 +361,10 @@ async def campaign_country_breakdown(
 
     # Country breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
+
+    # Raise exception if df has no data
+    if len(df.index) < 1:
+        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
     # Sort
     df = df.sort_values(by="count", ascending=False)
@@ -378,5 +382,45 @@ async def campaign_country_breakdown(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_country_breakdown.xlsx"
+        },
+    )
+
+
+@router.get(
+    "/{campaign}/data-source-breakdown",
+    response_class=StreamingResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def campaign_data_source_breakdown(
+    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
+):
+    """Read campaign data source breakdown"""
+
+    # CRUD
+    crud = CampaignCRUD(campaign_code=campaign_code)
+
+    # Get dataframe
+    df = crud.get_dataframe()
+
+    # Data source breakdown
+    df = pd.DataFrame({"count": df.groupby(["data_source"]).size()}).reset_index()
+
+    # Raise exception if df has no data
+    if len(df.index) < 1:
+        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+
+    # Sort
+    df = df.sort_values(by="count", ascending=False)
+
+    # To xlsx
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer) as writer:
+        df.to_excel(excel_writer=writer, index=False, header=True)
+
+    return StreamingResponse(
+        BytesIO(buffer.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_data_source_breakdown.xlsx"
         },
     )
