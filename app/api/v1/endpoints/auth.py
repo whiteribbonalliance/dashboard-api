@@ -5,7 +5,6 @@ from app import auth_handler
 from app import databases
 from app import http_exceptions
 from app.core.settings import settings
-from app.schemas.token import Token
 
 router = APIRouter(prefix="/auth")
 
@@ -45,8 +44,6 @@ async def login(
         domain=DOMAIN,
     )
 
-    return {"detail": "Login success"}
-
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(response: Response):
@@ -56,4 +53,17 @@ async def logout(response: Response):
         key="token", httponly=True, secure=SECURE_COOKIE, domain=DOMAIN
     )
 
-    return {"detail": "Logout success"}
+
+@router.get("/check", status_code=status.HTTP_200_OK)
+async def check(
+    response: Response,
+    username: str = Depends(auth_handler.auth_wrapper_access_token),
+):
+    """Check"""
+
+    if not username:
+        response.delete_cookie(
+            key="token", httponly=True, secure=SECURE_COOKIE, domain=DOMAIN
+        )
+
+        raise http_exceptions.UnauthorizedHTTPException()
