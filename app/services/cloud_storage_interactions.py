@@ -100,6 +100,6 @@ def cleanup():
     # Get size in megabytes
     size_megabytes = size_bytes / 1024 / 1024
 
-    # Clear bucket if > 5GB
-    if size_megabytes > 5120:
+    # Clear bucket if >= 5GB
+    if size_megabytes >= 5120:
         clear_bucket()

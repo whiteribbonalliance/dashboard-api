@@ -10,12 +10,14 @@ from fastapi.responses import StreamingResponse
 from app import databases
 from app import http_exceptions
 from app.api import dependencies
+from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.filter_options import FilterOptions
+from app.schemas.option import Option
 from app.schemas.parameters_campaign_download_url import (
     ParametersCampaignDownloadUrl,
 )
@@ -148,44 +150,44 @@ async def read_filter_options(
     # Country options
     countries = campaign_service.get_countries_list()
     country_options = [
-        {"value": country.alpha2_code, "label": country.name} for country in countries
+        Option(value=country.alpha2_code, label=country.name) for country in countries
     ]
 
     # Country regions options
-    country_regions_options = []
+    country_regions_options: list[dict[str, str | list[Option]]] = []
     for country in countries:
         regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
         for region in sorted(country.regions, key=lambda r: r.name):
             regions_options["options"].append(
-                {"value": region.code, "label": region.name}
+                Option(value=region.code, label=region.name)
             )
         country_regions_options.append(regions_options)
 
     # Response topic options
     response_topics = campaign_service.get_response_topics()
     response_topic_options = [
-        {
-            "value": response_topic.code,
-            "label": response_topic.name,
-            "metadata": "is_parent" if response_topic.is_parent else "is_not_parent",
-        }
+        Option(
+            value=response_topic.code,
+            label=response_topic.name,
+            metadata="is_parent" if response_topic.is_parent else "is_not_parent",
+        )
         for response_topic in response_topics
     ]
 
     # Age options
     ages = campaign_service.get_ages()
-    ages = [{"value": age.code, "label": age.name} for age in ages]
+    ages = [Option(value=age.code, label=age.name) for age in ages]
 
     # Gender options
     genders = campaign_service.get_genders()
     gender_options = [
-        {"value": gender.code, "label": gender.name} for gender in genders
+        Option(value=gender.code, label=gender.name) for gender in genders
     ]
 
     # Profession options
     professions = campaign_service.get_professions()
     profession_options = [
-        {"value": profession.code, "label": profession.name}
+        Option(value=profession.code, label=profession.name)
         for profession in professions
     ]
 
@@ -269,15 +271,11 @@ async def campaign_download_url(
             "User has no access to campaign"
         )
 
-    # Get campaign db
-    db = databases.get_campaign_db(campaign_code=campaign_code)
-    if not db:
-        raise http_exceptions.InternalServerErrorHTTPException(
-            "Campaign database not found"
-        )
+    # CRUD
+    crud = CampaignCRUD(campaign_code=campaign_code)
 
     # Get dataframe
-    df = db.dataframe
+    df = crud.get_dataframe()
 
     # File name
     xlsx_filename = f"wra_{campaign_code.value}.xlsx"
@@ -355,15 +353,11 @@ async def campaign_country_breakdown(
 ):
     """Read country breakdown"""
 
-    # Get campaign db
-    db = databases.get_campaign_db(campaign_code=campaign_code)
-    if not db:
-        raise http_exceptions.InternalServerErrorHTTPException(
-            "Campaign database not found"
-        )
+    # CRUD
+    crud = CampaignCRUD(campaign_code=campaign_code)
 
     # Get dataframe
-    df = db.dataframe
+    df = crud.get_dataframe()
 
     # Country breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()

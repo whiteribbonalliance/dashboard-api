@@ -346,7 +346,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud.set_countries(countries=countries)
 
     # Get responses sample column ids
-    column_ids = [col["id"] for col in campaign_crud.get_responses_sample_columns()]
+    column_ids = [col.id for col in campaign_crud.get_responses_sample_columns()]
 
     # Set genders
     genders = []
@@ -377,7 +377,7 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
     campaign_service = CampaignService(campaign_code=campaign_code)
 
-    df = campaign_crud.get_dataframe().copy()
+    df = campaign_crud.get_dataframe()
 
     # Q codes available in a campaign
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)

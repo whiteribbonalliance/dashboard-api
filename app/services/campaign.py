@@ -19,7 +19,9 @@ from app.schemas.age import Age
 from app.schemas.country import Country
 from app.schemas.filter import Filter
 from app.schemas.gender import Gender
+from app.schemas.option import Option
 from app.schemas.profession import Profession
+from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import googlemaps_interactions
 from app.services.translator import Translator
@@ -156,7 +158,9 @@ class CampaignService:
 
         return parent_categories
 
-    def get_responses_sample_columns(self, q_code: QuestionCode) -> list[dict]:
+    def get_responses_sample_columns(
+        self, q_code: QuestionCode
+    ) -> list[ResponseColumn]:
         """Get responses sample columns"""
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()
@@ -167,15 +171,15 @@ class CampaignService:
             and q_code == QuestionCode.q2
         ):
             responses_sample_columns = [
-                x for x in responses_sample_columns if x.get("id") != "description"
+                x for x in responses_sample_columns if x.id != "description"
             ]
 
         # Translate column names
         for column in responses_sample_columns:
-            if not column.get("name"):
+            if not column.name:
                 continue
 
-            column["name"] = self.__t(column["name"])
+            column.name = self.__t(column.name)
 
         return responses_sample_columns
 
@@ -205,22 +209,24 @@ class CampaignService:
 
         return responses_breakdown
 
-    def __get_responses_sample_column_ids(self, q_code: QuestionCode = None) -> list:
+    def __get_responses_sample_column_ids(
+        self, q_code: QuestionCode = None
+    ) -> list[str]:
         """Get responses sample column ids"""
 
         columns = self.__crud.get_responses_sample_columns()
 
         if not q_code:
-            return [col["id"] for col in columns]
+            return [col.id for col in columns]
 
         # Rename column e.g. 'raw_response' -> 'q1_raw_response'
         for column in columns:
-            if column.get("id") == "raw_response":
-                column["id"] = f"{q_code.value}_raw_response"
-            if column.get("id") == "description":
-                column["id"] = f"{q_code.value}_description"
+            if column.id == "raw_response":
+                column.id = f"{q_code.value}_raw_response"
+            if column.id == "description":
+                column.id = f"{q_code.value}_description"
 
-        return [col["id"] for col in columns]
+        return [col.id for col in columns]
 
     def __get_code_descriptions(self, code: str, t: Callable) -> str:
         """Get code descriptions"""
@@ -821,7 +827,7 @@ class CampaignService:
         q_code: QuestionCode,
         only_multi_word_phrases_containing_filter_term: bool = False,
         keyword: str = "",
-    ):
+    ) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
         """Generate ngrams"""
 
         # Set column name based on question code
@@ -838,9 +844,9 @@ class CampaignService:
         stopwords = stopwords.union(extra_stopwords)
 
         # ngram counters
-        unigram_count_dict = Counter()
-        bigram_count_dict = Counter()
-        trigram_count_dict = Counter()
+        unigram_count = Counter()
+        bigram_count = Counter()
+        trigram_count = Counter()
 
         for word_list in df[tokenized_column_name]:
             # Unigram
@@ -850,7 +856,7 @@ class CampaignService:
                     word_single = word_single.strip()
                     if not word_single:
                         continue
-                    unigram_count_dict[word_single] += 1
+                    unigram_count[word_single] += 1
 
             # Bigram
             for i in range(len(word_list) - 1):
@@ -859,7 +865,7 @@ class CampaignService:
                     word_pair = word_pair.strip()
                     if len(word_pair.split()) < 2:
                         continue
-                    bigram_count_dict[word_pair] += 1
+                    bigram_count[word_pair] += 1
 
             # Trigram
             for i in range(len(word_list) - 2):
@@ -872,19 +878,19 @@ class CampaignService:
                     word_trio = word_trio.strip()
                     if len(word_trio.split()) < 3:
                         continue
-                    trigram_count_dict[word_trio] += 1
+                    trigram_count[word_trio] += 1
 
-        unigram_count_dict = dict(unigram_count_dict)
-        bigram_count_dict = dict(bigram_count_dict)
-        trigram_count_dict = dict(trigram_count_dict)
+        unigram_count_dict: dict[str, int] = dict(unigram_count)
+        bigram_count_dict: dict[str, int] = dict(bigram_count)
+        trigram_count_dict: dict[str, int] = dict(trigram_count)
 
         # Only show words in bigram and trigram if it contains the keyword
         if only_multi_word_phrases_containing_filter_term and len(keyword) > 0:
             bigram_count_dict = dict(
-                (a, b) for a, b in bigram_count_dict.items() if keyword in a
+                (a, b) for a, b in bigram_count.items() if keyword in a
             )
             trigram_count_dict = dict(
-                (a, b) for a, b in trigram_count_dict.items() if keyword in a
+                (a, b) for a, b in trigram_count.items() if keyword in a
             )
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
@@ -894,7 +900,7 @@ class CampaignService:
         only_multi_word_phrases_containing_filter_term: bool,
         keyword: str,
         q_code: QuestionCode,
-    ) -> tuple:
+    ) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
         """Get ngrams 1"""
 
         # Return the cached ngrams (this is when filter 1 was not requested)
@@ -914,7 +920,9 @@ class CampaignService:
 
         return unigram_count_dict, bigram_count_dict, trigram_count_dict
 
-    def __get_ngrams_2(self, q_code: QuestionCode) -> tuple:
+    def __get_ngrams_2(
+        self, q_code: QuestionCode
+    ) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
         """Get ngrams 2"""
 
         # Return the cached ngrams (this is when filter 2 was not requested)
@@ -1322,7 +1330,7 @@ class CampaignService:
 
         return professions
 
-    def get_only_responses_from_categories_options(self) -> list[dict]:
+    def get_only_responses_from_categories_options(self) -> list[Option]:
         """Get only responses from categories options"""
 
         only_responses_from_categories_options = (
@@ -1331,11 +1339,13 @@ class CampaignService:
 
         # Translate
         for option in only_responses_from_categories_options:
-            option["label"] = self.__t(option["label"])
+            option.label = self.__t(option.label)
 
         return only_responses_from_categories_options
 
-    def get_only_multi_word_phrases_containing_filter_term_options(self) -> list[dict]:
+    def get_only_multi_word_phrases_containing_filter_term_options(
+        self,
+    ) -> list[Option]:
         """Get only multi-word phrases containing filter term options"""
 
         only_multi_word_phrases_containing_filter_term_options = (
@@ -1344,6 +1354,6 @@ class CampaignService:
 
         # Translate
         for option in only_multi_word_phrases_containing_filter_term_options:
-            option["label"] = self.__t(option["label"])
+            option.label = self.__t(option.label)
 
         return only_multi_word_phrases_containing_filter_term_options
