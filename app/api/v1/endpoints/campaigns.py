@@ -4,6 +4,7 @@ from io import BytesIO
 from typing import Annotated
 
 import pandas as pd
+import requests
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 
@@ -21,7 +22,6 @@ from app.schemas.option import Option
 from app.schemas.parameters_campaign_download_url import (
     ParametersCampaignDownloadUrl,
 )
-from app.schemas.url import Url
 from app.services import cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
@@ -239,17 +239,17 @@ async def read_who_the_people_are_options(
 
 
 @router.post(
-    "/{campaign}/data-url",
-    response_model=str,
+    "/{campaign}/data",
+    response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_data_url(
+async def campaign_data(
     parameters: Annotated[
         ParametersCampaignDownloadUrl,
         Depends(dependencies.dep_parameters_campaign_download_url),
     ]
 ):
-    """Read campaign data url"""
+    """Read campaign data"""
 
     campaign_code = parameters.campaign_code
     username = parameters.username
@@ -342,7 +342,24 @@ async def campaign_data_url(
             filename=cloud_storage_xlsx_filepath
         )
 
-    return url
+    def iter_file():
+        session = requests.Session()
+        response = session.get(url=url, stream=True)
+
+        if not response.ok:
+            raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+
+        for chunk in response.iter_content(1024 * 1024):
+            yield chunk
+
+    return StreamingResponse(
+        content=iter_file(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}.xlsx",
+        },
+    )
 
 
 @router.get(
@@ -384,7 +401,7 @@ async def campaign_countries_breakdown(
         content=BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            "Content-Type": "Content-Disposition",
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx",
         },
     )
@@ -426,7 +443,7 @@ async def campaign_source_files_breakdown(
         content=BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            "Content-Type": "Content-Disposition",
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx",
         },
     )
