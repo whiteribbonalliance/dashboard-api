@@ -358,6 +358,7 @@ async def campaign_data(
         headers={
             "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}.xlsx",
+            "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
 
@@ -403,6 +404,7 @@ async def campaign_countries_breakdown(
         headers={
             "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx",
+            "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
 
@@ -445,5 +447,6 @@ async def campaign_source_files_breakdown(
         headers={
             "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx",
+            "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
