@@ -41,7 +41,7 @@ class ProdSettings(Settings):
     RELOAD: bool = False
     CORS: dict = {
         "allow_origins": [
-            "localhost",
+            "http://localhost:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
