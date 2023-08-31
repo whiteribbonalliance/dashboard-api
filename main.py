@@ -29,7 +29,7 @@ app_fastapi = FastAPI(
 
 app_fastapi.add_middleware(
     middleware_class=CORSMiddleware,
-    allow_origins=settings.CORS["origins"],
+    allow_origins=settings.CORS["allow_origins"],
     allow_credentials=settings.CORS["allow_credentials"],
     allow_methods=settings.CORS["allow_methods"],
     allow_headers=settings.CORS["allow_headers"],

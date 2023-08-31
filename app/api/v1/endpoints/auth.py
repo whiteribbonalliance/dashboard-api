@@ -5,14 +5,12 @@ from app import auth_handler
 from app import databases
 from app import http_exceptions
 from app.core.settings import settings
+from app.schemas.user import UserResponse
 
 router = APIRouter(prefix="/auth")
 
-DOMAIN = settings.DOMAIN
-SECURE_COOKIE = settings.SECURE_COOKIE
 
-
-@router.post("/login", status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def login(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -40,8 +38,13 @@ async def login(
         key="token",
         value=f"Bearer {access_token}",
         httponly=True,
-        secure=SECURE_COOKIE,
-        domain=DOMAIN,
+        secure=settings.COOKIE_SECURE,
+        domain=settings.COOKIE_DOMAIN,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+
+    return UserResponse(
+        username=db_user.username, campaign_access=db_user.campaign_access
     )
 
 
@@ -50,20 +53,25 @@ async def logout(response: Response):
     """Logout: Remove access token cookie"""
 
     response.delete_cookie(
-        key="token", httponly=True, secure=SECURE_COOKIE, domain=DOMAIN
+        key="token",
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        domain=settings.COOKIE_DOMAIN,
+        samesite=settings.COOKIE_SAMESITE,
     )
 
 
-@router.get("/check", status_code=status.HTTP_200_OK)
+@router.post("/check", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def check(
-    response: Response,
     username: str = Depends(auth_handler.auth_wrapper_access_token),
 ):
-    """Check"""
+    """Check: Verify user"""
 
-    if not username:
-        response.delete_cookie(
-            key="token", httponly=True, secure=SECURE_COOKIE, domain=DOMAIN
-        )
+    users = databases.get_users()
+    db_user = users.get(username)
+    if not db_user:
+        raise http_exceptions.UnauthorizedHTTPException("Unauthorized")
 
-        raise http_exceptions.UnauthorizedHTTPException()
+    return UserResponse(
+        username=db_user.username, campaign_access=db_user.campaign_access
+    )

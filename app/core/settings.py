@@ -14,16 +14,16 @@ class Settings(BaseSettings):
 
 
 class DevSettings(Settings):
-    # Development app config
-    DOMAIN = "127.0.0.1"
-    SECURE_COOKIE = False
+    COOKIE_DOMAIN: str | None = None
+    COOKIE_SECURE = False
+    COOKIE_SAMESITE = "none"
     SERVER_HOST = "0.0.0.0"
     DEBUG = True
     PORT = 8000
     RELOAD = True
     CORS = {
-        "origins": [
-            "*",
+        "allow_origins": [
+            "http://localhost:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
@@ -32,16 +32,16 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    # Production app config
-    DOMAIN = "localhost"
-    SECURE_COOKIE = True
+    COOKIE_DOMAIN: str | None = "localhost"
+    COOKIE_SECURE = True
+    COOKIE_SAMESITE = "strict"
     SERVER_HOST = "0.0.0.0"
     DEBUG = False
     PORT = 8080
     RELOAD = False
     CORS = {
-        "origins": [
-            "*",
+        "allow_origins": [
+            "localhost",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
