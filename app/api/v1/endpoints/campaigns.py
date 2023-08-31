@@ -239,17 +239,17 @@ async def read_who_the_people_are_options(
 
 
 @router.post(
-    "/{campaign}/download-url",
-    response_model=Url,
+    "/{campaign}/data-url",
+    response_model=str,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_download_url(
+async def campaign_data_url(
     parameters: Annotated[
         ParametersCampaignDownloadUrl,
         Depends(dependencies.dep_parameters_campaign_download_url),
     ]
 ):
-    """Read campaign data download url"""
+    """Read campaign data url"""
 
     campaign_code = parameters.campaign_code
     username = parameters.username
@@ -342,7 +342,7 @@ async def campaign_download_url(
             filename=cloud_storage_xlsx_filepath
         )
 
-    return Url(url=url)
+    return url
 
 
 @router.get(
