@@ -380,10 +380,11 @@ async def campaign_countries_breakdown(
         df.to_excel(excel_writer=writer, index=False, header=True)
 
     return StreamingResponse(
-        BytesIO(buffer.getvalue()),
+        content=BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx"
+            "Content-Type": "Content-Disposition",
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx",
         },
     )
 
@@ -420,9 +421,10 @@ async def campaign_source_files_breakdown(
         df.to_excel(excel_writer=writer, index=False, header=True)
 
     return StreamingResponse(
-        BytesIO(buffer.getvalue()),
+        content=BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx"
+            "Content-Type": "Content-Disposition",
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx",
         },
     )
