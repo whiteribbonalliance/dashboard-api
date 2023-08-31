@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app import auth_handler
+from app import auth_handler, constants
 from app import databases
 from app import http_exceptions
 from app.core.settings import settings
@@ -33,6 +33,9 @@ async def login(
     # Create access token
     access_token = auth_handler.create_access_token(data={"sub": db_user.username})
 
+    # Max age of cookie
+    max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS - 1) * 86400
+
     # Set access token as HttpOnly cookie
     response.set_cookie(
         key="token",
@@ -41,6 +44,7 @@ async def login(
         secure=settings.COOKIE_SECURE,
         domain=settings.COOKIE_DOMAIN,
         samesite=settings.COOKIE_SAMESITE,
+        max_age=max_age,
     )
 
     return UserResponse(

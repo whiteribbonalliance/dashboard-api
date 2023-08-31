@@ -7,23 +7,24 @@ from app.enums.api_prefix import ApiPrefix
 
 class Settings(BaseSettings):
     # General app config
-    VERSION = "1.0.0"
-    APP_TITLE = "What Women Want API"
-    API_V1 = ApiPrefix.v1
-    OFFLINE_TRANSLATE_MODE = False
+    VERSION: str = "1.0.0"
+    APP_TITLE: str = "What Women Want API"
+    API_V1: str = ApiPrefix.v1.value
+    OFFLINE_TRANSLATE_MODE: bool = False
 
 
 class DevSettings(Settings):
-    COOKIE_DOMAIN: str | None = None
-    COOKIE_SECURE = False
-    COOKIE_SAMESITE = "none"
-    SERVER_HOST = "0.0.0.0"
-    DEBUG = True
-    PORT = 8000
-    RELOAD = True
-    CORS = {
+    COOKIE_DOMAIN: str = "localhost"
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: str = "strict"
+    SERVER_HOST: str = "0.0.0.0"
+    DEBUG: bool = True
+    PORT: int = 8000
+    RELOAD: bool = True
+    CORS: dict = {
         "allow_origins": [
             "http://localhost:3000",
+            "https://localhost:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
@@ -32,14 +33,14 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    COOKIE_DOMAIN: str | None = "localhost"
-    COOKIE_SECURE = True
-    COOKIE_SAMESITE = "strict"
-    SERVER_HOST = "0.0.0.0"
-    DEBUG = False
-    PORT = 8080
-    RELOAD = False
-    CORS = {
+    COOKIE_DOMAIN: str = "localhost"
+    COOKIE_SECURE: bool = True
+    COOKIE_SAMESITE: str = "strict"
+    SERVER_HOST: str = "0.0.0.0"
+    DEBUG: bool = False
+    PORT: int = 8080
+    RELOAD: bool = False
+    CORS: dict = {
         "allow_origins": [
             "localhost",
         ],
