@@ -7,7 +7,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 
-from app import databases
+from app import databases, auth_handler
 from app import http_exceptions
 from app.api import dependencies
 from app.crud.campaign import CampaignCRUD
@@ -351,7 +351,8 @@ async def campaign_data_url(
     status_code=status.HTTP_200_OK,
 )
 async def campaign_countries_breakdown(
-    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
+    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)],
+    _: str = Depends(auth_handler.auth_wrapper_access_token),
 ):
     """Read campaign countries breakdown"""
 
@@ -395,7 +396,8 @@ async def campaign_countries_breakdown(
     status_code=status.HTTP_200_OK,
 )
 async def campaign_source_files_breakdown(
-    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
+    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)],
+    _: str = Depends(auth_handler.auth_wrapper_access_token),
 ):
     """Read campaign source files breakdown"""
 
