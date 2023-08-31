@@ -346,14 +346,14 @@ async def campaign_download_url(
 
 
 @router.get(
-    "/{campaign}/country-breakdown",
+    "/{campaign}/countries-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_country_breakdown(
+async def campaign_countries_breakdown(
     campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
 ):
-    """Read campaign country breakdown"""
+    """Read campaign countries breakdown"""
 
     # CRUD
     crud = CampaignCRUD(campaign_code=campaign_code)
@@ -361,7 +361,7 @@ async def campaign_country_breakdown(
     # Get dataframe
     df = crud.get_dataframe()
 
-    # Country breakdown
+    # Countries breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
 
     # Raise exception if df has no data
@@ -383,20 +383,20 @@ async def campaign_country_breakdown(
         BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_country_breakdown.xlsx"
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx"
         },
     )
 
 
 @router.get(
-    "/{campaign}/data-source-breakdown",
+    "/{campaign}/source-files-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_data_source_breakdown(
+async def campaign_source_files_breakdown(
     campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)]
 ):
-    """Read campaign data source breakdown"""
+    """Read campaign source files breakdown"""
 
     # CRUD
     crud = CampaignCRUD(campaign_code=campaign_code)
@@ -404,7 +404,7 @@ async def campaign_data_source_breakdown(
     # Get dataframe
     df = crud.get_dataframe()
 
-    # Data source breakdown
+    # Source files breakdown
     df = pd.DataFrame({"count": df.groupby(["data_source"]).size()}).reset_index()
 
     # Raise exception if df has no data
@@ -423,6 +423,6 @@ async def campaign_data_source_breakdown(
         BytesIO(buffer.getvalue()),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_data_source_breakdown.xlsx"
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx"
         },
     )
