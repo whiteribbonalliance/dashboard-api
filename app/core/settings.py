@@ -6,7 +6,6 @@ from app.enums.api_prefix import ApiPrefix
 
 
 class Settings(BaseSettings):
-    # General app config
     VERSION: str = "1.0.0"
     APP_TITLE: str = "What Women Want API"
     API_V1: str = ApiPrefix.v1.value
