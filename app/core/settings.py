@@ -43,6 +43,9 @@ class ProdSettings(Settings):
     RELOAD: bool = False
     CORS: dict = {
         "allow_origins": [
+            "http://localhost",
+            "http://localhost:3000",
+            "http://explore.whiteribbonalliance.local:3000",
             "https://explore.whiteribbonalliance.org"
             "https://whatwomenwant.whiteribbonalliance.org",
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
