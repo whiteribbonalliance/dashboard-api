@@ -35,7 +35,7 @@ class DevSettings(Settings):
 class ProdSettings(Settings):
     COOKIE_DOMAIN: str = ".appspot.com"
     COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "strict"
+    COOKIE_SAMESITE: str = "lax"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
