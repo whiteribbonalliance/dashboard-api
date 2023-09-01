@@ -1,3 +1,4 @@
+import inspect
 import json
 from functools import wraps
 from hashlib import sha256
@@ -19,43 +20,69 @@ class ApiCache(metaclass=SingletonMeta):
     def cache_response(self, func):
         """Decorator for caching API responses"""
 
-        @wraps(func)
-        async def wrapper(*args: tuple, **kwargs: dict):
-            # Get path from request
-            if kwargs.get("parameters").request:
-                path = kwargs.get("parameters").request.url.path
-            else:
-                path = ""
+        if inspect.iscoroutinefunction(func):
 
-            # Set request as None as it is not needed anymore
-            kwargs.get("parameters").request = None
+            @wraps(func)
+            async def wrapper(*args: tuple, **kwargs: dict):
+                hash_value = self.__get_hash_value(**kwargs)
+                if self.__hash_exists(hash_value):
+                    # Return cached result
+                    return self.__cache.get(hash_value)
+                else:
+                    # Create result, cache result, return result
+                    result = await func(*args, **kwargs)
+                    self.__cache[hash_value] = result
 
-            # Create a jsonable dict from kwargs
-            kwargs_jsonable = jsonable_encoder(kwargs)
+                    return result
 
-            # Remove request
-            kwargs_jsonable.get("parameters").pop("request")
+        else:
 
-            # Add path to jsonable kwargs
-            kwargs_jsonable["path"] = path
+            @wraps(func)
+            def wrapper(*args: tuple, **kwargs: dict):
+                hash_value = self.__get_hash_value(**kwargs)
+                if self.__hash_exists(hash_value):
+                    # Return cached result
+                    return self.__cache.get(hash_value)
+                else:
+                    # Create result, cache result, return result
+                    result = func(*args, **kwargs)
+                    self.__cache[hash_value] = result
 
-            # Create hash value
-            kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
-            hash_value = sha256(kwargs_json.encode()).hexdigest()
-
-            if hash_value in self.__cache.keys():
-                # Return cached result
-                result = self.__cache.get(hash_value)
-
-                return result
-            else:
-                # Create result, cache result, return result
-                result = await func(*args, **kwargs)
-                self.__cache[hash_value] = result
-
-                return result
+                    return result
 
         return wrapper
+
+    def __get_hash_value(self, **kwargs: dict) -> str:
+        """Get hash value"""
+
+        # Get path from request
+        if kwargs.get("parameters").request:
+            path = kwargs.get("parameters").request.url.path
+        else:
+            path = ""
+
+        # Set request as None as it is not needed anymore
+        kwargs.get("parameters").request = None
+
+        # Create a jsonable dict from kwargs
+        kwargs_jsonable = jsonable_encoder(kwargs)
+
+        # Remove request
+        kwargs_jsonable.get("parameters").pop("request")
+
+        # Add path to jsonable kwargs
+        kwargs_jsonable["path"] = path
+
+        # Create hash value
+        kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
+        hash_value = sha256(kwargs_json.encode()).hexdigest()
+
+        return hash_value
+
+    def __hash_exists(self, hash_value: str) -> bool:
+        """Check if hash exists"""
+
+        return hash_value in self.__cache.keys()
 
     def get_cache(self):
         """Get cache"""

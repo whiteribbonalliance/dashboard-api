@@ -40,7 +40,7 @@ def get_campaign_q_codes(campaign_code: CampaignCode) -> list[QuestionCode]:
     return q_codes
 
 
-async def check_campaign(campaign: str) -> CampaignCode:
+def check_campaign(campaign: str) -> CampaignCode:
     """Check if campaign exists"""
 
     if campaign.lower() in [c.lower() for c in constants.CAMPAIGN_CODES]:
@@ -49,7 +49,7 @@ async def check_campaign(campaign: str) -> CampaignCode:
                 return campaign_code
 
 
-async def check_language(lang: str) -> str:
+def check_language(lang: str) -> str:
     """Check if language exists, if not, default to 'en'"""
 
     if lang in constants.TRANSLATION_LANGUAGES:

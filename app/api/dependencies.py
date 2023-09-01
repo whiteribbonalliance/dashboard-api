@@ -9,15 +9,15 @@ from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.date_filter import DateFilter
-from app.schemas.parameters_campaign_download_url import (
-    ParametersCampaignDownloadUrl,
+from app.schemas.parameters_campaign_data import (
+    ParametersCampaignData,
 )
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 
-async def dep_campaign_code(
+def dep_campaign_code(
     campaign_code: CampaignCode = Depends(helpers.check_campaign),
 ):
     """Return the campaign code"""
@@ -28,7 +28,7 @@ async def dep_campaign_code(
     return campaign_code
 
 
-async def dep_common_parameters_campaign(
+def dep_common_parameters_campaign(
     request: Request,
     campaign_code: CampaignCode = Depends(dep_campaign_code),
     q_code: str = "q1",
@@ -52,11 +52,11 @@ async def dep_common_parameters_campaign(
     )
 
 
-async def dep_parameters_campaign_download_url(
+def dep_parameters_campaign_data(
     campaign_code: CampaignCode = Depends(dep_campaign_code),
     username: str = Depends(auth_handler.auth_wrapper_access_token),
     date_filter: DateFilter | None = None,
-) -> ParametersCampaignDownloadUrl:
+) -> ParametersCampaignData:
     """Return the common parameters"""
 
     date_format = "%Y-%m-%d"
@@ -78,7 +78,7 @@ async def dep_parameters_campaign_download_url(
     except ValueError as e:
         logger.warning(f"Could not parse date from date_filter: {str(e)}")
 
-    return ParametersCampaignDownloadUrl(
+    return ParametersCampaignData(
         campaign_code=campaign_code,
         username=username,
         from_date=from_date,

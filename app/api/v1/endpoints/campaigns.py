@@ -19,8 +19,8 @@ from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.filter_options import FilterOptions
 from app.schemas.option import Option
-from app.schemas.parameters_campaign_download_url import (
-    ParametersCampaignDownloadUrl,
+from app.schemas.parameters_campaign_data import (
+    ParametersCampaignData,
 )
 from app.services import cloud_storage_interactions
 from app.services.api_cache import ApiCache
@@ -243,10 +243,10 @@ async def read_who_the_people_are_options(
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_data(
+def campaign_data(
     parameters: Annotated[
-        ParametersCampaignDownloadUrl,
-        Depends(dependencies.dep_parameters_campaign_download_url),
+        ParametersCampaignData,
+        Depends(dependencies.dep_parameters_campaign_data),
     ]
 ):
     """Read campaign data"""

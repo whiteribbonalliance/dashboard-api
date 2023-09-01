@@ -24,7 +24,7 @@ class DevSettings(Settings):
     CORS: dict = {
         "allow_origins": [
             "http://localhost:3000",
-            "http://explore.whiteribbonalliance.local:3000"
+            "http://explore.whiteribbonalliance.local:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
@@ -45,7 +45,7 @@ class ProdSettings(Settings):
             "https://explore.whiteribbonalliance.org"
             "https://whatwomenwant.whiteribbonalliance.org",
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
-            "https://midwivesvoices.whiteribbonalliance.org"
+            "https://midwivesvoices.whiteribbonalliance.org",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
