@@ -23,6 +23,7 @@ class DevSettings(Settings):
     RELOAD: bool = True
     CORS: dict = {
         "allow_origins": [
+            "http://localhost",
             "http://localhost:3000",
             "http://explore.whiteribbonalliance.local:3000",
         ],
