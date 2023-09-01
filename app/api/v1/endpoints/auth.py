@@ -34,7 +34,7 @@ async def login(
     access_token = auth_handler.create_access_token(data={"sub": db_user.username})
 
     # Max age of cookie
-    max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS - 1) * 86400
+    max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS * 86400) - 3600
 
     # Set access token as HttpOnly cookie
     response.set_cookie(

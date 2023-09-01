@@ -59,17 +59,19 @@ async def dep_parameters_campaign_download_url(
 ) -> ParametersCampaignDownloadUrl:
     """Return the common parameters"""
 
+    date_format = "%Y-%m-%d"
+
     # Parse date
     from_date: date | None = None
     to_date: date | None = None
     try:
         from_date = (
-            datetime.strptime(date_filter.from_date, "%Y-%m-%d").date()
+            datetime.strptime(date_filter.from_date, date_format).date()
             if date_filter and date_filter.from_date
             else None
         )
         to_date = (
-            datetime.strptime(date_filter.to_date, "%Y-%m-%d").date()
+            datetime.strptime(date_filter.to_date, date_format).date()
             if date_filter and date_filter.to_date
             else None
         )

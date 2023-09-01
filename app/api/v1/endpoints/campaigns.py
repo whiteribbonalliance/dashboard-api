@@ -287,7 +287,7 @@ async def campaign_data(
             (df["ingestion_time"].dt.date >= from_date)
             & (df["ingestion_time"].dt.date <= to_date)
         ]
-        xlsx_filename = f"wra_{campaign_code.value}_from_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
+        xlsx_filename = f"wra_{campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
 
     # File paths
     xlsx_filepath = f"/tmp/{xlsx_filename}"
@@ -357,7 +357,7 @@ async def campaign_data(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}.xlsx",
+            f"Content-Disposition": f"attachment; filename={xlsx_filename}",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
