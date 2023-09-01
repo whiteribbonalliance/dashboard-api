@@ -33,7 +33,7 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    COOKIE_DOMAIN: str = "admindashboard-dot-deft-stratum-290216.uc.r.appspot.com"
+    COOKIE_DOMAIN: str = ".admindashboard-dot-deft-stratum-290216.uc.r.appspot.com"
     COOKIE_SECURE: bool = True
     COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
