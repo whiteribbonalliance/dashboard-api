@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 class DevSettings(Settings):
     COOKIE_DOMAIN: str = "localhost"
     COOKIE_SECURE: bool = False
-    COOKIE_SAMESITE: str = "strict"
+    COOKIE_SAMESITE: str = "Strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = True
     PORT: int = 8000
@@ -34,7 +34,7 @@ class DevSettings(Settings):
 class ProdSettings(Settings):
     COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
     COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "strict"
+    COOKIE_SAMESITE: str = "Strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
