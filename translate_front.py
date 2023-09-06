@@ -3,11 +3,8 @@ import os
 import shutil
 
 from app import constants
-from app.core.settings import settings
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
-
-settings.OFFLINE_TRANSLATE_MODE = True
 
 count_chars_only = False
 
@@ -16,6 +13,7 @@ def translate_front():
     """Apply translation on texts"""
 
     translations_cache = TranslationsCache()
+    translations_cache.load()
 
     with open("front_translations/to_translate.json", "r", encoding="utf8") as file:
         texts: dict = json.loads(file.read())
@@ -29,7 +27,7 @@ def translate_front():
         translator.set_target_language(target_language=language)
 
         for text_id, text in texts.items():
-            translator.add_text_to_extract(text)
+            translator.extract_text(text)
 
         translator.translate_extracted_texts(count_chars_only=count_chars_only)
 

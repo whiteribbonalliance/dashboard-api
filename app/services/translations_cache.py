@@ -14,14 +14,21 @@ class TranslationsCache(metaclass=SingletonMeta):
     def __init__(self):
         self.__cache = {}
 
-        self.__load()
+        self.__is_loaded = False
 
-    def __load(self):
+    def load(self):
         """Load content of translations.json into cache"""
 
-        if os.path.isfile(constants.TRANSLATIONS_JSON):
-            with open(constants.TRANSLATIONS_JSON, "r") as file:
-                self.__cache: dict = json.loads(file.read())
+        if not self.__cache:
+            if os.path.isfile(constants.TRANSLATIONS_JSON):
+                with open(constants.TRANSLATIONS_JSON, "r") as file:
+                    self.__cache: dict = json.loads(file.read())
+                    self.__is_loaded = True
+
+    def is_loaded(self) -> bool:
+        """Is loaded"""
+
+        return self.__is_loaded
 
     def set(self, key: str, value: Any):
         """Set key value pair"""

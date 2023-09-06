@@ -6,6 +6,7 @@ import logging
 
 from fastapi import concurrency
 from rocketry import Rocketry
+from rocketry.args import Session
 from rocketry.conds import cron
 
 from app import helpers
@@ -16,6 +17,22 @@ app = Rocketry(executation="async")
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
+
+
+@app.task("true")
+async def do_once_load_initial_data(session=Session()):
+    """Load initial data"""
+
+    try:
+        await concurrency.run_in_threadpool(data_loader.load_initial_data)
+    except (Exception,) as e:
+        logger.error(f"Error while trying to load data: {str(e)}")
+
+    # Get task
+    task = session["do_once_load_initial_data"]
+
+    # Disable task
+    task.disabled = True
 
 
 @app.task(cron("0 */12 * * *"))

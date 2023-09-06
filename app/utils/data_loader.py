@@ -10,7 +10,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from app import constants, globals, databases, helpers
+from app import constants, databases, helpers
+from app import global_variables
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
@@ -417,6 +418,7 @@ def load_campaigns_data():
         try:
             load_campaign_data(campaign_code=campaign_code)
             load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
+            ApiCache().clear_cache()
         except (Exception,):
             logger.exception(
                 f"""Error loading data for campaign {campaign_code.value}"""
@@ -444,8 +446,7 @@ def load_translations_cache():
 
     print("INFO:\t  Loading translations cache...")
 
-    # Creating the singleton instance will automatically load the cache
-    TranslationsCache()
+    TranslationsCache().load()
 
     print("INFO:\t  Loading translations cache completed.")
 
@@ -459,8 +460,8 @@ def load_coordinates():
     coordinates_json = "coordinates.json"
     new_coordinates_added = False
 
-    if globals.coordinates:
-        coordinates = globals.coordinates
+    if global_variables.coordinates:
+        coordinates = global_variables.coordinates
     else:
         with open(coordinates_json, "r") as file:
             coordinates: dict = json.loads(file.read())
@@ -517,6 +518,6 @@ def load_coordinates():
         with open(coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 
-    globals.coordinates = coordinates
+    global_variables.coordinates = coordinates
 
     print(f"INFO:\t  Loading coordinates completed.")

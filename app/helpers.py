@@ -74,3 +74,23 @@ def clear_tmp_dir():
 
     for filename in glob.glob("/tmp/wra_*"):
         os.remove(filename)
+
+
+def get_q_code_column_names() -> list:
+    """Get q code column names"""
+
+    columns = []
+    for q_code in QuestionCode:
+        columns.extend(
+            [
+                f"{q_code.value}_raw_response",
+                f"{q_code.value}_original_language",
+                f"{q_code.value}_canonical_code",
+                f"{q_code.value}_canonical_codes",
+                f"{q_code.value}_lemmatized",
+                f"{q_code.value}_tokenized",
+                f"{q_code.value}_parent_category",
+            ]
+        )
+
+    return columns

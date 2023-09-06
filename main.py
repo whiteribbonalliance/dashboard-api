@@ -7,10 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
 from app.core.settings import settings
 from app.scheduler import app as app_rocketry
-from app.utils import data_loader
-
-# Load initial data
-data_loader.load_initial_data()
 
 description = """
 What Women Want Dashboard API.

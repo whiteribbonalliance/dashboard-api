@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     APP_TITLE: str = "What Women Want API"
     API_V1: str = ApiPrefix.v1.value
-    OFFLINE_TRANSLATE_MODE: bool = False
 
 
 class DevSettings(Settings):
@@ -35,7 +34,7 @@ class DevSettings(Settings):
 class ProdSettings(Settings):
     COOKIE_DOMAIN: str = ".appspot.com"
     COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "lax"
+    COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
@@ -49,7 +48,7 @@ class ProdSettings(Settings):
             "https://whatwomenwant.whiteribbonalliance.org",
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
             "https://midwivesvoices.whiteribbonalliance.org",
-            "https://admindashboard-dot-deft-stratum-290216.uc.r.appspot.com"
+            "https://admindashboard-dot-deft-stratum-290216.uc.r.appspot.com",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
