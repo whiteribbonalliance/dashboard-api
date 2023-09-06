@@ -32,7 +32,7 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    COOKIE_DOMAIN: str = ".appspot.com"
+    COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
     COOKIE_SECURE: bool = True
     COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
@@ -48,7 +48,7 @@ class ProdSettings(Settings):
             "https://whatwomenwant.whiteribbonalliance.org",
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
             "https://midwivesvoices.whiteribbonalliance.org",
-            "https://admindashboard-dot-deft-stratum-290216.uc.r.appspot.com",
+            "https://admin.whiteribbonalliance.org",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
