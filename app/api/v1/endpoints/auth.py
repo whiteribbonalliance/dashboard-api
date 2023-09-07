@@ -47,8 +47,6 @@ async def login(
         max_age=max_age,
     )
 
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-
     return UserResponse(
         username=db_user.username, campaign_access=db_user.campaign_access
     )
@@ -57,8 +55,6 @@ async def login(
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(response: Response):
     """Logout: Remove access token cookie"""
-
-    response.headers["Access-Control-Allow-Credentials"] = "true"
 
     response.delete_cookie(
         key="token",
@@ -71,7 +67,6 @@ async def logout(response: Response):
 
 @router.post("/check", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def check(
-    response: Response,
     username: str = Depends(auth_handler.auth_wrapper_access_token),
 ):
     """Check: Verify user"""
@@ -80,8 +75,6 @@ async def check(
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unauthorized")
-
-    response.headers["Access-Control-Allow-Credentials"] = "true"
 
     return UserResponse(
         username=db_user.username, campaign_access=db_user.campaign_access
