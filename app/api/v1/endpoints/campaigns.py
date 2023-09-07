@@ -1,6 +1,6 @@
 import logging
 import os.path
-from io import BytesIO
+from io import StringIO
 from typing import Annotated
 
 import pandas as pd
@@ -410,7 +410,7 @@ def campaign_data(
     df = crud.get_dataframe()
 
     # File name
-    xlsx_filename = f"wra_{campaign_code.value}.xlsx"
+    csv_filename = f"wra_{campaign_code.value}.csv"
 
     # Filter by date
     date_format = "%Y_%m_%d"
@@ -419,59 +419,59 @@ def campaign_data(
             (df["ingestion_time"].dt.date >= from_date)
             & (df["ingestion_time"].dt.date <= to_date)
         ]
-        xlsx_filename = f"wra_{campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.xlsx"
+        csv_filename = f"wra_{campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
     # File paths
-    xlsx_filepath = f"/tmp/{xlsx_filename}"
-    creating_xlsx_filepath = f"/tmp/wra_creating_{xlsx_filename}"
-    cloud_storage_xlsx_filepath = f"{xlsx_filename}"
+    csv_filepath = f"/tmp/{csv_filename}"
+    creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
+    cloud_storage_csv_filepath = f"{csv_filename}"
 
     # Raise exception if df has no data
     if len(df.index) < 1:
         raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
     # If file exists in Cloud Storage
-    if cloud_storage_interactions.file_exists(filename=cloud_storage_xlsx_filepath):
+    if cloud_storage_interactions.file_exists(filename=cloud_storage_csv_filepath):
         # Get storage url
         url = cloud_storage_interactions.get_file_url(
-            filename=cloud_storage_xlsx_filepath
+            filename=cloud_storage_csv_filepath
         )
 
     # If file does not exist in Cloud Storage
     else:
-        if not os.path.isfile(xlsx_filepath):
+        if not os.path.isfile(csv_filepath):
             # Create '/tmp' dir (only if 'dev' because this dir already exists when in production if using App Engine)
             if os.getenv("STAGE") == "dev":
                 if not os.path.isdir("/tmp"):
                     os.mkdir("/tmp")
 
             # Cleanup
-            if os.path.isfile(creating_xlsx_filepath):
-                os.remove(creating_xlsx_filepath)
+            if os.path.isfile(creating_csv_filepath):
+                os.remove(creating_csv_filepath)
 
             # Convert date to string
             df["ingestion_time"] = df["ingestion_time"].apply(
                 lambda x: x.strftime(date_format) if x else ""
             )
 
-            # Save dataframe to xlsx file
-            df.to_excel(excel_writer=creating_xlsx_filepath, index=False, header=True)
+            # Save dataframe to csv file
+            df.to_csv(path_or_buf=creating_csv_filepath, index=False, header=True)
 
             # Rename
-            os.rename(src=creating_xlsx_filepath, dst=xlsx_filepath)
+            os.rename(src=creating_csv_filepath, dst=csv_filepath)
 
         # Upload to storage
         cloud_storage_interactions.upload_file(
-            source_filename=xlsx_filepath,
-            destination_filename=cloud_storage_xlsx_filepath,
+            source_filename=csv_filepath,
+            destination_filename=cloud_storage_csv_filepath,
         )
 
         # Remove from tmp
-        os.remove(xlsx_filepath)
+        os.remove(csv_filepath)
 
         # Get storage url
         url = cloud_storage_interactions.get_file_url(
-            filename=cloud_storage_xlsx_filepath
+            filename=cloud_storage_csv_filepath
         )
 
     def iter_file():
@@ -486,10 +486,10 @@ def campaign_data(
 
     return StreamingResponse(
         content=iter_file(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type="text/csv",
         headers={
-            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            f"Content-Disposition": f"attachment; filename={xlsx_filename}",
+            "Content-Type": "text/csv",
+            f"Content-Disposition": f"attachment; filename={csv_filename}",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
@@ -525,17 +525,16 @@ async def campaign_countries_breakdown(
     # Rename column
     df = df.rename(columns={"canonical_country": "country"})
 
-    # To xlsx
-    buffer = BytesIO()
-    with pd.ExcelWriter(buffer) as writer:
-        df.to_excel(excel_writer=writer, index=False, header=True)
+    # To csv
+    buffer = StringIO()
+    df.to_csv(path_or_buf=buffer, index=False, header=True)
 
     return StreamingResponse(
-        content=BytesIO(buffer.getvalue()),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        content=iter([buffer.getvalue()]),
+        media_type="text/csv",
         headers={
-            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.xlsx",
+            "Content-Type": "text/csv",
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
@@ -568,17 +567,16 @@ async def campaign_source_files_breakdown(
     # Sort
     df = df.sort_values(by="count", ascending=False)
 
-    # To xlsx
-    buffer = BytesIO()
-    with pd.ExcelWriter(buffer) as writer:
-        df.to_excel(excel_writer=writer, index=False, header=True)
+    # To csv
+    buffer = StringIO()
+    df.to_csv(path_or_buf=buffer, index=False, header=True)
 
     return StreamingResponse(
-        content=BytesIO(buffer.getvalue()),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        content=iter([buffer.getvalue()]),
+        media_type="text/csv",
         headers={
-            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.xlsx",
+            "Content-Type": "text/csv",
+            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
