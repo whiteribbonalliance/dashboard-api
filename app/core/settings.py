@@ -34,7 +34,7 @@ class DevSettings(Settings):
 class ProdSettings(Settings):
     COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
     COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "Strict"
+    COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
@@ -54,8 +54,11 @@ class ProdSettings(Settings):
         "allow_methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": [
             "Access-Control-Allow-Headers",
-            "Authorization",
+            "Access-Control-Allow-Methods",
+            "Access-Control-Allow-Credentials",
             "Access-Control-Allow-Origin",
+            "Access-Control-Max-Age",
+            "Authorization",
             "Content-Type",
             "Set-Cookie",
         ],
