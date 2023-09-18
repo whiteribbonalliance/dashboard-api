@@ -8,3 +8,4 @@ class CampaignCode(Enum):
     economic_empowerment_mexico: str = "giz"
     what_women_want_pakistan: str = "wwwpakistan"
     healthwellbeing: str = "healthwellbeing"
+    womens_economic_empowerment: str = "wee"
