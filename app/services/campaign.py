@@ -224,7 +224,14 @@ class CampaignService:
         descriptions = mapping_to_description.get(
             code,
             " / ".join(
-                sorted(set([mapping_to_description.get(x, x) for x in code.split("/")]))
+                sorted(
+                    set(
+                        [
+                            mapping_to_description.get(x.strip(), x.strip())
+                            for x in code.split("/")
+                        ]
+                    )
+                )
             ),
         )
 
@@ -309,20 +316,20 @@ class CampaignService:
                     df = df[(df[parent_category_col_name] == parent_category)]
                     for canonical_code in df[canonical_code_col_name]:
                         for c in canonical_code.split("/"):
-                            category_counter[c] += 1
+                            category_counter[c.strip()] += 1
 
                 # Only include parent categories
                 else:
                     for canonical_code in df[parent_category_col_name]:
                         for c in canonical_code.split("/"):
-                            category_counter[c] += 1
+                            category_counter[c.strip()] += 1
 
             # Other campaigns
             else:
                 # Include all categories
                 for canonical_code in df[canonical_code_col_name]:
                     for c in canonical_code.split("/"):
-                        category_counter[c] += 1
+                        category_counter[c.strip()] += 1
 
             if len(category_counter) > 0:
                 # Create dataframe with items from counter

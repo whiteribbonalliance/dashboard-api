@@ -40,7 +40,7 @@ def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str
     mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
         campaign_code=campaign_code
     )
-    categories = [x for x in sub_categories.split("/") if x]
+    categories = [x.strip() for x in sub_categories.split("/") if x]
     parent_categories = sorted(
         set([mapping_to_parent_category.get(x, x) for x in categories])
     )
