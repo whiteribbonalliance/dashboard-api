@@ -413,6 +413,9 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_code in CampaignCode:
+        # TODO: Temporarily skip campaign 'wee'
+        if campaign_code == CampaignCode.womens_economic_empowerment:
+            continue
         print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")
 
         try:
@@ -456,7 +459,6 @@ def load_coordinates():
 
     print(f"INFO:\t  Loading coordinates...")
 
-    stage_is_dev = os.getenv("stage", "") == "dev"
     coordinates_json = "coordinates.json"
     new_coordinates_added = False
 
@@ -513,8 +515,8 @@ def load_coordinates():
             if not new_coordinates_added:
                 new_coordinates_added = True
 
-    # Save coordinates
-    if stage_is_dev and new_coordinates_added:
+    # Save coordinates (Only in development environment)
+    if os.getenv("stage", "").lower() == "dev" and new_coordinates_added:
         with open(coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 
