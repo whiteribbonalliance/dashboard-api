@@ -172,6 +172,7 @@ async def read_campaign(
         logger.warning(f"An error occurred during translation of 'campaign': {str(e)}")
 
     return Campaign(
+        campaign_code=campaign_code.value,
         responses_sample=responses_sample,
         responses_breakdown=responses_breakdown,
         living_settings_breakdown=living_settings_breakdown,
@@ -371,7 +372,7 @@ async def read_who_the_people_are_options(
 
 
 @router.post(
-    "/{campaign}/data",
+    path="/{campaign}/data",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
@@ -496,7 +497,7 @@ def campaign_data(
 
 
 @router.get(
-    "/{campaign}/countries-breakdown",
+    path="/{campaign}/countries-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
@@ -541,7 +542,7 @@ async def campaign_countries_breakdown(
 
 
 @router.get(
-    "/{campaign}/source-files-breakdown",
+    path="/{campaign}/source-files-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )

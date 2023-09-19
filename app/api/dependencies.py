@@ -7,6 +7,7 @@ from fastapi import Request, Depends
 from app import helpers, auth_handler, http_exceptions
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
+from app.schemas.common_parameters_all_campaigns import CommonParametersAllCampaigns
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.date_filter import DateFilter
 from app.schemas.parameters_campaign_data import (
@@ -46,6 +47,24 @@ def dep_common_parameters_campaign(
 
     return CommonParametersCampaign(
         campaign_code=campaign_code,
+        language=lang,
+        q_code=q_code_verified,
+        request=request,
+    )
+
+
+def dep_common_parameters_all_campaigns(
+    request: Request,
+    q_code: str = "q1",
+    lang: str = Depends(helpers.check_language),
+) -> CommonParametersAllCampaigns:
+    """Return the common parameters"""
+
+    q_code_verified = helpers.check_q_code(q_code=q_code)
+    if not q_code_verified:
+        raise http_exceptions.ResourceNotFoundHTTPException("q_code does not exist")
+
+    return CommonParametersAllCampaigns(
         language=lang,
         q_code=q_code_verified,
         request=request,
