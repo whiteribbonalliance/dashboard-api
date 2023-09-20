@@ -65,12 +65,12 @@ class CampaignService:
 
         # Filter 1 description
         self.__filter_1_description = self.__get_filter_description(
-            df=self.__df_1, _filter=self.__filter_1
+            df_len=len(self.__df_1), _filter=self.__filter_1
         )
 
         # Filter 2 description
         self.__filter_2_description = self.__get_filter_description(
-            df=self.__df_2, _filter=self.__filter_2
+            df_len=len(self.__df_2), _filter=self.__filter_2
         )
 
         # If filter 1 was requested, then do not use the cached ngrams
@@ -689,7 +689,7 @@ class CampaignService:
 
         return self.__filter_2_description
 
-    def __get_filter_description(self, df: pd.DataFrame, _filter: Filter) -> str:
+    def __get_filter_description(self, df_len: int, _filter: Filter) -> str:
         """Get filter description"""
 
         if not _filter:
@@ -699,7 +699,7 @@ class CampaignService:
         description = filters.generate_description_of_filter(
             campaign_code=self.__campaign_code,
             _filter=_filter,
-            num_results=len(df),
+            num_results=df_len,
             respondent_noun_singular=self.__crud.get_respondent_noun_singular(),
             respondent_noun_plural=self.__crud.get_respondent_noun_plural(),
         )

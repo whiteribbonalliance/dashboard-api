@@ -2,9 +2,6 @@ import glob
 import os
 import random
 import re
-from typing import Literal
-
-import numpy as np
 
 from app import constants
 from app.enums.campaign_code import CampaignCode
@@ -107,31 +104,18 @@ def get_q_code_column_names() -> list:
     return columns
 
 
-def get_unique_flattened_list(
-    data_lists: list[list[dict]], content_type: Literal["dict", "str"]
-) -> list[dict | str]:
-    """Get unique flattened list that contains dict or str"""
+def get_distributed_list_of_dictionaries(
+    data_lists: list[list[dict]],
+    sort_by_key: str = None,
+    remove_duplicates: bool = False,
+) -> list[dict]:
+    """
+    Given a list containing a list of dictionaries, distribute the list items to a single list of dictionaries.
 
-    # Flatten list
-    data_lists_flatten: list[dict | str] = []
-    for data_list in data_lists:
-        data_lists_flatten.extend([dict(x) for x in data_list if x])
-
-    if content_type == "dict":
-        return [
-            dict(tupleized)
-            for tupleized in set(
-                tuple(data_list.items()) for data_list in data_lists_flatten
-            )
-        ]
-    elif content_type == "list":
-        return list(set(data_lists_flatten))
-    else:
-        return []
-
-
-def get_distributed_data_list(data_lists: list[list]) -> list:
-    """Get distribute data list"""
+    :param data_lists: A list containing lists of dictionaries.
+    :param sort_by_key: Optional, sort by dictionary key (desc) and pick top items.
+    :param remove_duplicates: Optional, remove duplicates from list.
+    """
 
     distributed_data_list = []
 
@@ -141,14 +125,97 @@ def get_distributed_data_list(data_lists: list[list]) -> list:
     # Get average items count
     average_items_count = max_items_count // len(data_lists)
 
-    # Get sample from each list
+    # Get items from each list
     for data_list in data_lists:
         if data_list:
-            n_sample = average_items_count
+            # n items
+            n_items = average_items_count
             if average_items_count > len(data_list):
-                n_sample = len(data_list)
-            distributed_data_list.extend(
-                random.sample(population=data_list, k=n_sample)
+                n_items = len(data_list)
+
+            # Sort list by dict key and pick the top n results
+            if sort_by_key:
+                data_list_sorted = sorted(
+                    data_list, key=lambda d: d.get(sort_by_key), reverse=True
+                )
+                distributed_data_list.extend(data_list_sorted[:n_items])
+
+            # Pick random n sample
+            else:
+                distributed_data_list.extend(
+                    random.sample(population=data_list, k=n_items)
+                )
+
+    # Remove duplicates
+    if remove_duplicates:
+        distributed_data_list = [
+            dict(tupleized)
+            for tupleized in set(
+                tuple(data_list.items()) for data_list in distributed_data_list
             )
+        ]
 
     return distributed_data_list
+
+
+def get_unique_flattened_list_of_dictionaries(
+    data_lists: list[list[dict]],
+) -> list[dict]:
+    """
+    Given a list containing a list of dictionaries, flatten the list and remove duplicates.
+
+    :param data_lists: A list containing lists of dictionaries.
+    """
+
+    # Flatten the list
+    data_lists_flattened: list[dict] = []
+    for data_list in data_lists:
+        data_lists_flattened.extend([dict(x) for x in data_list if x])
+
+    # Remove duplicate dictionaries from list
+    data_lists_flattened = [
+        dict(tupleized)
+        for tupleized in set(
+            tuple(data_list.items()) for data_list in data_lists_flattened
+        )
+    ]
+
+    return data_lists_flattened
+
+
+def get_merged_flattened_list_of_dictionaries(
+    data_lists: list[list[dict]], by_key: str, keys_to_merge: list[str]
+) -> list[dict]:
+    """
+    Given a list containing a list of dictionaries, find duplicates by dictionary key and merge them to a single list.
+
+    :param data_lists: A list containing lists of dictionaries.
+    :param by_key: Key to use for checking duplicates.
+    :param keys_to_merge: If the value of the key is an int, add the value to an existing dictionary with same by_key.
+    """
+
+    # Flatten the list
+    data_lists_flattened: list[dict] = []
+    for data_lists in data_lists:
+        data_lists_flattened.extend([dict(x) for x in data_lists if x])
+
+    tmp_merged: dict[str, dict] = {}
+    for data in data_lists_flattened:
+        if not data.get(by_key):
+            continue
+
+        # Add data to dict
+        if data[by_key] not in tmp_merged.keys():
+            tmp_merged[data[by_key]] = data
+
+        # Merge data to existing dict in list
+        else:
+            for key_to_merge in keys_to_merge:
+                if isinstance(
+                    tmp_merged.get(by_key, {}).get(key_to_merge), int
+                ) and isinstance(data.get(by_key, {}).get(key_to_merge), int):
+                    tmp_merged[by_key][key_to_merge] += data[by_key][key_to_merge]
+
+    merged_list = [v for v in tmp_merged.values()]
+
+    return merged_list
