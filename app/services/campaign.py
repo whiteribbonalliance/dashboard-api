@@ -114,7 +114,7 @@ class CampaignService:
             self.__ngrams_2[q_code.value] = self.__get_ngrams_2(q_code=q_code)
 
         # Check if filters are identical or not
-        self.filters_are_identical = filters.check_if_filters_are_identical(
+        self.__filters_are_identical = filters.check_if_filters_are_identical(
             filter_1=filter_1, filter_2=filter_2
         )
 
@@ -523,7 +523,7 @@ class CampaignService:
         )
 
         # Only keep the first 100 words
-        n_words_to_keep = 100
+        n_words_to_keep = constants.n_wordcloud_words
         wordcloud_words_length = len(wordcloud_words)
         if wordcloud_words_length < n_words_to_keep:
             n_words_to_keep = wordcloud_words_length
@@ -1202,7 +1202,7 @@ class CampaignService:
     def get_filters_are_identical(self) -> bool:
         """Get filters are identical"""
 
-        return self.filters_are_identical
+        return self.__filters_are_identical
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""

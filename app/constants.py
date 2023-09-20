@@ -407,3 +407,5 @@ TRANSLATION_LANGUAGES = {
 TRANSLATIONS_JSON = "translations.json"
 
 ACCESS_TOKEN_EXPIRE_DAYS = 30
+
+n_wordcloud_words = 100

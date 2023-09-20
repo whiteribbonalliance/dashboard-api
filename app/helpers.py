@@ -1,4 +1,5 @@
 import glob
+import math
 import os
 import random
 import re
@@ -108,6 +109,8 @@ def get_distributed_list_of_dictionaries(
     data_lists: list[list[dict]],
     sort_by_key: str = None,
     remove_duplicates: bool = False,
+    n_items: int = None,
+    skip_list_size_check: bool = False,
 ) -> list[dict]:
     """
     Given a list containing a list of dictionaries, distribute the list items to a single list of dictionaries.
@@ -115,6 +118,8 @@ def get_distributed_list_of_dictionaries(
     :param data_lists: A list containing lists of dictionaries.
     :param sort_by_key: Optional, sort by dictionary key (desc) and pick top items.
     :param remove_duplicates: Optional, remove duplicates from list.
+    :param n_items: Optional, n items to pick from each list
+    :param skip_list_size_check: Optional, skip checking the size of returned list
     """
 
     distributed_data_list = []
@@ -122,15 +127,13 @@ def get_distributed_list_of_dictionaries(
     # Get items count of list with most items
     max_items_count = max([len(data_list) for data_list in data_lists])
 
-    # Get average items count
-    average_items_count = max_items_count // len(data_lists)
-
     # Get items from each list
     for data_list in data_lists:
         if data_list:
             # n items
-            n_items = average_items_count
-            if average_items_count > len(data_list):
+            if not n_items:
+                n_items = math.ceil(max_items_count / len(data_lists))
+            if n_items > len(data_list):
                 n_items = len(data_list)
 
             # Sort list by dict key and pick the top n results
@@ -154,6 +157,11 @@ def get_distributed_list_of_dictionaries(
                 tuple(data_list.items()) for data_list in distributed_data_list
             )
         ]
+
+    # Keep the list the size of max_items_count
+    if not skip_list_size_check:
+        if len(distributed_data_list) > max_items_count:
+            distributed_data_list = distributed_data_list[:max_items_count]
 
     return distributed_data_list
 
@@ -201,20 +209,21 @@ def get_merged_flattened_list_of_dictionaries(
 
     tmp_merged: dict[str, dict] = {}
     for data in data_lists_flattened:
-        if not data.get(by_key):
+        data_key_value = data.get(by_key)
+        if not data_key_value:
             continue
 
         # Add data to dict
-        if data[by_key] not in tmp_merged.keys():
-            tmp_merged[data[by_key]] = data
+        if data_key_value not in tmp_merged.keys():
+            tmp_merged[data_key_value] = data
 
         # Merge data to existing dict in list
         else:
             for key_to_merge in keys_to_merge:
                 if isinstance(
-                    tmp_merged.get(by_key, {}).get(key_to_merge), int
-                ) and isinstance(data.get(by_key, {}).get(key_to_merge), int):
-                    tmp_merged[by_key][key_to_merge] += data[by_key][key_to_merge]
+                    tmp_merged.get(data_key_value, {}).get(key_to_merge), int
+                ) and isinstance(data.get(key_to_merge, {}), int):
+                    tmp_merged[data_key_value][key_to_merge] += data[key_to_merge]
 
     merged_list = [v for v in tmp_merged.values()]
 
