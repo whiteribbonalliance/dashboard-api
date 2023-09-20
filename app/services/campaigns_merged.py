@@ -8,6 +8,7 @@ from app import helpers, constants
 from app.enums.campaign_code import CampaignCode
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
+from app.schemas.filter_options import FilterOptions
 from app.utils import filters
 
 
@@ -15,10 +16,12 @@ class CampaignsMergedService:
     def __init__(
         self,
         campaigns: list[Campaign],
+        campaigns_filter_options: list[FilterOptions],
         filter_1: Filter | None = None,
         filter_2: Filter | None = None,
     ):
         self.__campaigns = campaigns
+        self.__campaigns_filter_options = campaigns_filter_options
 
         # Check if filters are identical or not
         self.__filters_are_identical = filters.check_if_filters_are_identical(
@@ -39,11 +42,12 @@ class CampaignsMergedService:
             ),
         }
 
-        # Responses sample - (remove columns gender, region and profession)
+        # Responses sample - (keep only columns raw_response, description, canonical_country and age)
         responses_sample["columns"] = [
             x
             for x in responses_sample["columns"]
-            if x.get("id") not in {"gender", "region", "profession"}
+            if x.get("id")
+            in {"raw_response", "description", "canonical_country", "age"}
         ]
 
         return responses_sample
@@ -303,3 +307,56 @@ class CampaignsMergedService:
                 return campaign.filter_2_description
 
         return ""
+
+    def get_country_options(self) -> list:
+        """Get country options"""
+
+        country_options = helpers.get_merged_flattened_list_of_dictionaries(
+            data_lists=[
+                [dict(y) for y in x.countries] for x in self.__campaigns_filter_options
+            ],
+            by_key="value",
+            keys_to_merge=[],
+        )
+
+        return country_options
+
+    def get_country_regions_options(self) -> list:
+        """Get country regions options"""
+
+        country_regions_options = helpers.get_merged_flattened_list_of_dictionaries(
+            data_lists=[
+                [dict(y) for y in x.country_regions]
+                for x in self.__campaigns_filter_options
+            ],
+            by_key="country_alpha2_code",
+            keys_to_merge=[],
+        )
+
+        return country_regions_options
+
+    def get_response_topics_options(self) -> list:
+        """Get response topic options"""
+
+        response_topics_options = helpers.get_merged_flattened_list_of_dictionaries(
+            data_lists=[
+                [dict(y) for y in x.response_topics]
+                for x in self.__campaigns_filter_options
+            ],
+            by_key="value",
+            keys_to_merge=[],
+        )
+
+        return response_topics_options
+
+    def get_only_responses_from_categories_options(self) -> list:
+        """Get only responses from categories options"""
+
+        return self.__campaigns_filter_options[0].only_responses_from_categories
+
+    def get_only_multi_word_phrases_containing_filter_term_options(self) -> list:
+        """Get only multi-word phrases containing filter term options"""
+
+        return self.__campaigns_filter_options[
+            0
+        ].only_multi_word_phrases_containing_filter_term
