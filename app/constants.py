@@ -409,5 +409,6 @@ TRANSLATIONS_JSON = "translations.json"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
 n_wordcloud_words = 100
+n_top_words = 20
 
 n_responses_sample = 1000

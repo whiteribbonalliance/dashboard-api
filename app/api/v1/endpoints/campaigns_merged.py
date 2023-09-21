@@ -73,7 +73,7 @@ def read_campaigns_merged(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        campaigns=campaigns, filter_1=filter_1, filter_2=filter_2
+        campaigns_data=campaigns, filter_1=filter_1, filter_2=filter_2
     )
 
     # Campaign

@@ -203,11 +203,12 @@ def get_merged_flattened_list_of_dictionaries(
     data_lists: list[list[dict]], by_key: str, keys_to_merge: list[str]
 ) -> list[dict]:
     """
-    Given a list containing a list of dictionaries, find duplicates by dictionary key and merge them to a single list.
+    Given a list containing a list of dictionaries, find duplicates by a specific dictionary key and merge them to a
+    single list.
 
     :param data_lists: A list containing lists of dictionaries.
     :param by_key: Key to use for checking duplicates.
-    :param keys_to_merge: If the value of the key is an int, add the value to an existing dictionary with same by_key.
+    :param keys_to_merge: If the value of the key is an int, add the value to an existing dictionary with same key.
     """
 
     # Flatten the list

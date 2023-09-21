@@ -132,6 +132,343 @@ class CampaignService:
             self.__get_unique_parent_categories_from_response_topics()
         )
 
+    def get_campaign(
+        self,
+        q_code: QuestionCode,
+    ) -> Campaign:
+        """Get campaign"""
+
+        # Top words and phrases
+        top_words_and_phrases = {
+            "top_words": self.__get_top_words(q_code=q_code),
+            "two_word_phrases": self.__get_two_word_phrases(q_code=q_code),
+            "three_word_phrases": self.__get_three_word_phrases(q_code=q_code),
+            "wordcloud_words": self.__get_wordcloud_words(q_code=q_code),
+        }
+
+        # Responses sample
+        responses_sample = {
+            "columns": [
+                x.dict() for x in self.__get_responses_sample_columns(q_code=q_code)
+            ],
+            "data": self.__get_responses_sample(q_code=q_code),
+        }
+
+        # Responses breakdown
+        responses_breakdown = self.__get_responses_breakdown(q_code=q_code)
+
+        # Living settings breakdown
+        living_settings_breakdown = self.__get_living_settings_breakdown()
+
+        # Histogram
+        histogram = self.__get_histogram()
+
+        # Genders breakdown
+        if self.__campaign_code == CampaignCode.what_young_people_want:
+            genders_breakdown = self.__get_genders_breakdown()
+        else:
+            genders_breakdown = []
+
+        # World bubble maps coordinates
+        world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
+
+        # Respondents count
+        filter_1_respondents_count = self.__get_filter_1_respondents_count()
+        filter_2_respondents_count = self.__get_filter_2_respondents_count()
+
+        # Average age
+        filter_1_average_age = self.__get_filter_1_average_age()
+        filter_2_average_age = self.__get_filter_2_average_age()
+
+        # Filters Description
+        filter_1_description = self.__get_filter_1_description()
+        filter_2_description = self.__get_filter_2_description()
+
+        # Filters are identical
+        filters_are_identical = self.__get_filters_are_identical()
+
+        # Translate
+        try:
+            if self.__language != "en" and TranslationsCache().is_loaded():
+                translator = Translator()
+                translator.set_target_language(target_language=self.__language)
+
+                # Extract texts
+                translator.apply_t_function_campaign(
+                    t=translator.extract_text,
+                    campaign_code=self.__campaign_code,
+                    language=self.__language,
+                    responses_sample=responses_sample,
+                    responses_breakdown=responses_breakdown,
+                    living_settings_breakdown=living_settings_breakdown,
+                    top_words_and_phrases=top_words_and_phrases,
+                    histogram=histogram,
+                    genders_breakdown=genders_breakdown,
+                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+                    filter_1_average_age=filter_1_average_age,
+                    filter_2_average_age=filter_2_average_age,
+                    filter_1_description=filter_1_description,
+                    filter_2_description=filter_2_description,
+                )
+
+                # Translate extracted texts
+                translator.translate_extracted_texts()
+
+                # Apply translations to texts
+                (
+                    responses_sample,
+                    responses_breakdown,
+                    living_settings_breakdown,
+                    top_words_and_phrases,
+                    histogram,
+                    genders_breakdown,
+                    world_bubble_maps_coordinates,
+                    filter_1_average_age,
+                    filter_2_average_age,
+                    filter_1_description,
+                    filter_2_description,
+                ) = translator.apply_t_function_campaign(
+                    t=translator.translate_text,
+                    campaign_code=self.__campaign_code,
+                    language=self.__language,
+                    responses_sample=responses_sample,
+                    responses_breakdown=responses_breakdown,
+                    living_settings_breakdown=living_settings_breakdown,
+                    top_words_and_phrases=top_words_and_phrases,
+                    histogram=histogram,
+                    genders_breakdown=genders_breakdown,
+                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+                    filter_1_average_age=filter_1_average_age,
+                    filter_2_average_age=filter_2_average_age,
+                    filter_1_description=filter_1_description,
+                    filter_2_description=filter_2_description,
+                )
+        except (Exception,) as e:
+            logger.warning(
+                f"An error occurred during translation of 'campaign': {str(e)}"
+            )
+
+        return Campaign(
+            campaign_code=self.__campaign_code.value,
+            q_code=q_code.value,
+            responses_sample=responses_sample,
+            responses_breakdown=responses_breakdown,
+            living_settings_breakdown=living_settings_breakdown,
+            top_words_and_phrases=top_words_and_phrases,
+            histogram=histogram,
+            genders_breakdown=genders_breakdown,
+            world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+            filter_1_respondents_count=filter_1_respondents_count,
+            filter_2_respondents_count=filter_2_respondents_count,
+            filter_1_average_age=filter_1_average_age,
+            filter_2_average_age=filter_2_average_age,
+            filter_1_description=filter_1_description,
+            filter_2_description=filter_2_description,
+            filters_are_identical=filters_are_identical,
+        )
+
+    def get_filter_options(self) -> FilterOptions:
+        """Get filter options"""
+
+        # Country options
+        countries = self.__get_countries_list()
+        country_options = [
+            Option(value=country.alpha2_code, label=country.name).dict()
+            for country in countries
+        ]
+
+        # Country regions options
+        country_regions_options: list[dict[str, str | list[Option]]] = []
+        for country in countries:
+            regions_options = {
+                "country_alpha2_code": country.alpha2_code,
+                "options": [],
+            }
+            for region in sorted(country.regions, key=lambda r: r.name):
+                regions_options["options"].append(
+                    Option(value=region.code, label=region.name).dict()
+                )
+            country_regions_options.append(regions_options)
+
+        # Response topic options
+        response_topics = self.__get_response_topics()
+        response_topic_options = [
+            Option(
+                value=response_topic.code,
+                label=response_topic.name,
+                metadata="is_parent" if response_topic.is_parent else "is_not_parent",
+            ).dict()
+            for response_topic in response_topics
+        ]
+
+        # Age options
+        ages = self.__get_ages()
+        age_options = [Option(value=age.code, label=age.name).dict() for age in ages]
+
+        # Gender options
+        genders = self.__get_genders()
+        gender_options = [
+            Option(value=gender.code, label=gender.name).dict() for gender in genders
+        ]
+
+        # Profession options
+        professions = self.__get_professions()
+        profession_options = [
+            Option(value=profession.code, label=profession.name).dict()
+            for profession in professions
+        ]
+
+        # Only responses from categories options
+        only_responses_from_categories_options = [
+            x.dict() for x in self.__get_only_responses_from_categories_options()
+        ]
+
+        # Only multi-word phrases containing filter term options
+        only_multi_word_phrases_containing_filter_term_options = [
+            x.dict()
+            for x in self.__get_only_multi_word_phrases_containing_filter_term_options()
+        ]
+
+        # Translate
+        try:
+            if self.__language != "en" and TranslationsCache().is_loaded():
+                translator = Translator()
+                translator.set_target_language(target_language=self.__language)
+
+                # Extract texts
+                translator.apply_t_filter_options(
+                    t=translator.extract_text,
+                    country_options=country_options,
+                    country_regions_options=country_regions_options,
+                    response_topic_options=response_topic_options,
+                    age_options=age_options,
+                    gender_options=gender_options,
+                    profession_options=profession_options,
+                    only_responses_from_categories_options=only_responses_from_categories_options,
+                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
+                )
+
+                # Translate extracted texts
+                translator.translate_extracted_texts()
+
+                # Apply translations to texts
+                (
+                    country_options,
+                    country_regions_options,
+                    response_topic_options,
+                    age_options,
+                    gender_options,
+                    profession_options,
+                    only_responses_from_categories_options,
+                    only_multi_word_phrases_containing_filter_term_options,
+                ) = translator.apply_t_filter_options(
+                    t=translator.translate_text,
+                    country_options=country_options,
+                    country_regions_options=country_regions_options,
+                    response_topic_options=response_topic_options,
+                    age_options=age_options,
+                    gender_options=gender_options,
+                    profession_options=profession_options,
+                    only_responses_from_categories_options=only_responses_from_categories_options,
+                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
+                )
+        except (Exception,) as e:
+            logger.warning(
+                f"An error occurred during translation of 'filter_options': {str(e)}"
+            )
+
+        return FilterOptions(
+            countries=country_options,
+            country_regions=country_regions_options,
+            response_topics=response_topic_options,
+            ages=age_options,
+            genders=gender_options,
+            professions=profession_options,
+            only_responses_from_categories=only_responses_from_categories_options,
+            only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
+        )
+
+    def get_who_the_people_are_options(self) -> list[Option]:
+        """Get who the people are options"""
+
+        if self.__campaign_code == CampaignCode.healthwellbeing:
+            breakdown_by_age_str = "Show breakdown by age range"
+        else:
+            breakdown_by_age_str = "Show breakdown by age"
+
+        breakdown_country_option = Option(
+            value="breakdown-country",
+            label=f"{'Show breakdown by country'}",
+        )
+        breakdown_age_option = Option(
+            value="breakdown-age",
+            label=f"{'Show breakdown by age'}",
+        )
+        breakdown_age_range_option = Option(
+            value="breakdown-age-range",
+            label=f"{breakdown_by_age_str}",
+        )
+        breakdown_gender_option = Option(
+            value="breakdown-gender",
+            label=f"{'Show breakdown by gender'}",
+        )
+        breakdown_profession_option = Option(
+            value="breakdown-profession",
+            label=f"{'Show breakdown by profession'}",
+        )
+
+        options: list[Option] = []
+
+        if self.__campaign_code == CampaignCode.what_women_want:
+            options = [breakdown_age_option, breakdown_country_option]
+        elif self.__campaign_code == CampaignCode.what_young_people_want:
+            options = [
+                breakdown_age_option,
+                breakdown_gender_option,
+                breakdown_country_option,
+            ]
+        elif self.__campaign_code == CampaignCode.midwives_voices:
+            options = [
+                breakdown_age_option,
+                breakdown_profession_option,
+                breakdown_country_option,
+            ]
+        elif self.__campaign_code == CampaignCode.healthwellbeing:
+            options = [
+                breakdown_age_option,
+                breakdown_age_range_option,
+                breakdown_country_option,
+            ]
+        elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
+            options = [breakdown_age_range_option]
+        elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
+            options = [breakdown_age_range_option]
+
+        # Translate
+        try:
+            if self.__language != "en" and TranslationsCache().is_loaded():
+                translator = Translator()
+                translator.set_target_language(target_language=self.__language)
+
+                # Extract texts
+                translator.apply_t_who_the_people_are_options(
+                    translator.extract_text, options=options
+                )
+
+                # Translate extracted texts
+                translator.translate_extracted_texts()
+
+                # Apply translations to texts
+                options = translator.apply_t_who_the_people_are_options(
+                    translator.translate_text, options=options
+                )
+        except (Exception,) as e:
+            logger.warning(
+                f"An error occurred during translation of 'who_the_people_are_options': {str(e)}"
+            )
+
+        return options
+
     def __get_unique_parent_categories_from_response_topics(self) -> set:
         """
         Get unique parent categories from response topics
@@ -509,38 +846,35 @@ class CampaignService:
     def __get_wordcloud_words(self, q_code: QuestionCode) -> list[dict]:
         """Get wordcloud words"""
 
-        ngram_count_dict = self.__ngrams_1.get(q_code.value)
-        if not ngram_count_dict:
+        unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+        unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
+
+        unigram_count_dict_1 = unigram_count_dict_1[0] if unigram_count_dict_1 else ()
+        unigram_count_dict_2 = unigram_count_dict_2[0] if unigram_count_dict_2 else ()
+
+        # Get wordcloud words
+        wordcloud_words = self.__get_ngram_top_words_or_phrases(
+            ngram_count_dict_1=unigram_count_dict_1,
+            ngram_count_dict_2=unigram_count_dict_2,
+        )
+
+        if not wordcloud_words:
             return []
 
-        (
-            unigram_count_dict,
-            bigram_count_dict,
-            trigram_count_dict,
-        ) = ngram_count_dict
-
-        # Get words for wordcloud
-        wordcloud_words = (
-            unigram_count_dict
-            | dict([(k, v) for k, v in bigram_count_dict.items()])
-            | dict([(k, v) for k, v in trigram_count_dict.items()])
-        )
-
-        # Sort the words
-        wordcloud_words = sorted(
-            wordcloud_words.items(), key=lambda x: x[1], reverse=True
-        )
-
-        # Only keep the first 100 words
+        # Keep n
         n_words_to_keep = constants.n_wordcloud_words
-        wordcloud_words_length = len(wordcloud_words)
-        if wordcloud_words_length < n_words_to_keep:
-            n_words_to_keep = wordcloud_words_length
+        wordcloud_words_len = len(wordcloud_words)
+        if wordcloud_words_len < n_words_to_keep:
+            n_words_to_keep = wordcloud_words_len
         wordcloud_words = wordcloud_words[:n_words_to_keep]
 
         wordcloud_words_list = [
-            {"text": key.lower(), "value": item}
-            for key, item in dict(wordcloud_words).items()
+            {
+                "text": word["word"],
+                "count_1": word["count_1"],
+                "count_2": word["count_2"],
+            }
+            for word in wordcloud_words
         ]
 
         return wordcloud_words_list
@@ -548,21 +882,27 @@ class CampaignService:
     def __get_top_words(self, q_code: QuestionCode) -> list[dict]:
         """Get top words"""
 
-        # Set unigram count dict based on question code
-        if q_code == QuestionCode.q2:
-            unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
-            unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
-        else:
-            unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
-            unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
+        unigram_count_dict_1 = self.__ngrams_1.get(q_code.value)
+        unigram_count_dict_2 = self.__ngrams_2.get(q_code.value)
 
         unigram_count_dict_1 = unigram_count_dict_1[0] if unigram_count_dict_1 else ()
         unigram_count_dict_2 = unigram_count_dict_2[0] if unigram_count_dict_2 else ()
 
+        # Get top words
         top_words = self.__get_ngram_top_words_or_phrases(
             ngram_count_dict_1=unigram_count_dict_1,
             ngram_count_dict_2=unigram_count_dict_2,
         )
+
+        if not top_words:
+            return []
+
+        # Keep n
+        n_words_to_keep = constants.n_top_words
+        top_words_len = len(top_words)
+        if top_words_len < n_words_to_keep:
+            n_words_to_keep = top_words_len
+        top_words = top_words[:n_words_to_keep]
 
         return top_words
 
@@ -580,6 +920,16 @@ class CampaignService:
             ngram_count_dict_2=bigram_count_dict_2,
         )
 
+        if not top_words:
+            return []
+
+        # Keep n
+        n_words_to_keep = constants.n_top_words
+        top_words_len = len(top_words)
+        if top_words_len < n_words_to_keep:
+            n_words_to_keep = top_words_len
+        top_words = top_words[:n_words_to_keep]
+
         return top_words
 
     def __get_three_word_phrases(self, q_code: QuestionCode) -> list[dict]:
@@ -595,6 +945,16 @@ class CampaignService:
             ngram_count_dict_1=trigram_count_dict_1,
             ngram_count_dict_2=trigram_count_dict_2,
         )
+
+        if not top_words:
+            return []
+
+        # Keep n
+        n_words_to_keep = constants.n_top_words
+        top_words_len = len(top_words)
+        if top_words_len < n_words_to_keep:
+            n_words_to_keep = top_words_len
+        top_words = top_words[:n_words_to_keep]
 
         return top_words
 
@@ -614,8 +974,11 @@ class CampaignService:
         if len(unigram_count_dict_1) > 0:
             max1 = unigram_count_dict_1[-1][1]
 
-        if len(unigram_count_dict_1) > 20:
-            unigram_count_dict_1 = unigram_count_dict_1[-20:]
+        # n words
+        n_words = max([constants.n_wordcloud_words, constants.n_top_words])
+
+        if len(unigram_count_dict_1) > n_words:
+            unigram_count_dict_1 = unigram_count_dict_1[-n_words:]
 
         # words list + top words 1 frequency
         if len(unigram_count_dict_1) == 0:
@@ -1211,340 +1574,3 @@ class CampaignService:
         )
 
         return only_multi_word_phrases_containing_filter_term_options
-
-    def get_campaign(
-        self,
-        q_code: QuestionCode,
-    ) -> Campaign:
-        """Get campaign"""
-
-        # Top words and phrases
-        top_words_and_phrases = {
-            "top_words": self.__get_top_words(q_code=q_code),
-            "two_word_phrases": self.__get_two_word_phrases(q_code=q_code),
-            "three_word_phrases": self.__get_three_word_phrases(q_code=q_code),
-            "wordcloud_words": self.__get_wordcloud_words(q_code=q_code),
-        }
-
-        # Responses sample
-        responses_sample = {
-            "columns": [
-                x.dict() for x in self.__get_responses_sample_columns(q_code=q_code)
-            ],
-            "data": self.__get_responses_sample(q_code=q_code),
-        }
-
-        # Responses breakdown
-        responses_breakdown = self.__get_responses_breakdown(q_code=q_code)
-
-        # Living settings breakdown
-        living_settings_breakdown = self.__get_living_settings_breakdown()
-
-        # Histogram
-        histogram = self.__get_histogram()
-
-        # Genders breakdown
-        if self.__campaign_code == CampaignCode.what_young_people_want:
-            genders_breakdown = self.__get_genders_breakdown()
-        else:
-            genders_breakdown = []
-
-        # World bubble maps coordinates
-        world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
-
-        # Respondents count
-        filter_1_respondents_count = self.__get_filter_1_respondents_count()
-        filter_2_respondents_count = self.__get_filter_2_respondents_count()
-
-        # Average age
-        filter_1_average_age = self.__get_filter_1_average_age()
-        filter_2_average_age = self.__get_filter_2_average_age()
-
-        # Filters Description
-        filter_1_description = self.__get_filter_1_description()
-        filter_2_description = self.__get_filter_2_description()
-
-        # Filters are identical
-        filters_are_identical = self.__get_filters_are_identical()
-
-        # Translate
-        try:
-            if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
-                translator.set_target_language(target_language=self.__language)
-
-                # Extract texts
-                translator.apply_t_function_campaign(
-                    t=translator.extract_text,
-                    campaign_code=self.__campaign_code,
-                    language=self.__language,
-                    responses_sample=responses_sample,
-                    responses_breakdown=responses_breakdown,
-                    living_settings_breakdown=living_settings_breakdown,
-                    top_words_and_phrases=top_words_and_phrases,
-                    histogram=histogram,
-                    genders_breakdown=genders_breakdown,
-                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                    filter_1_average_age=filter_1_average_age,
-                    filter_2_average_age=filter_2_average_age,
-                    filter_1_description=filter_1_description,
-                    filter_2_description=filter_2_description,
-                )
-
-                # Translate extracted texts
-                translator.translate_extracted_texts()
-
-                # Apply translations to texts
-                (
-                    responses_sample,
-                    responses_breakdown,
-                    living_settings_breakdown,
-                    top_words_and_phrases,
-                    histogram,
-                    genders_breakdown,
-                    world_bubble_maps_coordinates,
-                    filter_1_average_age,
-                    filter_2_average_age,
-                    filter_1_description,
-                    filter_2_description,
-                ) = translator.apply_t_function_campaign(
-                    t=translator.translate_text,
-                    campaign_code=self.__campaign_code,
-                    language=self.__language,
-                    responses_sample=responses_sample,
-                    responses_breakdown=responses_breakdown,
-                    living_settings_breakdown=living_settings_breakdown,
-                    top_words_and_phrases=top_words_and_phrases,
-                    histogram=histogram,
-                    genders_breakdown=genders_breakdown,
-                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                    filter_1_average_age=filter_1_average_age,
-                    filter_2_average_age=filter_2_average_age,
-                    filter_1_description=filter_1_description,
-                    filter_2_description=filter_2_description,
-                )
-        except (Exception,) as e:
-            logger.warning(
-                f"An error occurred during translation of 'campaign': {str(e)}"
-            )
-
-        return Campaign(
-            campaign_code=self.__campaign_code.value,
-            q_code=q_code.value,
-            responses_sample=responses_sample,
-            responses_breakdown=responses_breakdown,
-            living_settings_breakdown=living_settings_breakdown,
-            top_words_and_phrases=top_words_and_phrases,
-            histogram=histogram,
-            genders_breakdown=genders_breakdown,
-            world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-            filter_1_respondents_count=filter_1_respondents_count,
-            filter_2_respondents_count=filter_2_respondents_count,
-            filter_1_average_age=filter_1_average_age,
-            filter_2_average_age=filter_2_average_age,
-            filter_1_description=filter_1_description,
-            filter_2_description=filter_2_description,
-            filters_are_identical=filters_are_identical,
-        )
-
-    def get_filter_options(self) -> FilterOptions:
-        """Get filter options"""
-
-        # Country options
-        countries = self.__get_countries_list()
-        country_options = [
-            Option(value=country.alpha2_code, label=country.name).dict()
-            for country in countries
-        ]
-
-        # Country regions options
-        country_regions_options: list[dict[str, str | list[Option]]] = []
-        for country in countries:
-            regions_options = {
-                "country_alpha2_code": country.alpha2_code,
-                "options": [],
-            }
-            for region in sorted(country.regions, key=lambda r: r.name):
-                regions_options["options"].append(
-                    Option(value=region.code, label=region.name).dict()
-                )
-            country_regions_options.append(regions_options)
-
-        # Response topic options
-        response_topics = self.__get_response_topics()
-        response_topic_options = [
-            Option(
-                value=response_topic.code,
-                label=response_topic.name,
-                metadata="is_parent" if response_topic.is_parent else "is_not_parent",
-            ).dict()
-            for response_topic in response_topics
-        ]
-
-        # Age options
-        ages = self.__get_ages()
-        age_options = [Option(value=age.code, label=age.name).dict() for age in ages]
-
-        # Gender options
-        genders = self.__get_genders()
-        gender_options = [
-            Option(value=gender.code, label=gender.name).dict() for gender in genders
-        ]
-
-        # Profession options
-        professions = self.__get_professions()
-        profession_options = [
-            Option(value=profession.code, label=profession.name).dict()
-            for profession in professions
-        ]
-
-        # Only responses from categories options
-        only_responses_from_categories_options = [
-            x.dict() for x in self.__get_only_responses_from_categories_options()
-        ]
-
-        # Only multi-word phrases containing filter term options
-        only_multi_word_phrases_containing_filter_term_options = [
-            x.dict()
-            for x in self.__get_only_multi_word_phrases_containing_filter_term_options()
-        ]
-
-        # Translate
-        try:
-            if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
-                translator.set_target_language(target_language=self.__language)
-
-                # Extract texts
-                translator.apply_t_filter_options(
-                    t=translator.extract_text,
-                    country_options=country_options,
-                    country_regions_options=country_regions_options,
-                    response_topic_options=response_topic_options,
-                    age_options=age_options,
-                    gender_options=gender_options,
-                    profession_options=profession_options,
-                    only_responses_from_categories_options=only_responses_from_categories_options,
-                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-                )
-
-                # Translate extracted texts
-                translator.translate_extracted_texts()
-
-                # Apply translations to texts
-                (
-                    country_options,
-                    country_regions_options,
-                    response_topic_options,
-                    age_options,
-                    gender_options,
-                    profession_options,
-                    only_responses_from_categories_options,
-                    only_multi_word_phrases_containing_filter_term_options,
-                ) = translator.apply_t_filter_options(
-                    t=translator.translate_text,
-                    country_options=country_options,
-                    country_regions_options=country_regions_options,
-                    response_topic_options=response_topic_options,
-                    age_options=age_options,
-                    gender_options=gender_options,
-                    profession_options=profession_options,
-                    only_responses_from_categories_options=only_responses_from_categories_options,
-                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-                )
-        except (Exception,) as e:
-            logger.warning(
-                f"An error occurred during translation of 'filter_options': {str(e)}"
-            )
-
-        return FilterOptions(
-            countries=country_options,
-            country_regions=country_regions_options,
-            response_topics=response_topic_options,
-            ages=age_options,
-            genders=gender_options,
-            professions=profession_options,
-            only_responses_from_categories=only_responses_from_categories_options,
-            only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
-        )
-
-    def get_who_the_people_are_options(self) -> list[Option]:
-        """Get who the people are options"""
-
-        if self.__campaign_code == CampaignCode.healthwellbeing:
-            breakdown_by_age_str = "Show breakdown by age range"
-        else:
-            breakdown_by_age_str = "Show breakdown by age"
-
-        breakdown_country_option = Option(
-            value="breakdown-country",
-            label=f"{'Show breakdown by country'}",
-        )
-        breakdown_age_option = Option(
-            value="breakdown-age",
-            label=f"{'Show breakdown by age'}",
-        )
-        breakdown_age_range_option = Option(
-            value="breakdown-age-range",
-            label=f"{breakdown_by_age_str}",
-        )
-        breakdown_gender_option = Option(
-            value="breakdown-gender",
-            label=f"{'Show breakdown by gender'}",
-        )
-        breakdown_profession_option = Option(
-            value="breakdown-profession",
-            label=f"{'Show breakdown by profession'}",
-        )
-
-        options: list[Option] = []
-
-        if self.__campaign_code == CampaignCode.what_women_want:
-            options = [breakdown_age_option, breakdown_country_option]
-        elif self.__campaign_code == CampaignCode.what_young_people_want:
-            options = [
-                breakdown_age_option,
-                breakdown_gender_option,
-                breakdown_country_option,
-            ]
-        elif self.__campaign_code == CampaignCode.midwives_voices:
-            options = [
-                breakdown_age_option,
-                breakdown_profession_option,
-                breakdown_country_option,
-            ]
-        elif self.__campaign_code == CampaignCode.healthwellbeing:
-            options = [
-                breakdown_age_option,
-                breakdown_age_range_option,
-                breakdown_country_option,
-            ]
-        elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
-            options = [breakdown_age_range_option]
-        elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
-            options = [breakdown_age_range_option]
-
-        # Translate
-        try:
-            if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
-                translator.set_target_language(target_language=self.__language)
-
-                # Extract texts
-                translator.apply_t_who_the_people_are_options(
-                    translator.extract_text, options=options
-                )
-
-                # Translate extracted texts
-                translator.translate_extracted_texts()
-
-                # Apply translations to texts
-                options = translator.apply_t_who_the_people_are_options(
-                    translator.translate_text, options=options
-                )
-        except (Exception,) as e:
-            logger.warning(
-                f"An error occurred during translation of 'who_the_people_are_options': {str(e)}"
-            )
-
-        return options
