@@ -1,6 +1,6 @@
-fastapi==0.95.2
+fastapi==0.103.1
 requests==2.31.0
-pydantic==1.10.7
+pydantic==1.10.12
 uvicorn[standard]==0.22.0
 pandas==1.5.3
 fastapi_utils==0.2.1

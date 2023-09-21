@@ -410,14 +410,14 @@ class Translator(metaclass=SingletonMeta):
     def apply_t_filter_options(
         self,
         t: Callable,
-        country_options: list[Option],
-        country_regions_options: list[dict[str, str | list[Option]]],
-        response_topic_options: list[Option],
-        age_options: list[Option],
-        gender_options: list[Option],
-        profession_options: list[Option],
-        only_responses_from_categories_options: list[Option],
-        only_multi_word_phrases_containing_filter_term_options: list[Option],
+        country_options: list[dict],
+        country_regions_options: list[dict[str, str | list[dict]]],
+        response_topic_options: list[dict],
+        age_options: list[dict],
+        gender_options: list[dict],
+        profession_options: list[dict],
+        only_responses_from_categories_options: list[dict],
+        only_multi_word_phrases_containing_filter_term_options: list[dict],
     ):
         """Apply extract/translate"""
 

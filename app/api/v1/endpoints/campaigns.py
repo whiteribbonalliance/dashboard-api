@@ -18,15 +18,12 @@ from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.filter_options import FilterOptions
-from app.schemas.option import Option
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
 from app.services import cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app.services.translations_cache import TranslationsCache
-from app.services.translator import Translator
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -57,7 +54,7 @@ async def read_campaign(
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    # Create service
+    # Service
     campaign_service = CampaignService(
         campaign_code=campaign_code,
         language=language,
@@ -65,129 +62,10 @@ async def read_campaign(
         filter_2=filter_2,
     )
 
-    # Top words and phrases
-    top_words_and_phrases = {
-        "top_words": campaign_service.get_top_words(q_code=q_code),
-        "two_word_phrases": campaign_service.get_two_word_phrases(q_code=q_code),
-        "three_word_phrases": campaign_service.get_three_word_phrases(q_code=q_code),
-        "wordcloud_words": campaign_service.get_wordcloud_words(q_code=q_code),
-    }
+    # Campaign
+    campaign = campaign_service.get_campaign(q_code=q_code)
 
-    # Responses sample
-    responses_sample = {
-        "columns": campaign_service.get_responses_sample_columns(q_code=q_code),
-        "data": campaign_service.get_responses_sample(q_code=q_code),
-    }
-
-    # Responses breakdown
-    responses_breakdown = campaign_service.get_responses_breakdown(q_code=q_code)
-
-    # Living settings breakdown
-    living_settings_breakdown = campaign_service.get_living_settings_breakdown()
-
-    # Histogram
-    histogram = campaign_service.get_histogram()
-
-    # Genders breakdown
-    if campaign_code == CampaignCode.what_young_people_want:
-        genders_breakdown = campaign_service.get_genders_breakdown()
-    else:
-        genders_breakdown = []
-
-    # World bubble maps coordinates
-    world_bubble_maps_coordinates = campaign_service.get_world_bubble_maps_coordinates()
-
-    # Respondents count
-    filter_1_respondents_count = campaign_service.get_filter_1_respondents_count()
-    filter_2_respondents_count = campaign_service.get_filter_2_respondents_count()
-
-    # Average age
-    filter_1_average_age = campaign_service.get_filter_1_average_age()
-    filter_2_average_age = campaign_service.get_filter_2_average_age()
-
-    # Filters Description
-    filter_1_description = campaign_service.get_filter_1_description()
-    filter_2_description = campaign_service.get_filter_2_description()
-
-    # Filters are identical
-    filters_are_identical = campaign_service.get_filters_are_identical()
-
-    # Translate
-    try:
-        if language != "en" and TranslationsCache().is_loaded():
-            translator = Translator()
-            translator.set_target_language(target_language=language)
-
-            # Extract texts
-            translator.apply_t_function_campaign(
-                t=translator.extract_text,
-                campaign_code=campaign_code,
-                language=language,
-                responses_sample=responses_sample,
-                responses_breakdown=responses_breakdown,
-                living_settings_breakdown=living_settings_breakdown,
-                top_words_and_phrases=top_words_and_phrases,
-                histogram=histogram,
-                genders_breakdown=genders_breakdown,
-                world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                filter_1_average_age=filter_1_average_age,
-                filter_2_average_age=filter_2_average_age,
-                filter_1_description=filter_1_description,
-                filter_2_description=filter_2_description,
-            )
-
-            # Translate extracted texts
-            translator.translate_extracted_texts()
-
-            # Apply translations to texts
-            (
-                responses_sample,
-                responses_breakdown,
-                living_settings_breakdown,
-                top_words_and_phrases,
-                histogram,
-                genders_breakdown,
-                world_bubble_maps_coordinates,
-                filter_1_average_age,
-                filter_2_average_age,
-                filter_1_description,
-                filter_2_description,
-            ) = translator.apply_t_function_campaign(
-                t=translator.translate_text,
-                campaign_code=campaign_code,
-                language=language,
-                responses_sample=responses_sample,
-                responses_breakdown=responses_breakdown,
-                living_settings_breakdown=living_settings_breakdown,
-                top_words_and_phrases=top_words_and_phrases,
-                histogram=histogram,
-                genders_breakdown=genders_breakdown,
-                world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                filter_1_average_age=filter_1_average_age,
-                filter_2_average_age=filter_2_average_age,
-                filter_1_description=filter_1_description,
-                filter_2_description=filter_2_description,
-            )
-    except (Exception,) as e:
-        logger.warning(f"An error occurred during translation of 'campaign': {str(e)}")
-
-    return Campaign(
-        campaign_code=campaign_code.value,
-        responses_sample=responses_sample,
-        responses_breakdown=responses_breakdown,
-        living_settings_breakdown=living_settings_breakdown,
-        top_words_and_phrases=top_words_and_phrases,
-        histogram=histogram,
-        genders_breakdown=genders_breakdown,
-        world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-        filter_1_respondents_count=filter_1_respondents_count,
-        filter_2_respondents_count=filter_2_respondents_count,
-        filter_1_average_age=filter_1_average_age,
-        filter_2_average_age=filter_2_average_age,
-        filter_1_description=filter_1_description,
-        filter_2_description=filter_2_description,
-        filters_are_identical=filters_are_identical,
-    )
+    return campaign
 
 
 @router.get(
@@ -206,121 +84,13 @@ async def read_filter_options(
     campaign_code = parameters.campaign_code
     language = parameters.language
 
-    # Create service
+    # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
-    # Country options
-    countries = campaign_service.get_countries_list()
-    country_options = [
-        Option(value=country.alpha2_code, label=country.name) for country in countries
-    ]
+    # Filter options
+    filter_options = campaign_service.get_filter_options()
 
-    # Country regions options
-    country_regions_options: list[dict[str, str | list[Option]]] = []
-    for country in countries:
-        regions_options = {"country_alpha2_code": country.alpha2_code, "options": []}
-        for region in sorted(country.regions, key=lambda r: r.name):
-            regions_options["options"].append(
-                Option(value=region.code, label=region.name)
-            )
-        country_regions_options.append(regions_options)
-
-    # Response topic options
-    response_topics = campaign_service.get_response_topics()
-    response_topic_options = [
-        Option(
-            value=response_topic.code,
-            label=response_topic.name,
-            metadata="is_parent" if response_topic.is_parent else "is_not_parent",
-        )
-        for response_topic in response_topics
-    ]
-
-    # Age options
-    ages = campaign_service.get_ages()
-    age_options = [Option(value=age.code, label=age.name) for age in ages]
-
-    # Gender options
-    genders = campaign_service.get_genders()
-    gender_options = [
-        Option(value=gender.code, label=gender.name) for gender in genders
-    ]
-
-    # Profession options
-    professions = campaign_service.get_professions()
-    profession_options = [
-        Option(value=profession.code, label=profession.name)
-        for profession in professions
-    ]
-
-    # Only responses from categories options
-    only_responses_from_categories_options = (
-        campaign_service.get_only_responses_from_categories_options()
-    )
-
-    # Only multi-word phrases containing filter term options
-    only_multi_word_phrases_containing_filter_term_options = (
-        campaign_service.get_only_multi_word_phrases_containing_filter_term_options()
-    )
-
-    # Translate
-    try:
-        if language != "en" and TranslationsCache().is_loaded():
-            translator = Translator()
-            translator.set_target_language(target_language=language)
-
-            # Extract texts
-            translator.apply_t_filter_options(
-                t=translator.extract_text,
-                country_options=country_options,
-                country_regions_options=country_regions_options,
-                response_topic_options=response_topic_options,
-                age_options=age_options,
-                gender_options=gender_options,
-                profession_options=profession_options,
-                only_responses_from_categories_options=only_responses_from_categories_options,
-                only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-            )
-
-            # Translate extracted texts
-            translator.translate_extracted_texts()
-
-            # Apply translations to texts
-            (
-                country_options,
-                country_regions_options,
-                response_topic_options,
-                age_options,
-                gender_options,
-                profession_options,
-                only_responses_from_categories_options,
-                only_multi_word_phrases_containing_filter_term_options,
-            ) = translator.apply_t_filter_options(
-                t=translator.translate_text,
-                country_options=country_options,
-                country_regions_options=country_regions_options,
-                response_topic_options=response_topic_options,
-                age_options=age_options,
-                gender_options=gender_options,
-                profession_options=profession_options,
-                only_responses_from_categories_options=only_responses_from_categories_options,
-                only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-            )
-    except (Exception,) as e:
-        logger.warning(
-            f"An error occurred during translation of 'filter_options': {str(e)}"
-        )
-
-    return FilterOptions(
-        countries=country_options,
-        country_regions=country_regions_options,
-        response_topics=response_topic_options,
-        ages=age_options,
-        genders=gender_options,
-        professions=profession_options,
-        only_responses_from_categories=only_responses_from_categories_options,
-        only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
-    )
+    return filter_options
 
 
 @router.get(
@@ -339,36 +109,13 @@ async def read_who_the_people_are_options(
     campaign_code = parameters.campaign_code
     language = parameters.language
 
-    # Create service
+    # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
-    # Options
-    options = campaign_service.get_who_the_people_are_options()
+    # Who the people are options
+    who_the_people_are_options = campaign_service.get_who_the_people_are_options()
 
-    # Translate
-    try:
-        if language != "en" and TranslationsCache().is_loaded():
-            translator = Translator()
-            translator.set_target_language(target_language=language)
-
-            # Extract texts
-            translator.apply_t_who_the_people_are_options(
-                translator.extract_text, options=options
-            )
-
-            # Translate extracted texts
-            translator.translate_extracted_texts()
-
-            # Apply translations to texts
-            options = translator.apply_t_who_the_people_are_options(
-                translator.translate_text, options=options
-            )
-    except (Exception,) as e:
-        logger.warning(
-            f"An error occurred during translation of 'who_the_people_are_options': {str(e)}"
-        )
-
-    return options
+    return who_the_people_are_options
 
 
 @router.post(

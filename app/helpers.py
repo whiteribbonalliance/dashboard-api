@@ -111,6 +111,7 @@ def get_distributed_list_of_dictionaries(
     remove_duplicates: bool = False,
     n_items: int = None,
     skip_list_size_check: bool = False,
+    shuffle: bool = False,
 ) -> list[dict]:
     """
     Given a list containing a list of dictionaries, distribute the list items to a single list of dictionaries.
@@ -118,14 +119,19 @@ def get_distributed_list_of_dictionaries(
     :param data_lists: A list containing lists of dictionaries.
     :param sort_by_key: Optional, sort by dictionary key (desc) and pick top items.
     :param remove_duplicates: Optional, remove duplicates from list.
-    :param n_items: Optional, n items to pick from each list
-    :param skip_list_size_check: Optional, skip checking the size of returned list
+    :param n_items: Optional, n items to pick from each list.
+    :param skip_list_size_check: Optional, skip checking the size of returned list.
+    :param shuffle: Optional, shuffle result.
     """
 
     distributed_data_list = []
 
     # Get items count of list with most items
-    max_items_count = max([len(data_list) for data_list in data_lists])
+    items_counts_list = [len(data_list) for data_list in data_lists]
+    if len(items_counts_list) > 0:
+        max_items_count = max(items_counts_list)
+    else:
+        max_items_count = 0
 
     # Get items from each list
     for data_list in data_lists:
@@ -152,16 +158,19 @@ def get_distributed_list_of_dictionaries(
     # Remove duplicates
     if remove_duplicates:
         distributed_data_list = [
-            dict(tupleized)
-            for tupleized in set(
-                tuple(data_list.items()) for data_list in distributed_data_list
-            )
+            x
+            for index, x in enumerate(distributed_data_list)
+            if x not in distributed_data_list[:index]
         ]
 
     # Keep the list the size of max_items_count
     if not skip_list_size_check:
         if len(distributed_data_list) > max_items_count:
             distributed_data_list = distributed_data_list[:max_items_count]
+
+    # Shuffle
+    if shuffle:
+        random.shuffle(distributed_data_list)
 
     return distributed_data_list
 
@@ -178,14 +187,13 @@ def get_unique_flattened_list_of_dictionaries(
     # Flatten the list
     data_lists_flattened: list[dict] = []
     for data_list in data_lists:
-        data_lists_flattened.extend([dict(x) for x in data_list if x])
+        data_lists_flattened.extend([x for x in data_list if x])
 
     # Remove duplicate dictionaries from list
     data_lists_flattened = [
-        dict(tupleized)
-        for tupleized in set(
-            tuple(data_list.items()) for data_list in data_lists_flattened
-        )
+        x
+        for index, x in enumerate(data_lists_flattened)
+        if x not in data_lists_flattened[:index]
     ]
 
     return data_lists_flattened
@@ -205,7 +213,7 @@ def get_merged_flattened_list_of_dictionaries(
     # Flatten the list
     data_lists_flattened: list[dict] = []
     for data_lists in data_lists:
-        data_lists_flattened.extend([dict(x) for x in data_lists if x])
+        data_lists_flattened.extend([x for x in data_lists if x])
 
     tmp_merged: dict[str, dict] = {}
     for data in data_lists_flattened:
