@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app import helpers
 from app.api import dependencies
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
@@ -41,12 +42,11 @@ def read_campaigns_merged(
     """Read campaigns merged"""
 
     language = parameters.language
-    q_code = parameters.q_code
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    # Get all campaigns
-    campaigns: list[Campaign] = []
+    # Get all campaigns data
+    campaigns: dict[str, list[Campaign]] = {}
     for campaign_code in CampaignCode:
         # TODO: Temporarily skip campaign 'wee'
         if campaign_code == CampaignCode.womens_economic_empowerment:
@@ -60,9 +60,16 @@ def read_campaigns_merged(
             filter_2=filter_2,
         )
 
-        # Campaign
-        campaign = campaign_service.get_campaign(q_code=q_code)
-        campaigns.append(campaign)
+        # Campaign q codes
+        campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+
+        # Campaign data
+        for campaign_q_code in campaign_q_codes:
+            if not campaigns.get(campaign_code.value):
+                campaigns[campaign_code.value] = []
+            campaigns[campaign_code.value].append(
+                campaign_service.get_campaign(q_code=campaign_q_code)
+            )
 
     # Service
     campaigns_merged_service = CampaignsMergedService(

@@ -15,7 +15,7 @@ from app.utils import filters
 class CampaignsMergedService:
     def __init__(
         self,
-        campaigns: list[Campaign] = None,
+        campaigns: dict[str, list[Campaign]] = None,
         campaigns_filter_options: list[dict] = None,
         campaigns_who_the_people_are_options: list[list[dict]] = None,
         filter_1: Filter | None = None,
@@ -24,7 +24,7 @@ class CampaignsMergedService:
         if campaigns:
             self.__campaigns = campaigns
         else:
-            self.__campaigns: list[Campaign] = []
+            self.__campaigns: dict[str, list[Campaign]] = {}
 
         if campaigns_filter_options:
             self.__campaigns_filter_options = campaigns_filter_options
@@ -35,9 +35,17 @@ class CampaignsMergedService:
             self.__campaigns_who_the_people_are_options = (
                 campaigns_who_the_people_are_options
             )
-
         else:
             self.__campaigns_who_the_people_are_options: list[list[dict]] = []
+
+        # Campaigns data question code 1 only
+        self.__campaigns_q1 = [x[0] for x in self.__campaigns.values() if x]
+
+        # Campaigns data all question codes
+        self.__campaigns_all_q_not_flattened = [x for x in self.__campaigns.values()]
+        self.__campaigns_all_q = [
+            x for sub_list in self.__campaigns_all_q_not_flattened for x in sub_list
+        ]
 
         # Check if filters are identical or not
         self.__filters_are_identical = filters.check_if_filters_are_identical(
@@ -51,14 +59,14 @@ class CampaignsMergedService:
             "columns": helpers.get_unique_flattened_list_of_dictionaries(
                 data_lists=[
                     x.responses_sample.get("columns")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.responses_sample
                 ],
             ),
             "data": helpers.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.responses_sample.get("data")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.responses_sample
                 ],
                 n_items=1000,
@@ -79,7 +87,9 @@ class CampaignsMergedService:
 
         responses_breakdown = helpers.get_merged_flattened_list_of_dictionaries(
             data_lists=[
-                x.responses_breakdown for x in self.__campaigns if x.responses_breakdown
+                x.responses_breakdown
+                for x in self.__campaigns_all_q
+                if x.responses_breakdown
             ],
             by_key="code",
             keys_to_merge=["count_1", "count_2"],
@@ -92,11 +102,6 @@ class CampaignsMergedService:
 
         return responses_breakdown
 
-    def __get_living_settings_breakdown(self) -> list:
-        """Get living settings breakdown"""
-
-        return []
-
     def __get_top_words_and_phrases(self) -> dict[str, list[dict]]:
         """Get top words and phrases"""
 
@@ -104,7 +109,7 @@ class CampaignsMergedService:
             "top_words": helpers.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.top_words_and_phrases.get("top_words")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.top_words_and_phrases
                 ],
                 sort_by_key="count_1",
@@ -114,7 +119,7 @@ class CampaignsMergedService:
             "two_word_phrases": helpers.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.top_words_and_phrases.get("two_word_phrases")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.top_words_and_phrases
                 ],
                 sort_by_key="count_1",
@@ -124,7 +129,7 @@ class CampaignsMergedService:
             "three_word_phrases": helpers.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.top_words_and_phrases.get("three_word_phrases")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.top_words_and_phrases
                 ],
                 sort_by_key="count_1",
@@ -134,7 +139,7 @@ class CampaignsMergedService:
             "wordcloud_words": helpers.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.top_words_and_phrases.get("wordcloud_words")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_all_q
                     if x.top_words_and_phrases
                 ],
                 sort_by_key="value",
@@ -216,6 +221,11 @@ class CampaignsMergedService:
 
         return top_words_and_phrases
 
+    def __get_living_settings_breakdown(self) -> list:
+        """Get living settings breakdown"""
+
+        return []
+
     def __get_histogram(self) -> dict[str, list | list[dict]]:
         """Get histogram"""
 
@@ -227,7 +237,7 @@ class CampaignsMergedService:
             "canonical_countries": helpers.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.histogram.get("canonical_countries")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_q1
                     if x.histogram
                 ],
                 by_key="name",
@@ -255,7 +265,7 @@ class CampaignsMergedService:
             "coordinates_1": helpers.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.world_bubble_maps_coordinates.get("coordinates_1")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_q1
                     if x.world_bubble_maps_coordinates
                 ],
                 by_key="location_code",
@@ -264,7 +274,7 @@ class CampaignsMergedService:
             "coordinates_2": helpers.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.world_bubble_maps_coordinates.get("coordinates_2")
-                    for x in self.__campaigns
+                    for x in self.__campaigns_q1
                     if x.world_bubble_maps_coordinates
                 ],
                 by_key="location_code",
@@ -278,7 +288,7 @@ class CampaignsMergedService:
         """Get filter 1 respondents count"""
 
         filter_1_respondents_counts: list[int] = [
-            x.filter_1_respondents_count for x in self.__campaigns
+            x.filter_1_respondents_count for x in self.__campaigns_q1
         ]
         if not filter_1_respondents_counts:
             filter_1_respondents_counts = [0]
@@ -289,7 +299,7 @@ class CampaignsMergedService:
         """Get filter 2 respondents count"""
 
         filter_2_respondents_counts: list[int] = [
-            x.filter_2_respondents_count for x in self.__campaigns
+            x.filter_2_respondents_count for x in self.__campaigns_q1
         ]
         if not filter_2_respondents_counts:
             filter_2_respondents_counts = [0]
@@ -301,7 +311,7 @@ class CampaignsMergedService:
 
         filter_1_ages = [
             int(x.filter_1_average_age)
-            for x in self.__campaigns
+            for x in self.__campaigns_q1
             if x.filter_1_average_age.isnumeric()
         ]
 
@@ -315,7 +325,7 @@ class CampaignsMergedService:
 
         filter_2_ages = [
             int(x.filter_2_average_age)
-            for x in self.__campaigns
+            for x in self.__campaigns_q1
             if x.filter_2_average_age.isnumeric()
         ]
 
@@ -336,7 +346,7 @@ class CampaignsMergedService:
         Use filter description from 'what_young_people_want' as this campaign uses respondent_noun as respondent.
         """
 
-        for campaign in self.__campaigns:
+        for campaign in self.__campaigns_q1:
             if campaign.campaign_code == CampaignCode.what_young_people_want.value:
                 return campaign.filter_1_description
 
@@ -349,7 +359,7 @@ class CampaignsMergedService:
         Use filter description from 'what_young_people_want' as this campaign uses respondent_noun as respondent.
         """
 
-        for campaign in self.__campaigns:
+        for campaign in self.__campaigns_q1:
             if campaign.campaign_code == CampaignCode.what_young_people_want.value:
                 return campaign.filter_2_description
 
@@ -464,6 +474,7 @@ class CampaignsMergedService:
 
         return Campaign(
             campaign_code="",
+            q_code="",
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
             living_settings_breakdown=[],

@@ -262,14 +262,14 @@ class CampaignService:
         # Limit the sample for languages that are not English
         if self.__language == "en":
             if self.__filter_2:
-                n_sample = constants.n_responses_sample / 2  # 500
+                n_sample = constants.n_responses_sample // 2  # 500
             else:
                 n_sample = constants.n_responses_sample  # 1000
         else:
             if self.__filter_2:
-                n_sample = constants.n_responses_sample / 2 / 10  # 50
+                n_sample = constants.n_responses_sample // 2 // 10  # 50
             else:
-                n_sample = constants.n_responses_sample / 10  # 100
+                n_sample = constants.n_responses_sample // 10  # 100
 
         if len(df.index) > 0:
             if len(df.index) < n_sample:
@@ -1330,6 +1330,7 @@ class CampaignService:
 
         return Campaign(
             campaign_code=self.__campaign_code.value,
+            q_code=q_code.value,
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
             living_settings_breakdown=living_settings_breakdown,

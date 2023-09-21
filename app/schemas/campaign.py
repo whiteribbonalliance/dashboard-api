@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class Campaign(BaseModel):
     campaign_code: str
+    q_code: str
     responses_sample: dict
     responses_breakdown: list
     living_settings_breakdown: list
