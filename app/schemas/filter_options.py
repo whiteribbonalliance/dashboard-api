@@ -14,6 +14,14 @@ class FilterOptions(BaseModel):
     ages: list[dict] = Field(
         default=[], description="Options for unique respondents ages"
     )
+    age_ranges: list[dict] = Field(
+        default=[],
+        description="Options for unique respondents age ranges (might differ from campaign to campaign)",
+    )
+    age_ranges_default: list[dict] = Field(
+        default=[],
+        description="Options for unique respondents age ranges (is same for all campaigns)",
+    )
     genders: list[dict] = Field(
         default=[], description="Options for respondents genders"
     )

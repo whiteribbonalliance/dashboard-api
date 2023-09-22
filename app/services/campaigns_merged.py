@@ -130,6 +130,12 @@ class CampaignsMergedService:
         # Response topic options
         response_topics_options = self.__get_response_topics_options()
 
+        # Ages
+        ages = []
+
+        # Age ranges
+        age_ranges = self.__get_age_ranges_options()
+
         # Only responses from categories options
         only_responses_from_categories_options = (
             self.__get_only_responses_from_categories_options()
@@ -144,7 +150,8 @@ class CampaignsMergedService:
             countries=country_options,
             country_regions=country_regions_options,
             response_topics=response_topics_options,
-            ages=[],
+            ages=ages,
+            age_ranges=age_ranges,
             genders=[],
             professions=[],
             only_responses_from_categories=only_responses_from_categories_options,
@@ -457,13 +464,11 @@ class CampaignsMergedService:
     def __get_country_regions_options(self) -> list[dict]:
         """Get country regions options"""
 
-        country_regions_options = helpers.get_merged_flattened_list_of_dictionaries(
+        country_regions_options = helpers.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("country_regions") or []]
                 for x in self.__campaigns_filter_options
-            ],
-            by_key="country_alpha2_code",
-            keys_to_merge=[],
+            ]
         )
 
         # Sort
@@ -476,16 +481,31 @@ class CampaignsMergedService:
     def __get_response_topics_options(self) -> list[dict]:
         """Get response topic options"""
 
-        response_topics_options = helpers.get_merged_flattened_list_of_dictionaries(
+        response_topics_options = helpers.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("response_topics") or []]
                 for x in self.__campaigns_filter_options
-            ],
-            by_key="value",
-            keys_to_merge=[],
+            ]
         )
 
+        # Remove metadata
+        for option in response_topics_options:
+            if option.get("metadata"):
+                option["metadata"] = ""
+
         return response_topics_options
+
+    def __get_age_ranges_options(self) -> list[dict]:
+        """Get age ranges options"""
+
+        ages_range_options = helpers.get_unique_flattened_list_of_dictionaries(
+            data_lists=[
+                [y for y in x.get("age_ranges_default") or []]
+                for x in self.__campaigns_filter_options
+            ]
+        )
+
+        return ages_range_options
 
     def __get_only_responses_from_categories_options(self) -> list[dict]:
         """Get only responses from categories options"""

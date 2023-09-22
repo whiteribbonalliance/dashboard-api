@@ -5,6 +5,7 @@ class Filter(BaseModel):
     countries: list[str] = Field(description="The selected alpha-2 country codes")
     regions: list[str] = Field(description="The selected regions")
     ages: list[str] = Field(description="The selected ages")
+    age_ranges: list[str] = Field(description="The selected age ranges")
     genders: list[str] = Field(description="The selected genders")
     professions: list[str] = Field(description="The selected professions")
     response_topics: list[str] = Field(description="The selected response topics")

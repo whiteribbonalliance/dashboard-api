@@ -77,6 +77,15 @@ class CampaignCRUD:
 
         return []
 
+    def get_age_ranges_default(self) -> list[AgeRange]:
+        """Get age ranges default"""
+
+        age_ranges_default = self.__db.age_ranges_default
+        if age_ranges_default:
+            return [x.copy() for x in age_ranges_default if x]
+
+        return []
+
     def get_genders(self) -> list[Gender]:
         """Get genders"""
 
@@ -220,6 +229,11 @@ class CampaignCRUD:
         """Set age ranges"""
 
         self.__db.age_ranges = age_ranges
+
+    def set_age_ranges_default(self, age_ranges_default: list[AgeRange]):
+        """Set age ranges default"""
+
+        self.__db.age_ranges_default = age_ranges_default
 
     def set_countries(self, countries: dict[str, Country]):
         """Set countries"""

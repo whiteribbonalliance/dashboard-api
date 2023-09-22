@@ -48,7 +48,9 @@ def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str
     return "/".join(parent_categories)
 
 
-def get_age_range(age: str | int | None, campaign_code: CampaignCode) -> str | None:
+def get_age_range(
+    age: str | int | None, campaign_code: CampaignCode = None
+) -> str | None:
     """Convert age to an age range e.g. '30' to '25-34'"""
 
     if age is None:
@@ -257,6 +259,11 @@ def load_campaign_data(campaign_code: CampaignCode):
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
 
+    # Make sure the age value 'prefer not to say' always starts with a capital letter
+    df_responses["age"] = df_responses["age"].apply(
+        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+    )
+
     # Set ages
     ages = df_responses["age"].unique().tolist()
     ages = [Age(code=age, name=age) for age in ages if age is not None]
@@ -269,9 +276,16 @@ def load_campaign_data(campaign_code: CampaignCode):
         or campaign_code == CampaignCode.midwives_voices
     ):
         df_responses["age_range"] = df_responses["age"]
+        df_responses["age_range_default"] = df_responses["age"]
     else:
+        # Age range might differ from campaign to campaign
         df_responses["age_range"] = df_responses["age"].apply(
             lambda x: get_age_range(age=x, campaign_code=campaign_code)
+        )
+
+        # Default age range, all campaigns will have the same age range
+        df_responses["age_range_default"] = df_responses["age"].apply(
+            lambda x: get_age_range(age=x)
         )
 
     # Set age ranges
@@ -282,6 +296,15 @@ def load_campaign_data(campaign_code: CampaignCode):
         if age_range is not None
     ]
     campaign_crud.set_age_ranges(age_ranges=age_ranges)
+
+    # Set age ranges default
+    age_ranges_default = df_responses["age_range_default"].unique().tolist()
+    age_ranges_default = [
+        AgeRange(code=age_range_default, name=age_range_default)
+        for age_range_default in age_ranges_default
+        if age_range_default is not None
+    ]
+    campaign_crud.set_age_ranges_default(age_ranges_default=age_ranges_default)
 
     # Remove the UNCODABLE responses
     for q_code in campaign_q_codes:

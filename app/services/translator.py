@@ -414,6 +414,8 @@ class Translator(metaclass=SingletonMeta):
         country_regions_options: list[dict[str, str | list[dict]]],
         response_topic_options: list[dict],
         age_options: list[dict],
+        age_range_options: list[dict],
+        age_range_default_options: list[dict],
         gender_options: list[dict],
         profession_options: list[dict],
         only_responses_from_categories_options: list[dict],
@@ -461,6 +463,28 @@ class Translator(metaclass=SingletonMeta):
         # Age options
         age_options = deep_replacer.replace(
             data=age_options,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "value": [key_depth_rules.IGNORE],
+                "metadata": [key_depth_rules.IGNORE],
+            },
+        )
+
+        # Age range options
+        age_range_options = deep_replacer.replace(
+            data=age_range_options,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "value": [key_depth_rules.IGNORE],
+                "metadata": [key_depth_rules.IGNORE],
+            },
+        )
+
+        # Age range default options
+        age_range_default_options = deep_replacer.replace(
+            data=age_range_default_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -518,6 +542,8 @@ class Translator(metaclass=SingletonMeta):
             country_regions_options,
             response_topic_options,
             age_options,
+            age_range_options,
+            age_range_default_options,
             gender_options,
             profession_options,
             only_responses_from_categories_options,

@@ -16,6 +16,7 @@ from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.age import Age
+from app.schemas.age_range import AgeRange
 from app.schemas.campaign import Campaign
 from app.schemas.country import Country
 from app.schemas.filter import Filter
@@ -306,7 +307,7 @@ class CampaignService:
             Option(
                 value=response_topic.code,
                 label=response_topic.name,
-                metadata="is_parent" if response_topic.is_parent else "is_not_parent",
+                metadata="is_parent" if response_topic.is_parent else "",
             ).dict()
             for response_topic in response_topics
         ]
@@ -314,6 +315,20 @@ class CampaignService:
         # Age options
         ages = self.__get_ages()
         age_options = [Option(value=age.code, label=age.name).dict() for age in ages]
+
+        # Age ranges options
+        age_ranges = self.__get_age_ranges()
+        age_range_options = [
+            Option(value=age_range.code, label=age_range.name).dict()
+            for age_range in age_ranges
+        ]
+
+        # Age ranges default options
+        age_ranges_default = self.__get_age_ranges_default()
+        age_range_default_options = [
+            Option(value=age_range_default.code, label=age_range_default.name).dict()
+            for age_range_default in age_ranges_default
+        ]
 
         # Gender options
         genders = self.__get_genders()
@@ -352,6 +367,8 @@ class CampaignService:
                     country_regions_options=country_regions_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
+                    age_range_options=age_range_options,
+                    age_range_default_options=age_range_default_options,
                     gender_options=gender_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
@@ -367,6 +384,7 @@ class CampaignService:
                     country_regions_options,
                     response_topic_options,
                     age_options,
+                    age_ranges_options,
                     gender_options,
                     profession_options,
                     only_responses_from_categories_options,
@@ -377,6 +395,8 @@ class CampaignService:
                     country_regions_options=country_regions_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
+                    age_range_options=age_range_options,
+                    age_range_default_options=age_range_default_options,
                     gender_options=gender_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
@@ -392,6 +412,8 @@ class CampaignService:
             country_regions=country_regions_options,
             response_topics=response_topic_options,
             ages=age_options,
+            age_ranges=age_range_options,
+            age_ranges_default=age_range_default_options,
             genders=gender_options,
             professions=profession_options,
             only_responses_from_categories=only_responses_from_categories_options,
@@ -1545,6 +1567,38 @@ class CampaignService:
         ages = sorted(ages, key=lambda a: convert_numeric(a.name))
 
         return ages
+
+    def __get_age_ranges(self) -> list[AgeRange]:
+        """Get age ranges"""
+
+        def convert_numeric(age_str: str):
+            return age_str.zfill(6)  # zero-pad the age string
+
+        age_ranges = self.__crud.get_age_ranges()
+
+        # Sort age ranges
+        age_ranges = sorted(age_ranges, key=lambda a: convert_numeric(a.name))
+
+        age_ranges = [x for x in age_ranges if x.code.lower() != "N/A"]
+
+        return age_ranges
+
+    def __get_age_ranges_default(self) -> list[AgeRange]:
+        """Get age ranges default"""
+
+        def convert_numeric(age_str: str):
+            return age_str.zfill(6)  # zero-pad the age string
+
+        age_ranges_default = self.__crud.get_age_ranges_default()
+
+        # Sort age ranges default
+        age_ranges_default = sorted(
+            age_ranges_default, key=lambda a: convert_numeric(a.name)
+        )
+
+        age_ranges_default = [x for x in age_ranges_default if x.code.lower() != "n/a"]
+
+        return age_ranges_default
 
     def __get_genders(self) -> list[Gender]:
         """Get genders"""
