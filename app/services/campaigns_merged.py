@@ -2,13 +2,14 @@
 Handles processing of data and business logic for campaigns merged
 """
 
-from statistics import mean
+import pandas as pd
 
 from app import helpers, constants
 from app.enums.campaign_code import CampaignCode
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
+from app.types import FilterSequence
 from app.utils import filters
 
 
@@ -38,16 +39,13 @@ class CampaignsMergedService:
         else:
             self.__campaigns_who_the_people_are_options: list[list[dict]] = []
 
-        # Campaigns data question code 1 only
+        # Campaigns data list for question code 1 only
         self.__campaigns_data_q1 = [x[0] for x in self.__campaigns_data.values() if x]
 
-        # Campaigns data all question codes
-        self.__campaigns_data_all_q_not_flattened = [
-            x for x in self.__campaigns_data.values()
-        ]
+        # Campaigns data list (flattened) for all question codes
         self.__campaigns_data_all_q = [
             x
-            for sub_list in self.__campaigns_data_all_q_not_flattened
+            for sub_list in [x for x in self.__campaigns_data.values()]
             for x in sub_list
         ]
 
@@ -81,22 +79,22 @@ class CampaignsMergedService:
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
         # Filter 1 respondents count
-        filter_1_respondents_count = self.__get_filter_1_respondents_count()
+        filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
 
         # Filter 2 respondents count
-        filter_2_respondents_count = self.__get_filter_2_respondents_count()
+        filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
 
         # Filter 1 average age
-        filter_1_average_age = self.__get_filter_1_average_age()
+        filter_1_average_age = self.__get_filter_average_age(filter_seq="1")
 
         # Filter 2 average age
-        filter_2_average_age = self.__get_filter_2_average_age()
+        filter_2_average_age = self.__get_filter_average_age(filter_seq="2")
 
         # Filter 1 description
-        filter_1_description = self.__get_filter_1_description()
+        filter_1_description = self.__get_filter_description(filter_seq="1")
 
         # Filter 2 description
-        filter_2_description = self.__get_filter_2_description()
+        filter_2_description = self.__get_filter_description(filter_seq="2")
 
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
@@ -194,7 +192,7 @@ class CampaignsMergedService:
         # Responses sample - (keep only columns raw_response, description, canonical_country and age)
         columns_to_keep = {"raw_response", "description", "canonical_country", "age"}
         responses_sample["columns"] = [
-            x for x in responses_sample["columns"] if x["id"] in columns_to_keep
+            x for x in responses_sample["columns"] if x.get("id") in columns_to_keep
         ]
 
         return responses_sample
@@ -375,84 +373,69 @@ class CampaignsMergedService:
 
         return world_bubble_maps_coordinates
 
-    def __get_filter_1_respondents_count(self) -> int:
-        """Get filter 1 respondents count"""
+    def __get_filter_respondents_count(self, filter_seq: FilterSequence) -> int:
+        """Get filter respondents count"""
 
-        filter_1_respondents_counts: list[int] = [
-            x.filter_1_respondents_count for x in self.__campaigns_data_q1
-        ]
-        if not filter_1_respondents_counts:
-            filter_1_respondents_counts = [0]
+        if filter_seq == "1":
+            filter_respondents_counts: list[int] = [
+                x.filter_1_respondents_count for x in self.__campaigns_data_q1
+            ]
+        elif filter_seq == "2":
+            filter_respondents_counts: list[int] = [
+                x.filter_2_respondents_count for x in self.__campaigns_data_q1
+            ]
+        else:
+            filter_respondents_counts = []
 
-        return sum(filter_1_respondents_counts)
+        if not filter_respondents_counts:
+            filter_respondents_counts = [0]
 
-    def __get_filter_2_respondents_count(self) -> int:
-        """Get filter 2 respondents count"""
+        return sum(filter_respondents_counts)
 
-        filter_2_respondents_counts: list[int] = [
-            x.filter_2_respondents_count for x in self.__campaigns_data_q1
-        ]
-        if not filter_2_respondents_counts:
-            filter_2_respondents_counts = [0]
+    def __get_filter_average_age(self, filter_seq: FilterSequence) -> str:
+        """Get filter average age"""
 
-        return sum(filter_2_respondents_counts)
+        # Create a list containing all ages
+        list_of_all_ages: list[str] = []
+        for campaign_data in self.__campaigns_data_q1:
+            if filter_seq == "1":
+                campaign_data_list_of_ages = campaign_data.list_of_ages_1
+            elif filter_seq == "2":
+                campaign_data_list_of_ages = campaign_data.list_of_ages_2
+            else:
+                campaign_data_list_of_ages = []
 
-    def __get_filter_1_average_age(self) -> str:
-        """Get filter 1 average age"""
+            list_of_all_ages.extend(campaign_data_list_of_ages)
 
-        filter_1_ages = [
-            int(x.filter_1_average_age)
-            for x in self.__campaigns_data_q1
-            if x.filter_1_average_age.isnumeric()
-        ]
+        # Calculate average age
+        df = pd.DataFrame(list_of_all_ages, columns=["age"])
+        average_age = "N/A"
+        if len(df.index) > 0:
+            average_age = " ".join(df["age"].mode())
+            average_age = (
+                average_age if helpers.contains_letters(average_age) else average_age
+            )
 
-        if not filter_1_ages:
-            filter_1_ages = [0]
-
-        return str(round(mean(filter_1_ages)))
-
-    def __get_filter_2_average_age(self) -> str:
-        """Get filter 2 average age"""
-
-        filter_2_ages = [
-            int(x.filter_2_average_age)
-            for x in self.__campaigns_data_q1
-            if x.filter_2_average_age.isnumeric()
-        ]
-
-        if not filter_2_ages:
-            filter_2_ages = [0]
-
-        return str(round(mean(filter_2_ages)))
+        return average_age
 
     def __get_filters_are_identical(self) -> bool:
         """Get filters are identical"""
 
         return self.__filters_are_identical
 
-    def __get_filter_1_description(self) -> str:
+    def __get_filter_description(self, filter_seq: FilterSequence) -> str:
         """
-        Get filter 1 description.
+        Get filter description.
 
         Use filter description from 'what_young_people_want' as this campaign uses respondent_noun as respondent.
         """
 
         for campaign in self.__campaigns_data_q1:
             if campaign.campaign_code == CampaignCode.what_young_people_want.value:
-                return campaign.filter_1_description
-
-        return ""
-
-    def __get_filter_2_description(self) -> str:
-        """
-        Get filter 2 description.
-
-        Use filter description from 'what_young_people_want' as this campaign uses respondent_noun as respondent.
-        """
-
-        for campaign in self.__campaigns_data_q1:
-            if campaign.campaign_code == CampaignCode.what_young_people_want.value:
-                return campaign.filter_2_description
+                if filter_seq == "1":
+                    return campaign.filter_1_description
+                if filter_seq == "2":
+                    return campaign.filter_2_description
 
         return ""
 

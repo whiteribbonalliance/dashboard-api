@@ -68,7 +68,9 @@ def read_campaigns_merged(
             if not campaigns.get(campaign_code.value):
                 campaigns[campaign_code.value] = []
             campaigns[campaign_code.value].append(
-                campaign_service.get_campaign(q_code=campaign_q_code)
+                campaign_service.get_campaign(
+                    q_code=campaign_q_code, include_list_of_ages=True
+                )
             )
 
     # Service

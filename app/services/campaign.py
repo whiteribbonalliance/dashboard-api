@@ -28,6 +28,7 @@ from app.schemas.response_topic import ResponseTopic
 from app.services import googlemaps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
+from app.types import FilterSequence
 from app.utils import code_hierarchy
 from app.utils import filters
 from app.utils import q_col_names
@@ -73,12 +74,12 @@ class CampaignService:
             self.__df_2 = self.__crud.get_dataframe()
 
         # Filter 1 description
-        self.__filter_1_description = self.__get_filter_description(
+        self.__filter_1_description = self.__get_df_filter_description(
             df_len=len(self.__df_1), _filter=self.__filter_1
         )
 
         # Filter 2 description
-        self.__filter_2_description = self.__get_filter_description(
+        self.__filter_2_description = self.__get_df_filter_description(
             df_len=len(self.__df_2), _filter=self.__filter_2
         )
 
@@ -133,8 +134,7 @@ class CampaignService:
         )
 
     def get_campaign(
-        self,
-        q_code: QuestionCode,
+        self, q_code: QuestionCode, include_list_of_ages: bool = False
     ) -> Campaign:
         """Get campaign"""
 
@@ -172,17 +172,25 @@ class CampaignService:
         # World bubble maps coordinates
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
+        # List of ages
+        if include_list_of_ages:
+            list_of_ages_1 = self.__get_list_of_ages(filter_seq="1")
+            list_of_ages_2 = self.__get_list_of_ages(filter_seq="2")
+        else:
+            list_of_ages_1 = []
+            list_of_ages_2 = []
+
         # Respondents count
-        filter_1_respondents_count = self.__get_filter_1_respondents_count()
-        filter_2_respondents_count = self.__get_filter_2_respondents_count()
+        filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
+        filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
 
         # Average age
-        filter_1_average_age = self.__get_filter_1_average_age()
-        filter_2_average_age = self.__get_filter_2_average_age()
+        filter_1_average_age = self.__get_filter_average_age(filter_seq="1")
+        filter_2_average_age = self.__get_filter_average_age(filter_seq="2")
 
         # Filters Description
-        filter_1_description = self.__get_filter_1_description()
-        filter_2_description = self.__get_filter_2_description()
+        filter_1_description = self.__get_filter_description(filter_seq="1")
+        filter_2_description = self.__get_filter_description(filter_seq="2")
 
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
@@ -258,6 +266,8 @@ class CampaignService:
             histogram=histogram,
             genders_breakdown=genders_breakdown,
             world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+            list_of_ages_1=list_of_ages_1,
+            list_of_ages_2=list_of_ages_2,
             filter_1_respondents_count=filter_1_respondents_count,
             filter_2_respondents_count=filter_2_respondents_count,
             filter_1_average_age=filter_1_average_age,
@@ -1051,18 +1061,18 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __get_filter_1_description(self) -> str:
-        """Get filter 1 description"""
-
-        return self.__filter_1_description
-
-    def __get_filter_2_description(self) -> str:
-        """Get filter 2 description"""
-
-        return self.__filter_2_description
-
-    def __get_filter_description(self, df_len: int, _filter: Filter) -> str:
+    def __get_filter_description(self, filter_seq: FilterSequence) -> str:
         """Get filter description"""
+
+        if filter_seq == "1":
+            return self.__filter_1_description
+        elif filter_seq == "2":
+            return self.__filter_2_description
+        else:
+            return ""
+
+    def __get_df_filter_description(self, df_len: int, _filter: Filter) -> str:
+        """Get df filter description"""
 
         if not _filter:
             # Use an empty filter to generate description
@@ -1078,38 +1088,33 @@ class CampaignService:
 
         return description
 
-    def __get_filter_1_respondents_count(self) -> int:
-        """Get filter 1 respondents count"""
+    def __get_filter_respondents_count(self, filter_seq: FilterSequence) -> int:
+        """Get filter respondents count"""
 
-        return len(self.__df_1.index)
+        if filter_seq == "1":
+            return len(self.__df_1.index)
+        elif filter_seq == "2":
+            return len(self.__df_2.index)
+        else:
+            return 0
 
-    def __get_filter_2_respondents_count(self) -> int:
-        """Get filter 2 respondents count"""
-
-        return len(self.__df_2.index)
-
-    def __get_filter_1_average_age(self) -> str:
-        """Get filter 1 average age"""
-
-        df_1_copy = self.__get_df_1_copy()
+    def __get_filter_average_age(self, filter_seq: FilterSequence) -> str:
+        """Get filter average age"""
 
         average_age = "N/A"
-        if len(df_1_copy.index) > 0:
-            average_age = " ".join(df_1_copy["age"].mode())
+
+        if filter_seq == "1":
+            df_copy = self.__get_df_1_copy()
+        elif filter_seq == "2":
+            df_copy = self.__get_df_2_copy()
+        else:
+            return average_age
+
+        if len(df_copy.index) > 0:
+            average_age = " ".join(df_copy["age"].mode())
             average_age = (
                 average_age if helpers.contains_letters(average_age) else average_age
             )
-
-        return average_age
-
-    def __get_filter_2_average_age(self) -> str:
-        """Get filter 2 average age"""
-
-        df_2_copy = self.__get_df_2_copy()
-
-        average_age = "N/A"
-        if len(df_2_copy.index) > 0:  #
-            average_age = " ".join(df_2_copy["age"].mode())
 
         return average_age
 
@@ -1574,3 +1579,17 @@ class CampaignService:
         )
 
         return only_multi_word_phrases_containing_filter_term_options
+
+    def __get_list_of_ages(self, filter_seq: FilterSequence) -> list[str]:
+        """Get list of ages"""
+
+        if filter_seq == "1":
+            df_copy = self.__get_df_1_copy()
+        elif filter_seq == "2":
+            df_copy = self.__get_df_2_copy()
+        else:
+            return []
+
+        df_copy = df_copy["age"].dropna()
+
+        return df_copy.tolist()

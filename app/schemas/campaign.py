@@ -11,6 +11,8 @@ class Campaign(BaseModel):
     histogram: dict
     genders_breakdown: list[dict]
     world_bubble_maps_coordinates: dict
+    list_of_ages_1: list[str] = []
+    list_of_ages_2: list[str] = []
     filter_1_respondents_count: int
     filter_2_respondents_count: int
     filter_1_average_age: str
