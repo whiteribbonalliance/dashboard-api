@@ -770,10 +770,13 @@ class CampaignService:
             # Count occurrence of response topics (categories)
             category_counter = Counter()
 
-            # Campaign 'healthwellbeing' will handle responses breakdown differently
+            # Campaign 'healthwellbeing' and 'wwwpakistan' will handle responses breakdown differently
             # If there is only one parent category, then only include its sub-categories in the response
             # Else, only include the parent categories in the response
-            if self.__campaign_code == CampaignCode.healthwellbeing:
+            if (
+                self.__campaign_code == CampaignCode.healthwellbeing
+                or self.__campaign_code == CampaignCode.what_women_want_pakistan
+            ):
                 # Only include sub-categories from the parent category
                 if len(self.__response_topics_unique_parent_categories) == 1:
                     parent_category = list(
