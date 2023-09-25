@@ -24,3 +24,6 @@ class Campaign(BaseModel):
     filter_1_description: str
     filter_2_description: str
     filters_are_identical: bool
+    q_codes: list[str]
+    included_response_years: list[str]
+    all_response_years: list[str]

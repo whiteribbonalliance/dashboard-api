@@ -1,94 +1,20 @@
 {
-  "MX": {
-    "Ciudad de M\u00e9xico": {
-      "lat": 19.4326077,
-      "lon": -99.133208
-    },
-    "Coyoac\u00e1n, Ciudad de M\u00e9xico": {
-      "lat": 19.3437444,
-      "lon": -99.1561883
-    },
-    "Tl\u00e1huac, Ciudad de M\u00e9xico": {
-      "lat": 19.2990233,
-      "lon": -99.0436467
-    },
-    "Benito Ju\u00e1rez, Ciudad de M\u00e9xico": {
-      "lat": 19.3794059,
-      "lon": -99.15914459999999
-    },
-    "Iztapalapa, Ciudad de M\u00e9xico": {
-      "lat": 19.342083,
-      "lon": -99.05321590000001
-    },
-    "Miguel Hidalgo, Ciudad de M\u00e9xico": {
-      "lat": 19.4306575,
-      "lon": -99.20839529999999
-    },
-    "Magdalena Contreras, Ciudad de M\u00e9xico": {
-      "lat": 19.3149641,
-      "lon": -99.24258859999999
-    },
-    "Venustiano Carranza, Ciudad de M\u00e9xico": {
-      "lat": 19.4306069,
-      "lon": -99.0949899
-    },
-    "Azcapotzalco, Ciudad de M\u00e9xico": {
-      "lat": 19.4846606,
-      "lon": -99.1886749
-    },
-    "Milpa Alta, Ciudad de M\u00e9xico": {
-      "lat": 19.1942041,
-      "lon": -99.0267076
-    },
-    "Gustavo A. Madero, Ciudad de M\u00e9xico": {
-      "lat": 19.4873329,
-      "lon": -99.1236134
-    },
-    "\u00c1lvaro Obreg\u00f3n, Ciudad de M\u00e9xico": {
-      "lat": 19.3605334,
-      "lon": -99.2267067
-    },
-    "Tlalpan, Ciudad de M\u00e9xico": {
-      "lat": 19.2777349,
-      "lon": -99.1644701
-    },
-    "Cuauht\u00e9moc, Ciudad de M\u00e9xico": {
-      "lat": 19.4356338,
-      "lon": -99.1495107
-    },
-    "Xochimilco, Ciudad de M\u00e9xico": {
-      "lat": 19.2572314,
-      "lon": -99.1029664
-    },
-    "Iztacalco, Ciudad de M\u00e9xico": {
-      "lat": 19.3948036,
-      "lon": -99.09768079999999
-    },
-    "Cuajimalpa, Ciudad de M\u00e9xico": {
-      "lat": 19.3557507,
-      "lon": -99.2993504
-    }
-  },
   "PK": {
+    "Nowshera, KP": {
+      "lat": 34.0104643,
+      "lon": 71.9875531
+    },
+    "Kamber Shahdad Kot, Sindh": {
+      "lat": 27.5859189,
+      "lon": 68.0060183
+    },
+    "Toba Tek Singh, Punjab": {
+      "lat": 30.9709356,
+      "lon": 72.48264739999999
+    },
     "Swabi, KP": {
       "lat": 34.1240709,
       "lon": 72.4613191
-    },
-    "Mardan, KP": {
-      "lat": 34.1986394,
-      "lon": 72.0404293
-    },
-    "Jhang, Punjab": {
-      "lat": 31.27806829999999,
-      "lon": 72.3316761
-    },
-    "Jamshoro, Sindh": {
-      "lat": 25.4303884,
-      "lon": 68.28086259999999
-    },
-    "Jacobabad, Sindh": {
-      "lat": 28.2823326,
-      "lon": 68.4472078
     },
     "Shikarpur, Sindh": {
       "lat": 27.9570397,
@@ -98,17 +24,95 @@
       "lat": 29.35435,
       "lon": 71.69106599999999
     },
+    "Mardan, KP": {
+      "lat": 34.1986394,
+      "lon": 72.0404293
+    },
     "Rahim Yar Khan, Punjab": {
       "lat": 28.4211565,
       "lon": 70.2988744
     },
-    "Toba Tek Singh, Punjab": {
-      "lat": 30.9709356,
-      "lon": 72.48264739999999
+    "Jamshoro, Sindh": {
+      "lat": 25.4303884,
+      "lon": 68.28086259999999
+    },
+    "Jhang, Punjab": {
+      "lat": 31.27806829999999,
+      "lon": 72.3316761
+    },
+    "Jacobabad, Sindh": {
+      "lat": 28.2823326,
+      "lon": 68.4472078
     },
     "Qambar Shahdadkot, Sindh": {
       "lat": 27.5859189,
       "lon": 68.0060183
+    }
+  },
+  "MX": {
+    "Azcapotzalco, Ciudad de M\u00e9xico": {
+      "lat": 19.4846606,
+      "lon": -99.1886749
+    },
+    "Benito Ju\u00e1rez, Ciudad de M\u00e9xico": {
+      "lat": 19.3794059,
+      "lon": -99.15914459999999
+    },
+    "Coyoac\u00e1n, Ciudad de M\u00e9xico": {
+      "lat": 19.364928,
+      "lon": -99.1630182
+    },
+    "Cuajimalpa, Ciudad de M\u00e9xico": {
+      "lat": 19.3557507,
+      "lon": -99.2993504
+    },
+    "Cuauht\u00e9moc, Ciudad de M\u00e9xico": {
+      "lat": 19.4356338,
+      "lon": -99.1495107
+    },
+    "Gustavo A. Madero, Ciudad de M\u00e9xico": {
+      "lat": 19.4873329,
+      "lon": -99.1236134
+    },
+    "Iztacalco, Ciudad de M\u00e9xico": {
+      "lat": 19.3948036,
+      "lon": -99.09768079999999
+    },
+    "Iztapalapa, Ciudad de M\u00e9xico": {
+      "lat": 19.342083,
+      "lon": -99.05321590000001
+    },
+    "Magdalena Contreras, Ciudad de M\u00e9xico": {
+      "lat": 19.3149641,
+      "lon": -99.24258859999999
+    },
+    "Miguel Hidalgo, Ciudad de M\u00e9xico": {
+      "lat": 19.4306575,
+      "lon": -99.20839529999999
+    },
+    "Milpa Alta, Ciudad de M\u00e9xico": {
+      "lat": 19.1942041,
+      "lon": -99.0267076
+    },
+    "Tlalpan, Ciudad de M\u00e9xico": {
+      "lat": 19.2777349,
+      "lon": -99.1644701
+    },
+    "Tl\u00e1huac, Ciudad de M\u00e9xico": {
+      "lat": 19.2990233,
+      "lon": -99.0436467
+    },
+    "Venustiano Carranza, Ciudad de M\u00e9xico": {
+      "lat": 19.4306069,
+      "lon": -99.0949899
+    },
+    "Xochimilco, Ciudad de M\u00e9xico": {
+      "lat": 19.2572314,
+      "lon": -99.1029664
+    },
+    "\u00c1lvaro Obreg\u00f3n, Ciudad de M\u00e9xico": {
+      "lat": 19.3605334,
+      "lon": -99.2267067
     }
   }
 }

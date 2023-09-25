@@ -10,6 +10,7 @@ class CommonParametersCampaign(BaseModel):
     language: str
     request: Request | None
     q_code: QuestionCode
+    response_year: str
 
     class Config:
         arbitrary_types_allowed = True

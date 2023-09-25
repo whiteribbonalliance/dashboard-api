@@ -59,6 +59,13 @@ class CampaignCRUD:
 
         return []
 
+    def get_response_years(self) -> list[str]:
+        """Get response years"""
+
+        response_years = copy.copy(self.__db.response_years)
+
+        return response_years
+
     def get_ages(self) -> list[Age]:
         """Get ages"""
 
@@ -219,6 +226,11 @@ class CampaignCRUD:
         """Set ngrams unfiltered"""
 
         self.__db.ngrams_unfiltered[q_code.value] = ngrams_unfiltered
+
+    def set_response_years(self, response_years: list[str]):
+        """Set response years"""
+
+        self.__db.response_years = response_years
 
     def set_ages(self, ages: list[Age]):
         """Set ages"""

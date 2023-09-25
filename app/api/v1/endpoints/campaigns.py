@@ -50,6 +50,7 @@ async def read_campaign(
     campaign_code = parameters.campaign_code
     language = parameters.language
     q_code = parameters.q_code
+    response_year = parameters.response_year
 
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
@@ -57,6 +58,7 @@ async def read_campaign(
     # Service
     campaign_service = CampaignService(
         campaign_code=campaign_code,
+        response_year=response_year,
         language=language,
         filter_1=filter_1,
         filter_2=filter_2,

@@ -306,6 +306,15 @@ def load_campaign_data(campaign_code: CampaignCode):
     ]
     campaign_crud.set_age_buckets_default(age_buckets_default=age_buckets_default)
 
+    # Response years
+    if campaign_code == CampaignCode.what_women_want_pakistan:
+        response_years = df_responses["response_year"].unique().tolist()
+    else:
+        response_years = []
+
+    # Set response years
+    campaign_crud.set_response_years(response_years=response_years)
+
     # Remove the UNCODABLE responses
     for q_code in campaign_q_codes:
         df_responses = df_responses[

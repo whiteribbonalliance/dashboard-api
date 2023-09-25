@@ -52,19 +52,19 @@ async def read_campaigns_merged(
         if campaign_code == CampaignCode.womens_economic_empowerment:
             continue
 
-        # Campaign service
-        campaign_service = CampaignService(
-            campaign_code=campaign_code,
-            language=language,
-            filter_1=filter_1,
-            filter_2=filter_2,
-        )
-
         # Campaign q codes
         campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
 
         # Campaign data
         for campaign_q_code in campaign_q_codes:
+            # Campaign service
+            campaign_service = CampaignService(
+                campaign_code=campaign_code,
+                language=language,
+                filter_1=filter_1,
+                filter_2=filter_2,
+            )
+
             if not campaigns.get(campaign_code.value):
                 campaigns[campaign_code.value] = []
             campaigns[campaign_code.value].append(

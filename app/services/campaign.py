@@ -44,36 +44,61 @@ class CampaignService:
         self,
         campaign_code: CampaignCode,
         language: str = "en",
-        filter_1: Filter | None = None,
-        filter_2: Filter | None = None,
+        response_year: str = None,
+        filter_1: Filter = None,
+        filter_2: Filter = None,
     ):
+        # Campaign code
         self.__campaign_code = campaign_code
-        self.__language = language
 
+        # CRUD
         self.__crud = CampaignCRUD(campaign_code=self.__campaign_code)
 
+        # Language
+        self.__language = language
+
+        # All response years
+        self.__all_response_years = self.__get_response_years()
+
+        # Response year
+        if response_year and response_year in self.__all_response_years:
+            self.__response_year = response_year
+        else:
+            self.__response_year = None
+
+        # Filters
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
+
+        # Get dataframe
+        df = self.__crud.get_dataframe()
+
+        # for 'wwwpakistan' filter the response year
+        if (
+            self.__response_year
+            and self.__campaign_code == CampaignCode.what_women_want_pakistan
+        ):
+            df = df[df["response_year"] == self.__response_year]
 
         # Apply filter 1
         if self.__filter_1:
             self.__df_1 = filters.apply_filter_to_df(
-                df=self.__crud.get_dataframe(),
+                df=df.copy(),
                 _filter=self.__filter_1,
                 campaign_code=self.__campaign_code,
             )
         else:
-            self.__df_1 = self.__crud.get_dataframe()
+            self.__df_1 = df
 
         # Apply filter 2
         if self.__filter_2:
             self.__df_2 = filters.apply_filter_to_df(
-                df=self.__crud.get_dataframe(),
+                df=df.copy(),
                 _filter=self.__filter_2,
                 campaign_code=self.__campaign_code,
             )
         else:
-            self.__df_2 = self.__crud.get_dataframe()
+            self.__df_2 = df
 
         # Filter 1 description
         self.__filter_1_description = self.__get_df_filter_description(
@@ -142,6 +167,12 @@ class CampaignService:
         include_list_of_age_buckets_default: bool = False,
     ) -> Campaign:
         """Get campaign"""
+
+        # Included response years
+        if self.__response_year:
+            included_response_years = [self.__response_year]
+        else:
+            included_response_years = self.__all_response_years
 
         # Top words and phrases
         top_words_and_phrases = {
@@ -302,6 +333,9 @@ class CampaignService:
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
+            q_codes=[],
+            included_response_years=included_response_years,
+            all_response_years=self.__all_response_years,
         )
 
     def get_filter_options(self) -> FilterOptions:
@@ -1731,3 +1765,10 @@ class CampaignService:
         df_copy = df_copy["age_bucket_default"].dropna()
 
         return df_copy.tolist()
+
+    def __get_response_years(self) -> list[str]:
+        """Get response years"""
+
+        response_years = self.__crud.get_response_years()
+
+        return response_years

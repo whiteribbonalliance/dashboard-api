@@ -35,6 +35,7 @@ def dep_common_parameters_campaign(
     request: Request,
     campaign_code: CampaignCode = Depends(dep_campaign_code),
     q_code: str = "q1",
+    response_year: str = "",
     lang: str = Depends(helpers.check_language),
 ) -> CommonParametersCampaign:
     """Return the common parameters"""
@@ -51,24 +52,19 @@ def dep_common_parameters_campaign(
         campaign_code=campaign_code,
         language=lang,
         q_code=q_code_verified,
+        response_year=response_year,
         request=request,
     )
 
 
 def dep_common_parameters_all_campaigns(
     request: Request,
-    q_code: str = "q1",
     lang: str = Depends(helpers.check_language),
 ) -> CommonParametersCampaignsMerged:
     """Return the common parameters"""
 
-    q_code_verified = helpers.check_q_code(q_code=q_code)
-    if not q_code_verified:
-        raise http_exceptions.ResourceNotFoundHTTPException("q_code does not exist")
-
     return CommonParametersCampaignsMerged(
         language=lang,
-        q_code=q_code_verified,
         request=request,
     )
 
