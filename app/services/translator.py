@@ -347,7 +347,7 @@ class Translator(metaclass=SingletonMeta):
             pydantic_to_dict=True,
             key_depth_rules={
                 "ages": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
-                "age_ranges": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
+                "age_buckets": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
             },
         )
 
@@ -414,8 +414,8 @@ class Translator(metaclass=SingletonMeta):
         country_regions_options: list[dict[str, str | list[dict]]],
         response_topic_options: list[dict],
         age_options: list[dict],
-        age_range_options: list[dict],
-        age_range_default_options: list[dict],
+        age_bucket_options: list[dict],
+        age_bucket_default_options: list[dict],
         gender_options: list[dict],
         profession_options: list[dict],
         only_responses_from_categories_options: list[dict],
@@ -471,9 +471,9 @@ class Translator(metaclass=SingletonMeta):
             },
         )
 
-        # Age range options
-        age_range_options = deep_replacer.replace(
-            data=age_range_options,
+        # Age bucket options
+        age_bucket_options = deep_replacer.replace(
+            data=age_bucket_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -482,9 +482,9 @@ class Translator(metaclass=SingletonMeta):
             },
         )
 
-        # Age range default options
-        age_range_default_options = deep_replacer.replace(
-            data=age_range_default_options,
+        # Age bucket default options
+        age_bucket_default_options = deep_replacer.replace(
+            data=age_bucket_default_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -542,8 +542,8 @@ class Translator(metaclass=SingletonMeta):
             country_regions_options,
             response_topic_options,
             age_options,
-            age_range_options,
-            age_range_default_options,
+            age_bucket_options,
+            age_bucket_default_options,
             gender_options,
             profession_options,
             only_responses_from_categories_options,

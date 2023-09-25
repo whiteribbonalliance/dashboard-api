@@ -24,7 +24,7 @@ def get_default_filter() -> Filter:
         genders=[],
         professions=[],
         ages=[],
-        age_ranges=[],
+        age_buckets=[],
         only_multi_word_phrases_containing_filter_term=False,
         keyword_filter="",
         keyword_exclude="",
@@ -44,7 +44,7 @@ def apply_filter_to_df(
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
     ages = _filter.ages
-    age_ranges = _filter.age_ranges
+    age_buckets = _filter.age_buckets
     only_responses_from_categories = _filter.only_responses_from_categories
 
     df_copy = df.copy()
@@ -69,9 +69,9 @@ def apply_filter_to_df(
     if len(ages) > 0:
         df_copy = df_copy[df_copy["age"].isin(ages)]
 
-    # Filter age ranges
-    if len(age_ranges) > 0:
-        df_copy = df_copy[df_copy["age_range"].isin(age_ranges)]
+    # Filter age buckets
+    if len(age_buckets) > 0:
+        df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
     # Apply the filter on specific columns for q1, q2 etc.
     campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
@@ -143,8 +143,8 @@ def generate_description_of_filter(
 
     if _filter.ages:
         ages = _filter.ages
-    elif _filter.age_ranges:
-        ages = _filter.age_ranges
+    elif _filter.age_buckets:
+        ages = _filter.age_buckets
     else:
         ages = []
 

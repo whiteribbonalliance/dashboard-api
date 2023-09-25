@@ -63,37 +63,31 @@ class CampaignsMergedService:
         # Responses breakdown
         responses_breakdown = self.__get_responses_breakdown()
 
-        # Living settings breakdown
-        # living_settings_breakdown = self.__get_living_settings_breakdown()
-
         # Top words or phrases
         top_words_and_phrases = self.__get_top_words_and_phrases()
 
         # Histogram
         histogram = self.__get_histogram()
 
-        # Genders breakdown
-        # genders_breakdown = self.__get_genders_breakdown()
-
         # World bubble maps coordinates
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
-        # Filter 1 respondents count
+        # Filter respondents count
         filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
-
-        # Filter 2 respondents count
         filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
 
-        # Filter 1 average age
+        # Average age
         filter_1_average_age = self.__get_filter_average_age(filter_seq="1")
-
-        # Filter 2 average age
         filter_2_average_age = self.__get_filter_average_age(filter_seq="2")
+        filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
+            filter_seq="1"
+        )
+        filter_2_average_age_bucket = self.__get_filter_average_age_bucket(
+            filter_seq="2"
+        )
 
-        # Filter 1 description
+        # Filter description
         filter_1_description = self.__get_filter_description(filter_seq="1")
-
-        # Filter 2 description
         filter_2_description = self.__get_filter_description(filter_seq="2")
 
         # Filters are identical
@@ -113,6 +107,8 @@ class CampaignsMergedService:
             filter_2_respondents_count=filter_2_respondents_count,
             filter_1_average_age=filter_1_average_age,
             filter_2_average_age=filter_2_average_age,
+            filter_1_average_age_bucket=filter_1_average_age_bucket,
+            filter_2_average_age_bucket=filter_2_average_age_bucket,
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
@@ -130,11 +126,11 @@ class CampaignsMergedService:
         # Response topic options
         response_topics_options = self.__get_response_topics_options()
 
-        # Ages
-        ages = []
+        # Age options
+        age_options = self.__get_age_options()
 
-        # Age ranges
-        age_ranges = self.__get_age_ranges_options()
+        # Age bucket options
+        age_bucket_options = self.__get_age_bucket_options()
 
         # Only responses from categories options
         only_responses_from_categories_options = (
@@ -150,8 +146,8 @@ class CampaignsMergedService:
             countries=country_options,
             country_regions=country_regions_options,
             response_topics=response_topics_options,
-            ages=ages,
-            age_ranges=age_ranges,
+            ages=age_options,
+            age_buckets=age_bucket_options,
             genders=[],
             professions=[],
             only_responses_from_categories=only_responses_from_categories_options,
@@ -327,7 +323,7 @@ class CampaignsMergedService:
 
         histogram = {
             "ages": [],
-            "age_ranges": [],
+            "age_buckets": [],
             "genders": [],
             "professions": [],
             "canonical_countries": helpers.get_merged_flattened_list_of_dictionaries(
@@ -402,26 +398,51 @@ class CampaignsMergedService:
     def __get_filter_average_age(self, filter_seq: FilterSequence) -> str:
         """Get filter average age"""
 
+        average_age = "N/A"
+
         # Create a list containing all ages
-        list_of_all_ages: list[str] = []
+        list_of_all_ages: list[int] = []
         for campaign_data in self.__campaigns_data_q1:
             if filter_seq == "1":
-                campaign_data_list_of_ages = campaign_data.list_of_ages_1
+                campaign_data_list_of_ages = [
+                    int(x) for x in campaign_data.list_of_ages_1 if x.isnumeric()
+                ]
             elif filter_seq == "2":
-                campaign_data_list_of_ages = campaign_data.list_of_ages_2
+                campaign_data_list_of_ages = [
+                    int(x) for x in campaign_data.list_of_ages_2 if x.isnumeric()
+                ]
             else:
                 campaign_data_list_of_ages = []
 
             list_of_all_ages.extend(campaign_data_list_of_ages)
 
-        # Calculate average age
-        df = pd.DataFrame(list_of_all_ages, columns=["age"])
+        # Calculate average
+        if len(list_of_all_ages) > 0:
+            df = pd.DataFrame(data=list_of_all_ages, columns=["age"])
+            average_age = int(round(df["age"].mean(numeric_only=True)))
+
+        return str(average_age)
+
+    def __get_filter_average_age_bucket(self, filter_seq: FilterSequence) -> str:
+        """Get filter average age bucket"""
+
+        # Create a list containing all age buckets
+        list_of_all_age_buckets: list[str] = []
+        for campaign_data in self.__campaigns_data_q1:
+            if filter_seq == "1":
+                campaign_data_list_of_age_buckets = campaign_data.list_of_age_buckets_1
+            elif filter_seq == "2":
+                campaign_data_list_of_age_buckets = campaign_data.list_of_age_buckets_2
+            else:
+                campaign_data_list_of_age_buckets = []
+
+            list_of_all_age_buckets.extend(campaign_data_list_of_age_buckets)
+
+        # Calculate average age bucket
+        df = pd.DataFrame(list_of_all_age_buckets, columns=["age_bucket"])
         average_age = "N/A"
         if len(df.index) > 0:
-            average_age = " ".join(df["age"].mode())
-            average_age = (
-                average_age if helpers.contains_letters(average_age) else average_age
-            )
+            average_age = " ".join(df["age_bucket"].mode())
 
         return average_age
 
@@ -495,17 +516,28 @@ class CampaignsMergedService:
 
         return response_topics_options
 
-    def __get_age_ranges_options(self) -> list[dict]:
-        """Get age ranges options"""
+    def __get_age_options(self) -> list[dict]:
+        """Get age options"""
 
-        ages_range_options = helpers.get_unique_flattened_list_of_dictionaries(
+        ages_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
             data_lists=[
-                [y for y in x.get("age_ranges_default") or []]
+                [y for y in x.get("age") or []] for x in self.__campaigns_filter_options
+            ]
+        )
+
+        return ages_bucket_options
+
+    def __get_age_bucket_options(self) -> list[dict]:
+        """Get age bucket options"""
+
+        ages_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
+            data_lists=[
+                [y for y in x.get("age_buckets_default") or []]
                 for x in self.__campaigns_filter_options
             ]
         )
 
-        return ages_range_options
+        return ages_bucket_options
 
     def __get_only_responses_from_categories_options(self) -> list[dict]:
         """Get only responses from categories options"""

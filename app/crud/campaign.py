@@ -12,7 +12,7 @@ from app.databases import Database
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.age import Age
-from app.schemas.age_range import AgeRange
+from app.schemas.age_bucket import AgeBucket
 from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.option import Option
@@ -68,21 +68,21 @@ class CampaignCRUD:
 
         return []
 
-    def get_age_ranges(self) -> list[AgeRange]:
-        """Get age ranges"""
+    def get_age_buckets(self) -> list[AgeBucket]:
+        """Get age buckets"""
 
-        age_ranges = self.__db.age_ranges
-        if age_ranges:
-            return [x.copy() for x in age_ranges if x]
+        age_buckets = self.__db.age_buckets
+        if age_buckets:
+            return [x.copy() for x in age_buckets if x]
 
         return []
 
-    def get_age_ranges_default(self) -> list[AgeRange]:
-        """Get age ranges default"""
+    def get_age_buckets_default(self) -> list[AgeBucket]:
+        """Get age buckets default"""
 
-        age_ranges_default = self.__db.age_ranges_default
-        if age_ranges_default:
-            return [x.copy() for x in age_ranges_default if x]
+        age_buckets_default = self.__db.age_buckets_default
+        if age_buckets_default:
+            return [x.copy() for x in age_buckets_default if x]
 
         return []
 
@@ -225,15 +225,15 @@ class CampaignCRUD:
 
         self.__db.ages = ages
 
-    def set_age_ranges(self, age_ranges: list[AgeRange]):
-        """Set age ranges"""
+    def set_age_buckets(self, age_buckets: list[AgeBucket]):
+        """Set age buckets"""
 
-        self.__db.age_ranges = age_ranges
+        self.__db.age_buckets = age_buckets
 
-    def set_age_ranges_default(self, age_ranges_default: list[AgeRange]):
-        """Set age ranges default"""
+    def set_age_buckets_default(self, age_buckets_default: list[AgeBucket]):
+        """Set age buckets default"""
 
-        self.__db.age_ranges_default = age_ranges_default
+        self.__db.age_buckets_default = age_buckets_default
 
     def set_countries(self, countries: dict[str, Country]):
         """Set countries"""

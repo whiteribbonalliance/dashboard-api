@@ -7,6 +7,7 @@ import operator
 import random
 from collections import Counter
 
+import numpy as np
 import pandas as pd
 
 from app import constants, helpers
@@ -16,7 +17,7 @@ from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.age import Age
-from app.schemas.age_range import AgeRange
+from app.schemas.age_bucket import AgeBucket
 from app.schemas.campaign import Campaign
 from app.schemas.country import Country
 from app.schemas.filter import Filter
@@ -135,7 +136,10 @@ class CampaignService:
         )
 
     def get_campaign(
-        self, q_code: QuestionCode, include_list_of_ages: bool = False
+        self,
+        q_code: QuestionCode,
+        include_list_of_ages: bool = False,
+        include_list_of_age_buckets_default: bool = False,
     ) -> Campaign:
         """Get campaign"""
 
@@ -174,12 +178,24 @@ class CampaignService:
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
         # List of ages
-        if include_list_of_ages:
+        if include_list_of_ages and q_code == QuestionCode.q1:
             list_of_ages_1 = self.__get_list_of_ages(filter_seq="1")
             list_of_ages_2 = self.__get_list_of_ages(filter_seq="2")
         else:
             list_of_ages_1 = []
             list_of_ages_2 = []
+
+        # List of age buckets
+        if include_list_of_age_buckets_default and q_code == QuestionCode.q1:
+            list_of_age_buckets_1 = self.__get_list_of_age_buckets_default(
+                filter_seq="1"
+            )
+            list_of_age_buckets_2 = self.__get_list_of_age_buckets_default(
+                filter_seq="2"
+            )
+        else:
+            list_of_age_buckets_1 = []
+            list_of_age_buckets_2 = []
 
         # Respondents count
         filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
@@ -188,6 +204,12 @@ class CampaignService:
         # Average age
         filter_1_average_age = self.__get_filter_average_age(filter_seq="1")
         filter_2_average_age = self.__get_filter_average_age(filter_seq="2")
+        filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
+            filter_seq="1"
+        )
+        filter_2_average_age_bucket = self.__get_filter_average_age_bucket(
+            filter_seq="2"
+        )
 
         # Filters Description
         filter_1_description = self.__get_filter_description(filter_seq="1")
@@ -269,10 +291,14 @@ class CampaignService:
             world_bubble_maps_coordinates=world_bubble_maps_coordinates,
             list_of_ages_1=list_of_ages_1,
             list_of_ages_2=list_of_ages_2,
+            list_of_age_buckets_1=list_of_age_buckets_1,
+            list_of_age_buckets_2=list_of_age_buckets_2,
             filter_1_respondents_count=filter_1_respondents_count,
             filter_2_respondents_count=filter_2_respondents_count,
             filter_1_average_age=filter_1_average_age,
             filter_2_average_age=filter_2_average_age,
+            filter_1_average_age_bucket=filter_1_average_age_bucket,
+            filter_2_average_age_bucket=filter_2_average_age_bucket,
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
@@ -316,18 +342,18 @@ class CampaignService:
         ages = self.__get_ages()
         age_options = [Option(value=age.code, label=age.name).dict() for age in ages]
 
-        # Age ranges options
-        age_ranges = self.__get_age_ranges()
-        age_range_options = [
-            Option(value=age_range.code, label=age_range.name).dict()
-            for age_range in age_ranges
+        # Age bucket options
+        age_buckets = self.__get_age_buckets()
+        age_bucket_options = [
+            Option(value=age_bucket.code, label=age_bucket.name).dict()
+            for age_bucket in age_buckets
         ]
 
-        # Age ranges default options
-        age_ranges_default = self.__get_age_ranges_default()
-        age_range_default_options = [
-            Option(value=age_range_default.code, label=age_range_default.name).dict()
-            for age_range_default in age_ranges_default
+        # Age buckets default options
+        age_buckets_default = self.__get_age_buckets_default()
+        age_bucket_default_options = [
+            Option(value=age_bucket_default.code, label=age_bucket_default.name).dict()
+            for age_bucket_default in age_buckets_default
         ]
 
         # Gender options
@@ -367,8 +393,8 @@ class CampaignService:
                     country_regions_options=country_regions_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
-                    age_range_options=age_range_options,
-                    age_range_default_options=age_range_default_options,
+                    age_bucket_options=age_bucket_options,
+                    age_bucket_default_options=age_bucket_default_options,
                     gender_options=gender_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
@@ -384,7 +410,8 @@ class CampaignService:
                     country_regions_options,
                     response_topic_options,
                     age_options,
-                    age_ranges_options,
+                    age_bucket_options,
+                    age_bucket_default_options,
                     gender_options,
                     profession_options,
                     only_responses_from_categories_options,
@@ -395,8 +422,8 @@ class CampaignService:
                     country_regions_options=country_regions_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
-                    age_range_options=age_range_options,
-                    age_range_default_options=age_range_default_options,
+                    age_bucket_options=age_bucket_options,
+                    age_bucket_default_options=age_bucket_default_options,
                     gender_options=gender_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
@@ -412,8 +439,8 @@ class CampaignService:
             country_regions=country_regions_options,
             response_topics=response_topic_options,
             ages=age_options,
-            age_ranges=age_range_options,
-            age_ranges_default=age_range_default_options,
+            age_buckets=age_bucket_options,
+            age_buckets_default=age_bucket_default_options,
             genders=gender_options,
             professions=profession_options,
             only_responses_from_categories=only_responses_from_categories_options,
@@ -424,7 +451,7 @@ class CampaignService:
         """Get who the people are options"""
 
         if self.__campaign_code == CampaignCode.healthwellbeing:
-            breakdown_by_age_str = "Show breakdown by age range"
+            breakdown_by_age_str = "Show breakdown by age bucket"
         else:
             breakdown_by_age_str = "Show breakdown by age"
 
@@ -436,8 +463,8 @@ class CampaignService:
             value="breakdown-age",
             label=f"{'Show breakdown by age'}",
         )
-        breakdown_age_range_option = Option(
-            value="breakdown-age-range",
+        breakdown_age_bucket_option = Option(
+            value="breakdown-age-bucket",
             label=f"{breakdown_by_age_str}",
         )
         breakdown_gender_option = Option(
@@ -468,13 +495,13 @@ class CampaignService:
         elif self.__campaign_code == CampaignCode.healthwellbeing:
             options = [
                 breakdown_age_option,
-                breakdown_age_range_option,
+                breakdown_age_bucket_option,
                 breakdown_country_option,
             ]
         elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
-            options = [breakdown_age_range_option]
+            options = [breakdown_age_bucket_option]
         elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
-            options = [breakdown_age_range_option]
+            options = [breakdown_age_bucket_option]
 
         # Translate
         try:
@@ -1132,13 +1159,46 @@ class CampaignService:
         else:
             return average_age
 
+        # Only keep age column
+        df_copy = df_copy[["age"]]
+
+        # Age column to numeric
+        df_copy["age"] = df_copy["age"].apply(
+            lambda x: int(x) if isinstance(x, str) and x.isnumeric() else np.nan
+        )
+        df_copy = df_copy.dropna()
+
+        # Calculate average
         if len(df_copy.index) > 0:
-            average_age = " ".join(df_copy["age"].mode())
-            average_age = (
-                average_age if helpers.contains_letters(average_age) else average_age
+            average_age = df_copy["age"].mean()
+            average_age = int(round(average_age))
+
+        return str(average_age)
+
+    def __get_filter_average_age_bucket(self, filter_seq: FilterSequence) -> str:
+        """Get filter average age bucket"""
+
+        average_age_bucket = "N/A"
+
+        if filter_seq == "1":
+            df_copy = self.__get_df_1_copy()
+        elif filter_seq == "2":
+            df_copy = self.__get_df_2_copy()
+        else:
+            return average_age_bucket
+
+        # Only keep age_bucket column
+        df_copy = df_copy[["age_bucket"]]
+
+        if len(df_copy.index) > 0:
+            average_age_bucket = " ".join(df_copy["age_bucket"].mode())
+            average_age_bucket = (
+                average_age_bucket
+                if helpers.contains_letters(average_age_bucket)
+                else average_age_bucket
             )
 
-        return average_age
+        return average_age_bucket
 
     def generate_ngrams(
         self,
@@ -1265,7 +1325,7 @@ class CampaignService:
         # Rename columns
         columns_rename = {
             "age": "ages",
-            "age_range": "age_ranges",
+            "age_bucket": "age_buckets",
             "gender": "genders",
             "profession": "professions",
             "canonical_country": "canonical_countries",
@@ -1276,7 +1336,7 @@ class CampaignService:
         # Get histogram for the keys used in the dictionary below
         histogram = {
             "ages": [],
-            "age_ranges": [],
+            "age_buckets": [],
             "genders": [],
             "professions": [],
             "canonical_countries": [],
@@ -1300,9 +1360,9 @@ class CampaignService:
             )
             names = [name for name in names if name]
 
-            # Sort age or age_range
+            # Sort age or age_bucket
             # Move values such as 'prefer not to say' at last place in the list
-            if (column_name == "ages" or column_name == "age_ranges") and len(
+            if (column_name == "ages" or column_name == "age_buckets") and len(
                 names
             ) > 0:
                 tmp_ages = []
@@ -1568,37 +1628,39 @@ class CampaignService:
 
         return ages
 
-    def __get_age_ranges(self) -> list[AgeRange]:
-        """Get age ranges"""
+    def __get_age_buckets(self) -> list[AgeBucket]:
+        """Get age buckets"""
 
         def convert_numeric(age_str: str):
             return age_str.zfill(6)  # zero-pad the age string
 
-        age_ranges = self.__crud.get_age_ranges()
+        age_buckets = self.__crud.get_age_buckets()
 
-        # Sort age ranges
-        age_ranges = sorted(age_ranges, key=lambda a: convert_numeric(a.name))
+        # Sort age buckets
+        age_buckets = sorted(age_buckets, key=lambda a: convert_numeric(a.name))
 
-        age_ranges = [x for x in age_ranges if x.code.lower() != "N/A"]
+        age_buckets = [x for x in age_buckets if x.code.lower() != "n/a"]
 
-        return age_ranges
+        return age_buckets
 
-    def __get_age_ranges_default(self) -> list[AgeRange]:
-        """Get age ranges default"""
+    def __get_age_buckets_default(self) -> list[AgeBucket]:
+        """Get age buckets default"""
 
         def convert_numeric(age_str: str):
             return age_str.zfill(6)  # zero-pad the age string
 
-        age_ranges_default = self.__crud.get_age_ranges_default()
+        age_buckets_default = self.__crud.get_age_buckets_default()
 
-        # Sort age ranges default
-        age_ranges_default = sorted(
-            age_ranges_default, key=lambda a: convert_numeric(a.name)
+        # Sort age buckets default
+        age_buckets_default = sorted(
+            age_buckets_default, key=lambda a: convert_numeric(a.name)
         )
 
-        age_ranges_default = [x for x in age_ranges_default if x.code.lower() != "n/a"]
+        age_buckets_default = [
+            x for x in age_buckets_default if x.code.lower() != "n/a"
+        ]
 
-        return age_ranges_default
+        return age_buckets_default
 
     def __get_genders(self) -> list[Gender]:
         """Get genders"""
@@ -1644,6 +1706,28 @@ class CampaignService:
         else:
             return []
 
+        # Only keep age column
+        df_copy = df_copy[["age"]]
+
         df_copy = df_copy["age"].dropna()
+
+        return df_copy.tolist()
+
+    def __get_list_of_age_buckets_default(
+        self, filter_seq: FilterSequence
+    ) -> list[str]:
+        """Get list of age buckets"""
+
+        if filter_seq == "1":
+            df_copy = self.__get_df_1_copy()
+        elif filter_seq == "2":
+            df_copy = self.__get_df_2_copy()
+        else:
+            return []
+
+        # Only keep age_bucket_default column
+        df_copy = df_copy[["age_bucket_default"]]
+
+        df_copy = df_copy["age_bucket_default"].dropna()
 
         return df_copy.tolist()

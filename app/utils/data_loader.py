@@ -16,7 +16,7 @@ from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.age import Age
-from app.schemas.age_range import AgeRange
+from app.schemas.age_bucket import AgeBucket
 from app.schemas.country import Country
 from app.schemas.gender import Gender
 from app.schemas.profession import Profession
@@ -48,10 +48,10 @@ def get_parent_category(sub_categories: str, campaign_code: CampaignCode) -> str
     return "/".join(parent_categories)
 
 
-def get_age_range(
+def get_age_bucket(
     age: str | int | None, campaign_code: CampaignCode = None
 ) -> str | None:
-    """Convert age to an age range e.g. '30' to '25-34'"""
+    """Convert age to an age bucket e.g. '30' to '25-34'"""
 
     if age is None:
         return age
@@ -60,7 +60,7 @@ def get_age_range(
         if age.isnumeric():
             age = int(age)
         else:
-            return age  # Non-numeric e.g. 'prefer not to say' or already an age range
+            return age  # Non-numeric e.g. 'prefer not to say' or already an age bucket
 
     if campaign_code == CampaignCode.healthwellbeing:
         if age >= 65:
@@ -269,42 +269,42 @@ def load_campaign_data(campaign_code: CampaignCode):
     ages = [Age(code=age, name=age) for age in ages if age is not None]
     campaign_crud.set_ages(ages=ages)
 
-    # Age range
-    # Note: Campaigns 'what_women_want' and 'midwives_voices' already contain 'age' as a range
+    # Age bucket
+    # Note: Campaigns 'what_women_want' and 'midwives_voices' already contain 'age' as an age bucket
     if (
         campaign_code == CampaignCode.what_women_want
         or campaign_code == CampaignCode.midwives_voices
     ):
-        df_responses["age_range"] = df_responses["age"]
-        df_responses["age_range_default"] = df_responses["age"]
+        df_responses["age_bucket"] = df_responses["age"]
+        df_responses["age_bucket_default"] = df_responses["age"]
     else:
-        # Age range might differ from campaign to campaign
-        df_responses["age_range"] = df_responses["age"].apply(
-            lambda x: get_age_range(age=x, campaign_code=campaign_code)
+        # Range for age bucket might differ from campaign to campaign
+        df_responses["age_bucket"] = df_responses["age"].apply(
+            lambda x: get_age_bucket(age=x, campaign_code=campaign_code)
         )
 
-        # Default age range, all campaigns will have the same age range
-        df_responses["age_range_default"] = df_responses["age"].apply(
-            lambda x: get_age_range(age=x)
+        # Default age bucket, all campaigns will have the same range for age bucket
+        df_responses["age_bucket_default"] = df_responses["age"].apply(
+            lambda x: get_age_bucket(age=x)
         )
 
-    # Set age ranges
-    age_ranges = df_responses["age_range"].unique().tolist()
-    age_ranges = [
-        AgeRange(code=age_range, name=age_range)
-        for age_range in age_ranges
-        if age_range is not None
+    # Set age buckets
+    age_buckets = df_responses["age_bucket"].unique().tolist()
+    age_buckets = [
+        AgeBucket(code=age_bucket, name=age_bucket)
+        for age_bucket in age_buckets
+        if age_bucket is not None
     ]
-    campaign_crud.set_age_ranges(age_ranges=age_ranges)
+    campaign_crud.set_age_buckets(age_buckets=age_buckets)
 
-    # Set age ranges default
-    age_ranges_default = df_responses["age_range_default"].unique().tolist()
-    age_ranges_default = [
-        AgeRange(code=age_range_default, name=age_range_default)
-        for age_range_default in age_ranges_default
-        if age_range_default is not None
+    # Set age buckets default
+    age_buckets_default = df_responses["age_bucket_default"].unique().tolist()
+    age_buckets_default = [
+        AgeBucket(code=age_bucket_default, name=age_bucket_default)
+        for age_bucket_default in age_buckets_default
+        if age_bucket_default is not None
     ]
-    campaign_crud.set_age_ranges_default(age_ranges_default=age_ranges_default)
+    campaign_crud.set_age_buckets_default(age_buckets_default=age_buckets_default)
 
     # Remove the UNCODABLE responses
     for q_code in campaign_q_codes:

@@ -32,7 +32,7 @@ api_cache = ApiCache()
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-def read_campaigns_merged(
+async def read_campaigns_merged(
     parameters: Annotated[
         CommonParametersCampaignsMerged,
         Depends(dependencies.dep_common_parameters_all_campaigns),
@@ -69,7 +69,9 @@ def read_campaigns_merged(
                 campaigns[campaign_code.value] = []
             campaigns[campaign_code.value].append(
                 campaign_service.get_campaign(
-                    q_code=campaign_q_code, include_list_of_ages=True
+                    q_code=campaign_q_code,
+                    include_list_of_ages=True,
+                    include_list_of_age_buckets_default=True,
                 )
             )
 
