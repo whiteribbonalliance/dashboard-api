@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 class Filter(BaseModel):
     countries: list[str] = Field(description="The selected alpha-2 country codes")
     regions: list[str] = Field(description="The selected regions")
+    provinces: list[str] = Field(description="The selected provinces")
     ages: list[str] = Field(description="The selected ages")
     age_buckets: list[str] = Field(description="The selected age buckets")
     genders: list[str] = Field(description="The selected genders")

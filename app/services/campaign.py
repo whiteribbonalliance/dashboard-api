@@ -75,8 +75,8 @@ class CampaignService:
 
         # for 'wwwpakistan' filter the response year
         if (
-            self.__response_year
-            and self.__campaign_code == CampaignCode.what_women_want_pakistan
+            self.__campaign_code == CampaignCode.what_women_want_pakistan
+            and self.__response_year
         ):
             df = df[df["response_year"] == self.__response_year]
 
@@ -88,7 +88,7 @@ class CampaignService:
                 campaign_code=self.__campaign_code,
             )
         else:
-            self.__df_1 = df
+            self.__df_1 = df.copy()
 
         # Apply filter 2
         if self.__filter_2:
@@ -98,7 +98,7 @@ class CampaignService:
                 campaign_code=self.__campaign_code,
             )
         else:
-            self.__df_2 = df
+            self.__df_2 = df.copy()
 
         # Filter 1 description
         self.__filter_1_description = self.__get_df_filter_description(
@@ -348,18 +348,41 @@ class CampaignService:
             for country in countries
         ]
 
-        # Country regions options
+        # Country regions options and Country region provinces options
         country_regions_options: list[dict[str, str | list[Option]]] = []
+        country_provinces_options: list[dict[str, str | list[Option]]] = []
         for country in countries:
             regions_options = {
                 "country_alpha2_code": country.alpha2_code,
                 "options": [],
             }
+            provinces_options = {
+                "country_alpha2_code": country.alpha2_code,
+                "options": [],
+            }
+
+            provinces_found = set()
             for region in sorted(country.regions, key=lambda r: r.name):
+                # Region
                 regions_options["options"].append(
                     Option(value=region.code, label=region.name).dict()
                 )
+
+                # Region province
+                # Only for `what_women_want_pakistan`
+                if self.__campaign_code == CampaignCode.what_women_want_pakistan:
+                    region_name_split = region.name.split(",")
+                    if len(region_name_split) == 2:
+                        province = region_name_split[-1].strip()
+                        if province in provinces_found:
+                            continue
+                        provinces_options["options"].append(
+                            Option(value=province, label=province).dict()
+                        )
+                        provinces_found.add(province)
+
             country_regions_options.append(regions_options)
+            country_provinces_options.append(provinces_options)
 
         # Response topic options
         response_topics = self.__get_response_topics()
@@ -425,6 +448,7 @@ class CampaignService:
                     t=translator.extract_text,
                     country_options=country_options,
                     country_regions_options=country_regions_options,
+                    country_provinces_options=country_provinces_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -442,6 +466,7 @@ class CampaignService:
                 (
                     country_options,
                     country_regions_options,
+                    country_provinces_options,
                     response_topic_options,
                     age_options,
                     age_bucket_options,
@@ -454,6 +479,7 @@ class CampaignService:
                     t=translator.translate_text,
                     country_options=country_options,
                     country_regions_options=country_regions_options,
+                    country_provinces_options=country_provinces_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -471,6 +497,7 @@ class CampaignService:
         return FilterOptions(
             countries=country_options,
             country_regions=country_regions_options,
+            country_provinces=country_provinces_options,
             response_topics=response_topic_options,
             ages=age_options,
             age_buckets=age_bucket_options,

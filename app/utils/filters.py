@@ -2,6 +2,7 @@ import copy
 import re
 
 import inflect
+import numpy as np
 from pandas import DataFrame
 
 from app import constants, helpers
@@ -19,6 +20,7 @@ def get_default_filter() -> Filter:
     return Filter(
         countries=[],
         regions=[],
+        provinces=[],
         response_topics=[],
         only_responses_from_categories=False,
         genders=[],
@@ -38,6 +40,7 @@ def apply_filter_to_df(
 
     countries = _filter.countries
     regions = _filter.regions
+    provinces = _filter.provinces
     response_topics = _filter.response_topics
     genders = _filter.genders
     professions = _filter.professions
@@ -53,9 +56,20 @@ def apply_filter_to_df(
     if len(countries) > 0:
         df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
 
-    # Filter regions
-    if len(regions) > 0:
-        df_copy = df_copy[df_copy["region"].isin(regions)]
+    # Filter regions and provinces
+    regions_and_provinces = regions + provinces
+    if len(regions_and_provinces) > 0:
+
+        def filter_regions_and_provinces(region: str):
+            if region:
+                for place in regions_and_provinces:
+                    if place in region:
+                        return region
+
+            return np.nan
+
+        df_copy["region"] = df_copy["region"].apply(filter_regions_and_provinces)
+        df_copy = df_copy[df_copy["region"].notna()]
 
     # Filter genders
     if len(genders) > 0:
@@ -135,6 +149,7 @@ def generate_description_of_filter(
 ):
     countries = _filter.countries
     regions = _filter.regions
+    provinces = _filter.provinces
     response_topics = _filter.response_topics
     genders = _filter.genders
     professions = _filter.professions
@@ -184,8 +199,8 @@ def generate_description_of_filter(
         if "prefer not to say" in genders:
             description += " who did not give a gender"
 
-    if len(regions) > 0:
-        description += " in " + join_list_comma_or(regions)
+    if len(regions + provinces) > 0:
+        description += " in " + join_list_comma_or(regions + provinces)
 
     if ages is not None and len(ages) > 0:
         description += generate_age_description(ages=ages)

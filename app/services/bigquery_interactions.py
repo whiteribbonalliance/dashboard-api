@@ -76,7 +76,6 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         response_lemmatized_text as q1_lemmatized,
         respondent_country_code as alpha2country,
         respondent_region_name as region,
-        respondent_region as district_province,
         coalesce(cast(respondent_age as string),respondent_age_bucket) as age,
         REGEXP_REPLACE(REGEXP_REPLACE(INITCAP(respondent_gender), 'Twospirit', 'Two Spirit'), 'Unspecified', 'Prefer Not To Say') as gender,
         ingestion_time as ingestion_time,
@@ -99,9 +98,6 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     results = query_job.result()
 
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
-
-    if campaign_code == CampaignCode.what_women_want_pakistan:
-        print(df_responses.iloc[0]["region_2"])
 
     # Save to .pkl file
     if os.getenv("SAVE_TO_PKL_FILE", "").lower() == "true":

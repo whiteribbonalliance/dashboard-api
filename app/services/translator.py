@@ -412,6 +412,7 @@ class Translator(metaclass=SingletonMeta):
         t: Callable,
         country_options: list[dict],
         country_regions_options: list[dict[str, str | list[dict]]],
+        country_provinces_options: list[dict[str, str | list[dict]]],
         response_topic_options: list[dict],
         age_options: list[dict],
         age_bucket_options: list[dict],
@@ -440,6 +441,18 @@ class Translator(metaclass=SingletonMeta):
         # Country regions options
         country_regions_options = deep_replacer.replace(
             data=country_regions_options,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "country_alpha2_code": [key_depth_rules.IGNORE],
+                "options:value": [key_depth_rules.IGNORE],
+                "options:metadata": [key_depth_rules.IGNORE],
+            },
+        )
+
+        # Country provinces options
+        country_provinces_options = deep_replacer.replace(
+            data=country_provinces_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -540,6 +553,7 @@ class Translator(metaclass=SingletonMeta):
         return (
             country_options,
             country_regions_options,
+            country_provinces_options,
             response_topic_options,
             age_options,
             age_bucket_options,

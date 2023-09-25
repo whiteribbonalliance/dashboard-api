@@ -81,5 +81,6 @@
   "healthwellbeing-q1": "What do you want to improve your health and wellbeing?",
   "healthwellbeing-q2": "What health issue do you have?",
   "select-dashboard": "Select dashboard",
-  "response-year": "Response year"
+  "response-year": "Response year",
+  "select-provinces": "Select provinces"
 }

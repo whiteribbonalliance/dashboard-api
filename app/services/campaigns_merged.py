@@ -112,6 +112,9 @@ class CampaignsMergedService:
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
+            q_codes=[],
+            included_response_years=[],
+            all_response_years=[],
         )
 
     def get_filter_options(self) -> FilterOptions:
