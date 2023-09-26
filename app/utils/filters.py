@@ -5,7 +5,8 @@ import inflect
 import numpy as np
 from pandas import DataFrame
 
-from app import constants, helpers
+from app import constants
+from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
@@ -33,9 +34,7 @@ def get_default_filter() -> Filter:
     )
 
 
-def apply_filter_to_df(
-    df: DataFrame, _filter: Filter, campaign_code: CampaignCode
-) -> DataFrame:
+def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = _filter.countries
@@ -88,7 +87,7 @@ def apply_filter_to_df(
         df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
     # Apply the filter on specific columns for q1, q2 etc.
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+    campaign_q_codes = crud.get_q_codes()
     for q_code in campaign_q_codes:
         # Set column names based on question code
         canonical_code_column_name = q_col_names.get_canonical_code_col_name(

@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from app import constants, databases, helpers
+from app import constants, databases
 from app import global_variables
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
@@ -111,12 +111,14 @@ def filter_ages_10_to_24(age: str) -> str:
 
 
 def create_additional_q_columns(
-    df: pd.DataFrame, campaign_code: CampaignCode
+    df: pd.DataFrame,
+    campaign_code: CampaignCode,
+    crud: CampaignCRUD,
 ) -> pd.DataFrame:
     """Create additional columns (q1_, q2_ etc.) from 'additional_fields'"""
 
     # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+    campaign_q_codes = crud.get_q_codes()
 
     for q_code in [x for x in campaign_q_codes if x != QuestionCode.q1]:
         # Create additional columns per question
@@ -223,7 +225,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_crud = CampaignCRUD(campaign_code=campaign_code, db=db_tmp)
 
     # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+    campaign_q_codes = campaign_crud.get_q_codes()
 
     # Get the dataframe from BigQuery
     df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
@@ -232,7 +234,7 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Create additional q columns (q1_, q2_, etc.)
     df_responses = create_additional_q_columns(
-        df=df_responses, campaign_code=campaign_code
+        df=df_responses, campaign_code=campaign_code, crud=campaign_crud
     )
 
     # Drop 'additional_fields'
@@ -413,7 +415,7 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
     df = campaign_crud.get_dataframe()
 
     # Q codes available in a campaign
-    campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+    campaign_q_codes = campaign_crud.get_q_codes()
 
     for q_code in campaign_q_codes:
         (

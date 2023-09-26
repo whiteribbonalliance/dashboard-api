@@ -85,7 +85,7 @@ class CampaignService:
             self.__df_1 = filters.apply_filter_to_df(
                 df=df.copy(),
                 _filter=self.__filter_1,
-                campaign_code=self.__campaign_code,
+                crud=self.__crud,
             )
         else:
             self.__df_1 = df.copy()
@@ -95,7 +95,7 @@ class CampaignService:
             self.__df_2 = filters.apply_filter_to_df(
                 df=df.copy(),
                 _filter=self.__filter_2,
-                campaign_code=self.__campaign_code,
+                crud=self.__crud,
             )
         else:
             self.__df_2 = df.copy()
@@ -125,9 +125,7 @@ class CampaignService:
             self.__filter_2_use_ngrams_unfiltered = False
 
         # Campaign question codes
-        self.__campaign_q_codes = helpers.get_campaign_q_codes(
-            campaign_code=campaign_code
-        )
+        self.__campaign_q_codes = self.__crud.get_q_codes()
 
         # Ngrams
         self.__ngrams_1 = {}
@@ -200,7 +198,10 @@ class CampaignService:
         histogram = self.__get_histogram()
 
         # Genders breakdown
-        if self.__campaign_code == CampaignCode.what_young_people_want:
+        if (
+            self.__campaign_code == CampaignCode.what_young_people_want
+            or self.__campaign_code == CampaignCode.healthwellbeing
+        ):
             genders_breakdown = self.__get_genders_breakdown()
         else:
             genders_breakdown = []
@@ -248,6 +249,9 @@ class CampaignService:
 
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
+
+        # Question codes
+        all_q_codes = [x.value for x in self.__crud.get_q_codes()]
 
         # Translate
         try:
@@ -313,6 +317,9 @@ class CampaignService:
         return Campaign(
             campaign_code=self.__campaign_code.value,
             q_code=q_code.value,
+            all_q_codes=all_q_codes,
+            included_response_years=included_response_years,
+            all_response_years=self.__all_response_years,
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
             living_settings_breakdown=living_settings_breakdown,
@@ -333,9 +340,6 @@ class CampaignService:
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
-            q_codes=[],
-            included_response_years=included_response_years,
-            all_response_years=self.__all_response_years,
         )
 
     def get_filter_options(self) -> FilterOptions:

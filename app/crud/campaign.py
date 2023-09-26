@@ -59,6 +59,13 @@ class CampaignCRUD:
 
         return []
 
+    def get_q_codes(self) -> list[QuestionCode]:
+        """Get q codes"""
+
+        q_codes = copy.copy(self.__db.q_codes)
+
+        return q_codes
+
     def get_response_years(self) -> list[str]:
         """Get response years"""
 

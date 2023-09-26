@@ -26,22 +26,6 @@ def divide_list_into_chunks(my_list: list, n: int):
     return list(divide())
 
 
-def get_campaign_q_codes(campaign_code: CampaignCode) -> list[QuestionCode]:
-    """Get campaign question codes"""
-
-    # All campaigns have q1
-    q_codes = [QuestionCode.q1]
-
-    # Campaigns with q2
-    if (
-        campaign_code == CampaignCode.economic_empowerment_mexico
-        or campaign_code == CampaignCode.healthwellbeing
-    ):
-        q_codes.append(QuestionCode.q2)
-
-    return q_codes
-
-
 def check_campaign(campaign: str) -> CampaignCode:
     """Check if campaign exists"""
 
@@ -58,14 +42,6 @@ def check_language(lang: str = "en") -> str:
         return lang
     else:
         return "en"
-
-
-def check_q_code_for_campaign(q_code: str, campaign_code: CampaignCode) -> QuestionCode:
-    """Check if q code str exists for campaign and return the q code"""
-
-    for q in get_campaign_q_codes(campaign_code=campaign_code):
-        if q.value == q_code:
-            return q
 
 
 def check_q_code(q_code: str) -> QuestionCode:

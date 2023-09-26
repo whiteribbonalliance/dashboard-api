@@ -5,24 +5,8 @@
       "lon": 71.9875531
     },
     "Kamber Shahdad Kot, Sindh": {
-      "lat": 27.5859189,
-      "lon": 68.0060183
-    },
-    "Toba Tek Singh, Punjab": {
-      "lat": 30.9709356,
-      "lon": 72.48264739999999
-    },
-    "Swabi, KP": {
-      "lat": 34.1240709,
-      "lon": 72.4613191
-    },
-    "Shikarpur, Sindh": {
-      "lat": 27.9570397,
-      "lon": 68.637993
-    },
-    "Bahawalpur, Punjab": {
-      "lat": 29.35435,
-      "lon": 71.69106599999999
+      "lat": 27.848312,
+      "lon": 67.91063179999999
     },
     "Mardan, KP": {
       "lat": 34.1986394,
@@ -47,6 +31,22 @@
     "Qambar Shahdadkot, Sindh": {
       "lat": 27.5859189,
       "lon": 68.0060183
+    },
+    "Swabi, KP": {
+      "lat": 34.1240709,
+      "lon": 72.4613191
+    },
+    "Shikarpur, Sindh": {
+      "lat": 27.9570397,
+      "lon": 68.637993
+    },
+    "Toba Tek Singh, Punjab": {
+      "lat": 30.9709356,
+      "lon": 72.48264739999999
+    },
+    "Bahawalpur, Punjab": {
+      "lat": 29.35435,
+      "lon": 71.69106599999999
     }
   },
   "MX": {
@@ -79,8 +79,8 @@
       "lon": -99.09768079999999
     },
     "Iztapalapa, Ciudad de M\u00e9xico": {
-      "lat": 19.342083,
-      "lon": -99.05321590000001
+      "lat": 19.3467093,
+      "lon": -99.0798926
     },
     "Magdalena Contreras, Ciudad de M\u00e9xico": {
       "lat": 19.3149641,

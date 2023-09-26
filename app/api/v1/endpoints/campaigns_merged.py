@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app import helpers
 from app.api import dependencies
+from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -52,8 +52,11 @@ async def read_campaigns_merged(
         if campaign_code == CampaignCode.womens_economic_empowerment:
             continue
 
+        # CRUD
+        crud = CampaignCRUD(campaign_code=campaign_code)
+
         # Campaign q codes
-        campaign_q_codes = helpers.get_campaign_q_codes(campaign_code=campaign_code)
+        campaign_q_codes = crud.get_q_codes()
 
         # Campaign data
         for campaign_q_code in campaign_q_codes:

@@ -5,12 +5,13 @@ from datetime import datetime
 from fastapi import Request, Depends
 
 from app import helpers, auth_handler, http_exceptions
+from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
+from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.common_parameters_campaigns_merged import (
     CommonParametersCampaignsMerged,
 )
-from app.schemas.common_parameters_campaign import CommonParametersCampaign
 from app.schemas.date_filter import DateFilter
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
@@ -40,9 +41,16 @@ def dep_common_parameters_campaign(
 ) -> CommonParametersCampaign:
     """Return the common parameters"""
 
-    q_code_verified = helpers.check_q_code_for_campaign(
-        q_code=q_code, campaign_code=campaign_code
-    )
+    # CRUD
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+
+    # Verify q_code
+    q_code_verified = None
+    for q in campaign_crud.get_q_codes():
+        if q.value == q_code:
+            q_code_verified = q
+            break
+
     if not q_code_verified:
         raise http_exceptions.ResourceNotFoundHTTPException(
             "Campaign does not have the provided q_code"
