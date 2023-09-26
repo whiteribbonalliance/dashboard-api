@@ -65,20 +65,18 @@ def get_age_bucket(
     if campaign_code == CampaignCode.healthwellbeing:
         if age >= 65:
             return "65+"
-        if age >= 56:
-            return "56-64"
-        if age >= 46:
-            return "46-55"
-        if age >= 36:
-            return "36-45"
-        if age >= 26:
-            return "26-35"
-        if age >= 21:
-            return "21-25"
-        if age >= 16:
-            return "16-20"
-        if age >= 10:
-            return "10-15"
+        if age >= 54:
+            return "54-64"
+        if age >= 45:
+            return "45-54"
+        if age >= 35:
+            return "35-44"
+        if age >= 25:
+            return "25-34"
+        if age >= 20:
+            return "20-24"
+        if age >= 15:
+            return "15-19"
         if age >= 0:
             return "< 10"
     else:
