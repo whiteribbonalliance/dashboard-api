@@ -553,7 +553,7 @@ class CampaignService:
             ]
         elif self.__campaign_code == CampaignCode.midwives_voices:
             options = [
-                breakdown_age_option,
+                breakdown_age_bucket_option,
                 breakdown_profession_option,
                 breakdown_country_option,
             ]
