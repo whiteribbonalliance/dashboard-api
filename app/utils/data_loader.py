@@ -244,9 +244,9 @@ def load_campaign_data(campaign_code: CampaignCode):
             q_col_names.get_lemmatized_col_name(q_code=q_code)
         ].apply(lambda x: str(x).split(" ") if x else x)
 
-    # Apply strip function on alpha2 country codes
+    # Apply strip function on alpha2 country codes and make sure the value is uppercase
     df_responses["alpha2country"] = df_responses["alpha2country"].apply(
-        lambda x: x.strip()
+        lambda x: x.strip().upper() if x else x
     )
 
     # Add canonical_country column
