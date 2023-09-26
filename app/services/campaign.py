@@ -1686,47 +1686,53 @@ class CampaignService:
     def __get_ages(self) -> list[Age]:
         """Get ages"""
 
-        def convert_numeric(age_str: str):
-            return age_str.zfill(6)  # zero-pad the age string
-
         ages = self.__crud.get_ages()
 
-        # Sort ages
-        ages = sorted(ages, key=lambda a: convert_numeric(a.name))
+        # Sort
+        ages = sorted(
+            ages,
+            key=lambda x: helpers.extract_first_numbers(
+                value=x.code, first_less_than_symbol_to_0=True
+            ),
+        )
 
         return ages
 
     def __get_age_buckets(self) -> list[AgeBucket]:
         """Get age buckets"""
 
-        def convert_numeric(age_str: str):
-            return age_str.zfill(6)  # zero-pad the age string
-
         age_buckets = self.__crud.get_age_buckets()
 
-        # Sort age buckets
-        age_buckets = sorted(age_buckets, key=lambda a: convert_numeric(a.name))
-
+        # Remove n/a
         age_buckets = [x for x in age_buckets if x.code.lower() != "n/a"]
+
+        # Sort
+        age_buckets = sorted(
+            age_buckets,
+            key=lambda x: helpers.extract_first_numbers(
+                value=x.code, first_less_than_symbol_to_0=True
+            ),
+        )
 
         return age_buckets
 
     def __get_age_buckets_default(self) -> list[AgeBucket]:
         """Get age buckets default"""
 
-        def convert_numeric(age_str: str):
-            return age_str.zfill(6)  # zero-pad the age string
-
         age_buckets_default = self.__crud.get_age_buckets_default()
 
-        # Sort age buckets default
-        age_buckets_default = sorted(
-            age_buckets_default, key=lambda a: convert_numeric(a.name)
-        )
-
+        # Remove n/a
         age_buckets_default = [
             x for x in age_buckets_default if x.code.lower() != "n/a"
         ]
+
+        # Sort
+        age_buckets_default = sorted(
+            age_buckets_default,
+            key=lambda x: helpers.extract_first_numbers(
+                value=x.code, first_less_than_symbol_to_0=True
+            ),
+        )
 
         return age_buckets_default
 

@@ -213,3 +213,19 @@ def get_merged_flattened_list_of_dictionaries(
     merged_list = [v for v in tmp_merged.values()]
 
     return merged_list
+
+
+def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False) -> str:
+    """Extract first numbers e.g. 25-30 -> 25"""
+
+    numbers = []
+    for i, c in enumerate(value):
+        if first_less_than_symbol_to_0 and i == 0 and c == "<":
+            numbers.append("0")
+        elif c.isdigit():
+            numbers.append(c)
+        else:
+            if len(numbers) > 0:
+                break
+
+    return "".join(numbers)

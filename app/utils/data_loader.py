@@ -65,8 +65,8 @@ def get_age_bucket(
     if campaign_code == CampaignCode.healthwellbeing:
         if age >= 65:
             return "65+"
-        if age >= 54:
-            return "54-64"
+        if age >= 55:
+            return "55-64"
         if age >= 45:
             return "45-54"
         if age >= 35:
@@ -77,6 +77,8 @@ def get_age_bucket(
             return "20-24"
         if age >= 15:
             return "15-19"
+        if age >= 10:
+            return "10-14"
         if age >= 0:
             return "< 10"
     else:
@@ -384,6 +386,10 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set genders
     genders = []
     if "gender" in column_ids:
+        # Make sure the gender value 'prefer not to say' always starts with a capital letter
+        df_responses["gender"] = df_responses["gender"].apply(
+            lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+        )
         for gender in df_responses["gender"].value_counts().index:
             if not gender:
                 continue
