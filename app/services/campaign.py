@@ -544,7 +544,7 @@ class CampaignService:
         options: list[Option] = []
 
         if self.__campaign_code == CampaignCode.what_women_want:
-            options = [breakdown_age_option, breakdown_country_option]
+            options = [breakdown_age_bucket_option, breakdown_country_option]
         elif self.__campaign_code == CampaignCode.what_young_people_want:
             options = [
                 breakdown_age_option,
@@ -1429,42 +1429,15 @@ class CampaignService:
             names = [name for name in names if name]
 
             # Sort age or age_bucket
-            # Move values such as 'prefer not to say' at last place in the list
             if (column_name == "ages" or column_name == "age_buckets") and len(
                 names
             ) > 0:
-                tmp_ages = []
-                tmp_ages_not_a_number = []  # e.g. 'prefer not to say'
-                for name in names:
-                    if len(name) < 1:
-                        continue
-
-                    # e.g. '30' or '25-30'
-                    if name[0].isnumeric():
-                        tmp_ages.append(name)
-                    # e.g. 'prefer not to say'
-                    else:
-                        tmp_ages_not_a_number.append(name)
-
-                # Convert to int for sorting purposes
-                if column_name == "ages":
-                    tmp_ages_as_int = []
-                    for x in tmp_ages:
-                        if x.isnumeric():
-                            tmp_ages_as_int.append(int(x))
-                        else:
-                            tmp_ages_as_int.append(x)
-
-                    tmp_ages = tmp_ages_as_int
-
-                tmp_ages.sort(reverse=True)
-                tmp_ages_not_a_number.sort(reverse=True)
-
-                # Convert back to str
-                if column_name == "ages":
-                    tmp_ages = [str(x) for x in tmp_ages]
-
-                names = tmp_ages + tmp_ages_not_a_number
+                names = sorted(
+                    names,
+                    key=lambda x: helpers.extract_first_numbers(
+                        value=x, first_less_than_symbol_to_0=True
+                    ),
+                )
 
             # Set count values
             for name in names:
