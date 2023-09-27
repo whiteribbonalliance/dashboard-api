@@ -52,7 +52,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     # Load from .pkl file
     if (
         os.getenv("LOAD_FROM_LOCAL_PKL_FILE", "").lower() == "true"
-        or campaign_code == CampaignCode.what_women_want_pakistan
+        # or campaign_code == CampaignCode.what_women_want_pakistan
     ):
         df_responses = pd.read_pickle(f"{campaign_code.value}.pkl")
 
