@@ -215,7 +215,7 @@ def get_merged_flattened_list_of_dictionaries(
     return merged_list
 
 
-def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False) -> str:
+def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False) -> int:
     """Extract first numbers e.g. 25-30 -> 25"""
 
     numbers = []
@@ -228,4 +228,4 @@ def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False)
             if len(numbers) > 0:
                 break
 
-    return "".join(numbers)
+    return int("".join(numbers))
