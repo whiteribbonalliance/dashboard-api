@@ -228,4 +228,7 @@ def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False)
             if len(numbers) > 0:
                 break
 
+    if not numbers:
+        return 0
+
     return int("".join(numbers))
