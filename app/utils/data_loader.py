@@ -400,12 +400,12 @@ def load_campaign_data(campaign_code: CampaignCode):
                 countries[alpha2_code].regions.append(Region(code=region, name=region))
 
     # Create province column
-    if campaign_code == CampaignCode.what_women_want_pakistan:
-        df_responses["province"] = df_responses["region"].apply(
-            lambda x: extract_province_from_region(x)
-        )
-    else:
-        df_responses["province"] = ""
+    # if campaign_code == CampaignCode.what_women_want_pakistan:
+    #     df_responses["province"] = df_responses["region"].apply(
+    #         lambda x: extract_province_from_region(x)
+    #     )
+    # else:
+    #     df_responses["province"] = ""
 
     # Set countries
     campaign_crud.set_countries(countries=countries)

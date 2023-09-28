@@ -38,7 +38,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
 
     countries = _filter.countries
     regions = _filter.regions
-    provinces = _filter.provinces
+    # provinces = _filter.provinces
     response_topics = _filter.response_topics
     genders = _filter.genders
     professions = _filter.professions
@@ -54,19 +54,23 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
     if len(countries) > 0:
         df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
 
-    # Filter using both regions and provinces
-    if len(regions) > 0 and len(provinces) > 0:
-        df_copy = df_copy[
-            df_copy[["region", "province"]].isin(regions + provinces).any(axis=1)
-        ]
-    else:
-        # Filter only regions
-        if len(regions) > 0:
-            df_copy = df_copy[df_copy["region"].isin(regions)]
+    # Filter region
+    if len(regions) > 0:
+        df_copy = df_copy[df_copy["region"].isin(regions)]
 
-        # Filter only provinces
-        elif len(provinces) > 0:
-            df_copy = df_copy[df_copy["province"].isin(provinces)]
+    # Filter using both regions and provinces
+    # if len(regions) > 0 and len(provinces) > 0:
+    #     df_copy = df_copy[
+    #         df_copy[["region", "province"]].isin(regions + provinces).any(axis=1)
+    #     ]
+    # else:
+    #     # Filter only regions
+    #     if len(regions) > 0:
+    #         df_copy = df_copy[df_copy["region"].isin(regions)]
+    #
+    #     # Filter only provinces
+    #     elif len(provinces) > 0:
+    #         df_copy = df_copy[df_copy["province"].isin(provinces)]
 
     # Filter genders
     if len(genders) > 0:
@@ -153,7 +157,7 @@ def generate_description_of_filter(
 ):
     countries = _filter.countries
     regions = _filter.regions
-    provinces = _filter.provinces
+    # provinces = _filter.provinces
     response_topics = _filter.response_topics
     genders = _filter.genders
     professions = _filter.professions
@@ -206,11 +210,15 @@ def generate_description_of_filter(
         if "prefer not to say" in [x.lower() for x in genders]:
             description += " who did not give a gender"
 
+    # Regions
+    if len(regions) > 0:
+        description += " in " + join_list_comma_or(regions, lower_words=False)
+
     # Regions and provinces
-    if len(regions + provinces) > 0:
-        description += " in " + join_list_comma_or(
-            regions + provinces, lower_words=False
-        )
+    # if len(regions + provinces) > 0:
+    #     description += " in " + join_list_comma_or(
+    #         regions + provinces, lower_words=False
+    #     )
 
     # Ages
     if ages is not None and len(ages) > 0:
