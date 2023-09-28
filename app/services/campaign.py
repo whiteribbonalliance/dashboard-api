@@ -73,7 +73,7 @@ class CampaignService:
         # Get dataframe
         df = self.__crud.get_dataframe()
 
-        # for 'wwwpakistan' filter the response year
+        # For 'wwwpakistan' filter the response year
         if (
             self.__campaign_code == CampaignCode.what_women_want_pakistan
             and self.__response_year
