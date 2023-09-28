@@ -78,13 +78,20 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
     if len(professions) > 0:
         df_copy = df_copy[df_copy["profession"].isin(professions)]
 
-    # Filter ages
-    if len(ages) > 0:
-        df_copy = df_copy[df_copy["age"].isin(ages)]
+    # Filter ages and age buckets
+    if len(ages) > 0 and len(age_buckets) > 0:
+        # Filter using both ages and age buckets
+        df_copy = df_copy[
+            df_copy[["age", "age_bucket"]].isin(ages + age_buckets).any(axis=1)
+        ]
+    else:
+        # Filter only ages
+        if len(ages) > 0:
+            df_copy = df_copy[df_copy["age"].isin(ages)]
 
-    # Filter age buckets
-    if len(age_buckets) > 0:
-        df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
+        # Filter only age buckets
+        elif len(age_buckets) > 0:
+            df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
     # Apply the filter on specific columns for q1, q2 etc.
     campaign_q_codes = crud.get_q_codes()
@@ -154,14 +161,7 @@ def generate_description_of_filter(
     professions = _filter.professions
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
-
-    if _filter.ages:
-        ages = _filter.ages
-    elif _filter.age_buckets:
-        ages = _filter.age_buckets
-    else:
-        ages = []
-
+    ages = _filter.ages + _filter.age_buckets
     only_responses_from_categories = _filter.only_responses_from_categories
 
     if len(professions) == 0:
@@ -192,7 +192,9 @@ def generate_description_of_filter(
     else:
         description = women
     if genders is not None and len(genders) > 0:
-        stated_genders = [gender for gender in genders if gender != "prefer not to say"]
+        stated_genders = [
+            gender for gender in genders if gender.lower() != "prefer not to say"
+        ]
         if len(stated_genders) > 0:
             description = join_list_comma_or(stated_genders) + " " + description
         if "prefer not to say" in genders:
