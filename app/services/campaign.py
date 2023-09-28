@@ -352,15 +352,15 @@ class CampaignService:
             for country in countries
         ]
 
-        # Country regions options and Country region provinces options
-        country_regions_options: list[dict[str, str | list[Option]]] = []
-        country_provinces_options: list[dict[str, str | list[Option]]] = []
+        # Region options and province options
+        country_region_options: list[dict[str, str | list[Option]]] = []
+        country_province_options: list[dict[str, str | list[Option]]] = []
         for country in countries:
-            regions_options = {
+            region_options = {
                 "country_alpha2_code": country.alpha2_code,
                 "options": [],
             }
-            provinces_options = {
+            province_options = {
                 "country_alpha2_code": country.alpha2_code,
                 "options": [],
             }
@@ -368,25 +368,19 @@ class CampaignService:
             provinces_found = set()
             for region in sorted(country.regions, key=lambda r: r.name):
                 # Region
-                regions_options["options"].append(
+                region_options["options"].append(
                     Option(value=region.code, label=region.name).dict()
                 )
 
-                # Region province
-                # Only for `what_women_want_pakistan`
-                if self.__campaign_code == CampaignCode.what_women_want_pakistan:
-                    region_name_split = region.name.split(",")
-                    if len(region_name_split) == 2:
-                        province = region_name_split[-1].strip()
-                        if province in provinces_found:
-                            continue
-                        provinces_options["options"].append(
-                            Option(value=province, label=province).dict()
-                        )
-                        provinces_found.add(province)
+                # Province
+                if region.province and region.province not in provinces_found:
+                    province_options["options"].append(
+                        Option(value=region.province, label=region.province).dict()
+                    )
+                    provinces_found.add(region.province)
 
-            country_regions_options.append(regions_options)
-            country_provinces_options.append(provinces_options)
+            country_region_options.append(region_options)
+            country_province_options.append(province_options)
 
         # Response topic options
         response_topics = self.__get_response_topics()
@@ -451,8 +445,8 @@ class CampaignService:
                 translator.apply_t_filter_options(
                     t=translator.extract_text,
                     country_options=country_options,
-                    country_regions_options=country_regions_options,
-                    country_provinces_options=country_provinces_options,
+                    country_regions_options=country_region_options,
+                    country_provinces_options=country_province_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -469,8 +463,8 @@ class CampaignService:
                 # Apply translations to texts
                 (
                     country_options,
-                    country_regions_options,
-                    country_provinces_options,
+                    country_region_options,
+                    country_province_options,
                     response_topic_options,
                     age_options,
                     age_bucket_options,
@@ -482,8 +476,8 @@ class CampaignService:
                 ) = translator.apply_t_filter_options(
                     t=translator.translate_text,
                     country_options=country_options,
-                    country_regions_options=country_regions_options,
-                    country_provinces_options=country_provinces_options,
+                    country_regions_options=country_region_options,
+                    country_provinces_options=country_province_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -500,8 +494,8 @@ class CampaignService:
 
         return FilterOptions(
             countries=country_options,
-            country_regions=country_regions_options,
-            country_provinces=country_provinces_options,
+            country_regions=country_region_options,
+            country_provinces=country_province_options,
             response_topics=response_topic_options,
             ages=age_options,
             age_buckets=age_bucket_options,

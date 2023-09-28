@@ -208,6 +208,21 @@ def fill_additional_q_columns(
     return row
 
 
+def extract_province_from_region(region: str) -> str:
+    """Extract province from region"""
+
+    if not region:
+        return ""
+
+    region_name_split = region.split(",")
+    if len(region_name_split) == 2:
+        province = region_name_split[-1].strip()
+
+        return province
+    else:
+        return ""
+
+
 def load_campaign_data(campaign_code: CampaignCode):
     """
     Load campaign data
@@ -375,7 +390,22 @@ def load_campaign_data(campaign_code: CampaignCode):
         alpha2_code = unique_canonical_country_region["alpha2country"].iloc[idx]
         region = unique_canonical_country_region["region"].iloc[idx]
         if region:
-            countries[alpha2_code].regions.append(Region(code=region, name=region))
+            # For wwwpakistan, extract the province name from the region
+            if campaign_code == CampaignCode.what_women_want_pakistan:
+                province = extract_province_from_region(region=region)
+                countries[alpha2_code].regions.append(
+                    Region(code=region, name=region, province=province)
+                )
+            else:
+                countries[alpha2_code].regions.append(Region(code=region, name=region))
+
+    # Create province column
+    if campaign_code == CampaignCode.what_women_want_pakistan:
+        df_responses["province"] = df_responses["region"].apply(
+            lambda x: extract_province_from_region(x)
+        )
+    else:
+        df_responses["province"] = ""
 
     # Set countries
     campaign_crud.set_countries(countries=countries)

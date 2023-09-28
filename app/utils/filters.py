@@ -2,7 +2,6 @@ import copy
 import re
 
 import inflect
-import numpy as np
 from pandas import DataFrame
 
 from app import constants
@@ -55,20 +54,19 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
     if len(countries) > 0:
         df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
 
-    # Filter regions and provinces
-    regions_and_provinces = regions + provinces
-    if len(regions_and_provinces) > 0:
+    # Filter using both regions and provinces
+    if len(regions) > 0 and len(provinces) > 0:
+        df_copy = df_copy[
+            df_copy[["region", "province"]].isin(regions + provinces).any(axis=1)
+        ]
+    else:
+        # Filter only regions
+        if len(regions) > 0:
+            df_copy = df_copy[df_copy["region"].isin(regions)]
 
-        def filter_regions_and_provinces(region: str):
-            if region:
-                for place in regions_and_provinces:
-                    if place in region:
-                        return region
-
-            return np.nan
-
-        df_copy["region"] = df_copy["region"].apply(filter_regions_and_provinces)
-        df_copy = df_copy[df_copy["region"].notna()]
+        # Filter only provinces
+        elif len(provinces) > 0:
+            df_copy = df_copy[df_copy["province"].isin(provinces)]
 
     # Filter genders
     if len(genders) > 0:
@@ -174,7 +172,9 @@ def generate_description_of_filter(
         if num_results == 1:
             women = join_list_comma_and(professions, lower_words=True)
         else:
-            women = join_list_comma_and([inflect_engine.plural(p) for p in professions], lower_words=True)
+            women = join_list_comma_and(
+                [inflect_engine.plural(p) for p in professions], lower_words=True
+            )
 
     # Countries
     if len(countries) > 0:
@@ -188,7 +188,7 @@ def generate_description_of_filter(
             demonyms.append(country_data["demonym"])
 
         if demonyms:
-            description = f"{join_list_comma_and(demonyms, lower_words=True)} {women}"
+            description = f"{join_list_comma_and(demonyms, lower_words=False)} {women}"
         else:
             description = ""
     else:
@@ -332,12 +332,12 @@ def flatten(list_to_flatten) -> list:
 
 def join_list_comma_and(listed, lower_words: bool) -> str:
     listed = list(listed)
+
     if len(listed) == 1:
-        if lower_words:
-            if isinstance(listed[0], str):
-                return listed[0].lower()
-            else:
-                return listed[0]
+        if lower_words and isinstance(listed[0], str):
+            return listed[0].lower()
+        else:
+            return listed[0]
 
     if lower_words:
         listed = [x.lower() for x in listed if isinstance(x, str)]
@@ -347,12 +347,12 @@ def join_list_comma_and(listed, lower_words: bool) -> str:
 
 def join_list_comma_or(listed, lower_words: bool) -> str:
     listed = list(listed)
+
     if len(listed) == 1:
-        if lower_words:
-            if isinstance(listed[0], str):
-                return listed[0].lower()
-            else:
-                return listed[0]
+        if lower_words and isinstance(listed[0], str):
+            return listed[0].lower()
+        else:
+            return listed[0]
 
     if lower_words:
         listed = [x.lower() for x in listed if isinstance(x, str)]
