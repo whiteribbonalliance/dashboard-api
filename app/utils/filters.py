@@ -164,6 +164,7 @@ def generate_description_of_filter(
     ages = _filter.ages + _filter.age_buckets
     only_responses_from_categories = _filter.only_responses_from_categories
 
+    # Professions
     if len(professions) == 0:
         if num_results == 1:
             women = respondent_noun_singular
@@ -171,10 +172,11 @@ def generate_description_of_filter(
             women = respondent_noun_plural
     else:
         if num_results == 1:
-            women = join_list_comma_and(professions)
+            women = join_list_comma_and(professions, lower_words=True)
         else:
-            women = join_list_comma_and([inflect_engine.plural(p) for p in professions])
+            women = join_list_comma_and([inflect_engine.plural(p) for p in professions], lower_words=True)
 
+    # Countries
     if len(countries) > 0:
         demonyms = []
         for country in countries:
@@ -186,26 +188,35 @@ def generate_description_of_filter(
             demonyms.append(country_data["demonym"])
 
         if demonyms:
-            description = f"{join_list_comma_and(demonyms)} {women}"
+            description = f"{join_list_comma_and(demonyms, lower_words=True)} {women}"
         else:
             description = ""
     else:
         description = women
+
+    # Genders
     if genders is not None and len(genders) > 0:
         stated_genders = [
             gender for gender in genders if gender.lower() != "prefer not to say"
         ]
         if len(stated_genders) > 0:
-            description = join_list_comma_or(stated_genders) + " " + description
-        if "prefer not to say" in genders:
+            description = (
+                join_list_comma_or(stated_genders, lower_words=True) + " " + description
+            )
+        if "prefer not to say" in [x.lower() for x in genders]:
             description += " who did not give a gender"
 
+    # Regions and provinces
     if len(regions + provinces) > 0:
-        description += " in " + join_list_comma_or(regions + provinces)
+        description += " in " + join_list_comma_or(
+            regions + provinces, lower_words=False
+        )
 
+    # Ages
     if ages is not None and len(ages) > 0:
         description += generate_age_description(ages=ages)
 
+    # Response topics
     mapping_to_description = code_hierarchy.get_mapping_code_to_description(
         campaign_code=campaign_code
     )
@@ -218,20 +229,22 @@ def generate_description_of_filter(
     if len(response_topics_mentioned) > 0:
         if only_responses_from_categories:
             description += " who mentioned " + join_list_comma_and(
-                response_topics_mentioned
+                response_topics_mentioned, lower_words=True
             )
         else:
             description += " who mentioned " + join_list_comma_or(
-                response_topics_mentioned
+                response_topics_mentioned, lower_words=True
             )
 
+    # Keywords
     if len(keyword_filter) > 0:
         if len(response_topics_mentioned) == 0:
             description += " who mentioned "
         else:
             description += " and "
-        description += '"' + str(keyword_filter) + '"'
+        description += '"' + str(keyword_filter).lower() + '"'
 
+    # Keywords exclude
     if len(keyword_exclude) > 0:
         if len(response_topics_mentioned) > 0:
             description += ' but not "' + str(keyword_exclude) + '"'
@@ -241,9 +254,9 @@ def generate_description_of_filter(
     if description == women:
         description = "all " + women
 
-    # Capitalize
+    # Capitalize first letter only
     if description:
-        description = description.capitalize()
+        description = capitalize_first_letter(text=description)
 
     return description
 
@@ -317,18 +330,32 @@ def flatten(list_to_flatten) -> list:
     return [item for sublist in list_to_flatten for item in sublist]
 
 
-def join_list_comma_and(listed) -> str:
+def join_list_comma_and(listed, lower_words: bool) -> str:
     listed = list(listed)
     if len(listed) == 1:
-        return listed[0]
+        if lower_words:
+            if isinstance(listed[0], str):
+                return listed[0].lower()
+            else:
+                return listed[0]
+
+    if lower_words:
+        listed = [x.lower() for x in listed if isinstance(x, str)]
 
     return "{} and {}".format(", ".join(listed[:-1]), listed[-1])
 
 
-def join_list_comma_or(listed) -> str:
+def join_list_comma_or(listed, lower_words: bool) -> str:
     listed = list(listed)
     if len(listed) == 1:
-        return listed[0]
+        if lower_words:
+            if isinstance(listed[0], str):
+                return listed[0].lower()
+            else:
+                return listed[0]
+
+    if lower_words:
+        listed = [x.lower() for x in listed if isinstance(x, str)]
 
     return "{} or {}".format(", ".join(listed[:-1]), listed[-1])
 
@@ -349,3 +376,12 @@ def generate_age_description(ages: list[str]) -> str:
     groups = re.sub("-19 or 20|-24 or 25|-34 or 35|-44 or 45|-54 or 55", "", groups)
 
     return " aged " + groups
+
+
+def capitalize_first_letter(text: str) -> str:
+    """Capitalize the first letter and leave the rest as is"""
+
+    if len(text) > 0 and isinstance(text[0], str):
+        text = text[:1].upper() + text[1:]
+
+    return text
