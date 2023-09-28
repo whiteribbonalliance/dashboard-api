@@ -215,8 +215,13 @@ def get_merged_flattened_list_of_dictionaries(
     return merged_list
 
 
-def extract_first_numbers(value: str, first_less_than_symbol_to_0: bool = False) -> int:
-    """Extract first numbers e.g. 25-30 -> 25"""
+def extract_first_occurring_numbers(
+    value: str, first_less_than_symbol_to_0: bool = False
+) -> int:
+    """
+    Extract numbers until the next char is not numeric e.g. "25-30" -> 25.
+    Optionally use "0" in place of the first value if it is "<".
+    """
 
     numbers = []
     for i, c in enumerate(value):

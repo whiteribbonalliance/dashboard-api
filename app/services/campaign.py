@@ -1434,7 +1434,7 @@ class CampaignService:
             ) > 0:
                 names = sorted(
                     names,
-                    key=lambda x: helpers.extract_first_numbers(
+                    key=lambda x: helpers.extract_first_occurring_numbers(
                         value=x, first_less_than_symbol_to_0=True
                     ),
                 )
@@ -1664,7 +1664,7 @@ class CampaignService:
         # Sort
         ages = sorted(
             ages,
-            key=lambda x: helpers.extract_first_numbers(
+            key=lambda x: helpers.extract_first_occurring_numbers(
                 value=x.code, first_less_than_symbol_to_0=True
             ),
         )
@@ -1682,7 +1682,7 @@ class CampaignService:
         # Sort
         age_buckets = sorted(
             age_buckets,
-            key=lambda x: helpers.extract_first_numbers(
+            key=lambda x: helpers.extract_first_occurring_numbers(
                 value=x.code, first_less_than_symbol_to_0=True
             ),
         )
@@ -1702,7 +1702,7 @@ class CampaignService:
         # Sort
         age_buckets_default = sorted(
             age_buckets_default,
-            key=lambda x: helpers.extract_first_numbers(
+            key=lambda x: helpers.extract_first_occurring_numbers(
                 value=x.code, first_less_than_symbol_to_0=True
             ),
         )
