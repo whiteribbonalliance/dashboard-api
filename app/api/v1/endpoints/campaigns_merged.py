@@ -32,7 +32,7 @@ api_cache = ApiCache()
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_campaigns_merged(
+def read_campaigns_merged(
     parameters: Annotated[
         CommonParametersCampaignsMerged,
         Depends(dependencies.dep_common_parameters_all_campaigns),
