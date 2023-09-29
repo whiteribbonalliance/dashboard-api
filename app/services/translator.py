@@ -274,7 +274,7 @@ class Translator(metaclass=SingletonMeta):
         campaign_code: CampaignCode,
         language: str,
         responses_sample: dict,
-        responses_breakdown: list,
+        responses_breakdown: dict,
         living_settings_breakdown: list,
         top_words_and_phrases: dict,
         histogram: dict,
@@ -323,7 +323,10 @@ class Translator(metaclass=SingletonMeta):
             data=responses_breakdown,
             replace_func=t,
             pydantic_to_dict=True,
-            key_depth_rules={"code": ["ignore"]},
+            key_depth_rules={
+                "parent_categories:code": ["ignore"],
+                "sub_categories:code": ["ignore"],
+            },
         )
 
         # Living settings

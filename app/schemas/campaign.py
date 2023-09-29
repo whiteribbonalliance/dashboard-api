@@ -8,7 +8,7 @@ class Campaign(BaseModel):
     included_response_years: list[str]
     all_response_years: list[str]
     responses_sample: dict
-    responses_breakdown: list
+    responses_breakdown: dict
     living_settings_breakdown: list
     top_words_and_phrases: dict
     histogram: dict

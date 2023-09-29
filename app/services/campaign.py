@@ -749,7 +749,7 @@ class CampaignService:
 
         return responses_sample_data
 
-    def __get_responses_breakdown(self, q_code: QuestionCode) -> list[dict]:
+    def __get_responses_breakdown(self, q_code: QuestionCode) -> dict[str, list]:
         """Get responses breakdown"""
 
         # Set column names based on question code
@@ -762,41 +762,10 @@ class CampaignService:
             q_code=q_code
         )
 
-        def get_df_responses_breakdown(df: pd.DataFrame) -> list[dict]:
-            """Get df responses breakdown"""
-
-            # Count occurrence of response topics (categories)
-            category_counter = Counter()
-
-            # Campaign 'healthwellbeing' and 'wwwpakistan' will handle responses breakdown differently
-            # If there is only one parent category, then only include its sub-categories in the response
-            # Else, only include the parent categories in the response
-            if (
-                self.__campaign_code == CampaignCode.healthwellbeing
-                or self.__campaign_code == CampaignCode.what_women_want_pakistan
-            ):
-                # Only include sub-categories from the parent category
-                if len(self.__response_topics_unique_parent_categories) == 1:
-                    parent_category = list(
-                        self.__response_topics_unique_parent_categories
-                    )[0]
-                    df = df[(df[parent_category_col_name] == parent_category)]
-                    for canonical_code in df[canonical_code_col_name]:
-                        for c in canonical_code.split("/"):
-                            category_counter[c.strip()] += 1
-
-                # Only include parent categories
-                else:
-                    for canonical_code in df[parent_category_col_name]:
-                        for c in canonical_code.split("/"):
-                            category_counter[c.strip()] += 1
-
-            # Other campaigns
-            else:
-                # Include all categories
-                for canonical_code in df[canonical_code_col_name]:
-                    for c in canonical_code.split("/"):
-                        category_counter[c.strip()] += 1
+        def category_counter_to_responses_breakdown_data(
+            category_counter: Counter,
+        ) -> list[dict]:
+            """Category counter to responses breakdown data"""
 
             if len(category_counter) > 0:
                 # Create dataframe with items from counter
@@ -843,54 +812,183 @@ class CampaignService:
 
             return responses_breakdown_data
 
-        # Get copy to not modify original
-        df_1_copy = self.__get_df_1_copy()
-        df_2_copy = self.__get_df_2_copy()
+        def get_df_responses_breakdown_default(df: pd.DataFrame) -> list[dict]:
+            """Get df responses breakdown"""
 
-        # Get responses breakdown from each df
-        responses_breakdown_1 = get_df_responses_breakdown(df=df_1_copy)
-        responses_breakdown_2 = get_df_responses_breakdown(df=df_2_copy)
+            # Count occurrence of response topics (categories)
+            category_counter = Counter()
 
-        # Get all unique codes from responses breakdown
-        codes_1 = [x[code_col_name] for x in responses_breakdown_1]
-        codes_2 = [x[code_col_name] for x in responses_breakdown_2]
-        all_codes = set(codes_1 + codes_2)
+            # Campaign 'wwwpakistan' will handle responses breakdown differently
+            # If there is only one parent category, then only include its sub-categories in the response
+            # Else, only include the parent categories in the response
+            if self.__campaign_code == CampaignCode.what_women_want_pakistan:
+                # Only include sub-categories from the parent category
+                if len(self.__response_topics_unique_parent_categories) == 1:
+                    parent_category = list(
+                        self.__response_topics_unique_parent_categories
+                    )[0]
+                    df = df[(df[parent_category_col_name] == parent_category)]
+                    for canonical_code in df[canonical_code_col_name]:
+                        for c in canonical_code.split("/"):
+                            category_counter[c.strip()] += 1
 
-        # Responses breakdown
-        responses_breakdown = []
-        for code in all_codes:
-            responses_1 = [x for x in responses_breakdown_1 if x[code_col_name] == code]
-            responses_2 = [x for x in responses_breakdown_2 if x[code_col_name] == code]
+                # Only include parent categories
+                else:
+                    for canonical_code in df[parent_category_col_name]:
+                        for c in canonical_code.split("/"):
+                            category_counter[c.strip()] += 1
 
-            if responses_1:
-                response_1 = responses_1[0]
+            # Other campaigns
             else:
-                response_1 = None
+                # Include all categories
+                for canonical_code in df[canonical_code_col_name]:
+                    for c in canonical_code.split("/"):
+                        category_counter[c.strip()] += 1
 
-            if responses_2:
-                response_2 = responses_2[0]
-            else:
-                response_2 = None
-
-            # Set description
-            description = ""
-            if response_1:
-                description = response_1[description_col_name]
-            if response_2:
-                description = response_2[description_col_name]
-
-            responses_breakdown.append(
-                {
-                    "count_1": response_1.get(count_col_name) if response_1 else 0,
-                    "count_2": response_2.get(count_col_name) if response_2 else 0,
-                    code_col_name.replace(f"{q_code.value}_", ""): code,
-                    description_col_name.replace(f"{q_code.value}_", ""): description,
-                }
+            responses_breakdown_data = category_counter_to_responses_breakdown_data(
+                category_counter
             )
 
-        # Sort responses breakdown
-        responses_breakdown = sorted(
-            responses_breakdown, key=lambda x: x["count_1"], reverse=True
+            return responses_breakdown_data
+
+        def get_df_responses_breakdown_only_parent(df: pd.DataFrame) -> list[dict]:
+            """Get df responses breakdown only parent"""
+
+            # Count occurrence of response topics (categories)
+            category_counter = Counter()
+            for canonical_code in df[parent_category_col_name]:
+                for c in canonical_code.split("/"):
+                    category_counter[c.strip()] += 1
+
+            responses_breakdown_data = category_counter_to_responses_breakdown_data(
+                category_counter
+            )
+
+            return responses_breakdown_data
+
+        def get_df_responses_breakdown_only_sub(df: pd.DataFrame) -> list[dict]:
+            """Get df responses breakdown only sub"""
+
+            # Count occurrence of response topics (categories)
+            category_counter = Counter()
+            for canonical_code in df[canonical_code_col_name]:
+                for c in canonical_code.split("/"):
+                    category_counter[c.strip()] += 1
+
+            responses_breakdown_data = category_counter_to_responses_breakdown_data(
+                category_counter
+            )
+
+            return responses_breakdown_data
+
+        # Get responses breakdown from each df
+        if self.__campaign_code != CampaignCode.healthwellbeing:
+            responses_breakdown_parent_1 = get_df_responses_breakdown_default(
+                df=self.__get_df_1_copy()
+            )
+            responses_breakdown_parent_2 = get_df_responses_breakdown_default(
+                df=self.__get_df_2_copy()
+            )
+            responses_breakdown_sub_1 = []
+            responses_breakdown_sub_2 = []
+        else:
+            responses_breakdown_parent_1 = get_df_responses_breakdown_only_parent(
+                df=self.__get_df_1_copy()
+            )
+            responses_breakdown_parent_2 = get_df_responses_breakdown_only_parent(
+                df=self.__get_df_2_copy()
+            )
+            responses_breakdown_sub_1 = get_df_responses_breakdown_only_sub(
+                df=self.__get_df_1_copy()
+            )
+            responses_breakdown_sub_2 = get_df_responses_breakdown_only_sub(
+                df=self.__get_df_2_copy()
+            )
+
+        # Get all unique codes from responses breakdown parent
+        parent_codes_1 = [x[code_col_name] for x in responses_breakdown_parent_1]
+        parent_codes_2 = [x[code_col_name] for x in responses_breakdown_parent_2]
+        all_parent_codes = set(parent_codes_1 + parent_codes_2)
+
+        # Get all unique codes from responses breakdown sub
+        sub_codes_1 = [x[code_col_name] for x in responses_breakdown_sub_1]
+        sub_codes_2 = [x[code_col_name] for x in responses_breakdown_sub_2]
+        all_sub_codes = set(sub_codes_1 + sub_codes_2)
+
+        def responses_breakdown_to_list(
+            all_codes: set[str],
+            responses_breakdown_1: list[dict],
+            responses_breakdown_2: list[dict],
+        ):
+            """Codes to responses breakdown list"""
+
+            data = []
+
+            # For each category (code) create a dictionary with count, code and description
+            for code in all_codes:
+                responses_1 = [
+                    x for x in responses_breakdown_1 if x[code_col_name] == code
+                ]
+                responses_2 = [
+                    x for x in responses_breakdown_2 if x[code_col_name] == code
+                ]
+
+                if responses_1:
+                    response_1 = responses_1[0]
+                else:
+                    response_1 = None
+
+                if responses_2:
+                    response_2 = responses_2[0]
+                else:
+                    response_2 = None
+
+                # Set description
+                description = ""
+                if response_1:
+                    description = response_1[description_col_name]
+                if response_2:
+                    description = response_2[description_col_name]
+
+                data.append(
+                    {
+                        "count_1": response_1.get(count_col_name) if response_1 else 0,
+                        "count_2": response_2.get(count_col_name) if response_2 else 0,
+                        code_col_name.replace(f"{q_code.value}_", ""): code,
+                        description_col_name.replace(
+                            f"{q_code.value}_", ""
+                        ): description,
+                    }
+                )
+
+            return data
+
+        # Responses breakdown
+        responses_breakdown = {
+            "parent_categories": responses_breakdown_to_list(
+                all_codes=all_parent_codes,
+                responses_breakdown_1=responses_breakdown_parent_1,
+                responses_breakdown_2=responses_breakdown_parent_2,
+            ),
+            "sub_categories": responses_breakdown_to_list(
+                all_codes=all_sub_codes,
+                responses_breakdown_1=responses_breakdown_sub_1,
+                responses_breakdown_2=responses_breakdown_sub_2,
+            ),
+        }
+
+        # Sort responses breakdown parent
+        responses_breakdown["parent_categories"] = sorted(
+            responses_breakdown["parent_categories"],
+            key=lambda x: x["count_1"],
+            reverse=True,
+        )
+
+        # Sort responses breakdown sub
+        responses_breakdown["sub_categories"] = sorted(
+            responses_breakdown["sub_categories"],
+            key=lambda x: x["count_1"],
+            reverse=True,
         )
 
         return responses_breakdown

@@ -85,5 +85,6 @@
   "select-dashboard": "Select dashboard",
   "response-year": "Response year",
   "select-provinces": "Select provinces",
-  "healthwellbeing-results-analyzed": "These results were categorized and analyzed using Artificial Intelligence, which is constantly improving. The current predictive accuracy for these responses is 84% but this varies across languages."
+  "healthwellbeing-results-analyzed": "These results were categorized and analyzed using Artificial Intelligence, which is constantly improving. The current predictive accuracy for these responses is 84% but this varies across languages.",
+  "export-dataset": "Export the dataset"
 }
