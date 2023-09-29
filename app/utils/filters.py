@@ -293,6 +293,9 @@ def check_if_filters_are_identical(
     _filter_1.regions = flatten(_filter_1.regions)
     _filter_2.regions = flatten(_filter_2.regions)
 
+    _filter_1.provinces = flatten(_filter_1.provinces)
+    _filter_2.provinces = flatten(_filter_2.provinces)
+
     _filter_1.response_topics = flatten(_filter_1.response_topics)
     _filter_2.response_topics = flatten(_filter_2.response_topics)
 
@@ -305,6 +308,7 @@ def check_if_filters_are_identical(
     return (
         _filter_1.countries == _filter_2.countries
         and _filter_1.regions == _filter_2.regions
+        and _filter_1.provinces == _filter_2.provinces
         and _filter_1.response_topics == _filter_2.response_topics
         and _filter_1.only_responses_from_categories
         == _filter_2.only_responses_from_categories
