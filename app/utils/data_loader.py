@@ -261,6 +261,11 @@ def load_campaign_data(campaign_code: CampaignCode):
             q_col_names.get_lemmatized_col_name(q_code=q_code)
         ].apply(lambda x: str(x).split(" ") if x else x)
 
+    # Make sure the setting value 'prefer not to say' always starts with a capital letter
+    df_responses["setting"] = df_responses["setting"].apply(
+        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+    )
+
     # Apply strip function on alpha2 country codes and make sure the value is uppercase
     df_responses["alpha2country"] = df_responses["alpha2country"].apply(
         lambda x: x.strip().upper() if x else x

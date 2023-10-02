@@ -113,6 +113,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
                 condition = df_copy[canonical_code_column_name].isin(
                     response_topics
                 ) | df_copy[parent_category_col_name].isin(response_topics)
+
             for response_topic in response_topics:
                 if only_responses_from_categories:
                     condition &= df_copy[canonical_code_column_name].str.contains(
@@ -369,12 +370,12 @@ def generate_age_description(ages: list[str]) -> str:
 
     if ages is None or len(ages) == 0:
         return ""
-    if len(ages) == 1 and ages[0] == "prefer not to say":
+    if len(ages) == 1 and ages[0] == "Prefer not to say":
         return " who did not give their age"
 
-    groups = " or ".join([a for a in sorted(ages) if a != "prefer not to say"])
+    groups = " or ".join([a for a in sorted(ages) if a != "Prefer not to say"])
 
-    if "prefer not to say" in ages:
+    if "Prefer not to say" in ages:
         groups += " or who did not give their age"
 
     groups = re.sub("-19 or 20|-24 or 25|-34 or 35|-44 or 45|-54 or 55", "", groups)
