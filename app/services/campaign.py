@@ -509,11 +509,6 @@ class CampaignService:
     def get_who_the_people_are_options(self) -> list[Option]:
         """Get who the people are options"""
 
-        if self.__campaign_code == CampaignCode.healthwellbeing:
-            breakdown_by_age_str = "Show breakdown by age bucket"
-        else:
-            breakdown_by_age_str = "Show breakdown by age"
-
         breakdown_country_option = Option(
             value="breakdown-country",
             label=f"{'Show breakdown by country'}",
@@ -524,7 +519,7 @@ class CampaignService:
         )
         breakdown_age_bucket_option = Option(
             value="breakdown-age-bucket",
-            label=f"{breakdown_by_age_str}",
+            label="Show breakdown by age bucket",
         )
         breakdown_gender_option = Option(
             value="breakdown-gender",
@@ -1506,6 +1501,7 @@ class CampaignService:
         columns_rename = {
             "age": "ages",
             "age_bucket": "age_buckets",
+            "age_bucket_default": "age_buckets_default",
             "gender": "genders",
             "profession": "professions",
             "canonical_country": "canonical_countries",
@@ -1517,6 +1513,7 @@ class CampaignService:
         histogram = {
             "ages": [],
             "age_buckets": [],
+            "age_buckets_default": [],
             "genders": [],
             "professions": [],
             "canonical_countries": [],
@@ -1541,9 +1538,11 @@ class CampaignService:
             names = [name for name in names if name]
 
             # Sort age or age_bucket
-            if (column_name == "ages" or column_name == "age_buckets") and len(
-                names
-            ) > 0:
+            if (
+                column_name == "ages"
+                or column_name == "age_buckets"
+                or column_name == "age_buckets_default"
+            ) and len(names) > 0:
                 names = sorted(
                     names,
                     key=lambda x: helpers.extract_first_occurring_numbers(

@@ -94,6 +94,10 @@ def get_age_bucket(
             return "20-24"
         if age >= 15:
             return "15-19"
+        if age >= 10:
+            return "10-14"
+        if age >= 0:
+            return "< 10"
 
     return "N/A"
 

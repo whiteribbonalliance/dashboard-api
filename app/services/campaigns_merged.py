@@ -168,11 +168,12 @@ class CampaignsMergedService:
             data_lists=self.__campaigns_who_the_people_are_options
         )
 
-        # Only keep country breakdown option
+        # Only keep country breakdown and age bucket breakdown option
         who_the_people_are_options = [
             x
             for x in who_the_people_are_options
             if x.get("value") == "breakdown-country"
+            or x.get("value") == "breakdown-age-bucket"
         ]
 
         return who_the_people_are_options
@@ -338,6 +339,15 @@ class CampaignsMergedService:
         histogram = {
             "ages": [],
             "age_buckets": [],
+            "age_buckets_default": helpers.get_merged_flattened_list_of_dictionaries(
+                data_lists=[
+                    x.histogram.get("age_buckets_default")
+                    for x in self.__campaigns_data_q1
+                    if x.histogram
+                ],
+                unique_key="name",
+                keys_to_merge=["count_1", "count_2"],
+            ),
             "genders": [],
             "professions": [],
             "canonical_countries": helpers.get_merged_flattened_list_of_dictionaries(
@@ -351,10 +361,19 @@ class CampaignsMergedService:
             ),
         }
 
+        # sort countries
         histogram["canonical_countries"] = sorted(
             histogram["canonical_countries"],
-            key=lambda d: d.get("count_1"),
+            key=lambda x: x.get("count_1"),
             reverse=True,
+        )
+
+        # Sort age buckets default
+        histogram["age_buckets_default"] = sorted(
+            histogram["age_buckets_default"],
+            key=lambda x: helpers.extract_first_occurring_numbers(
+                value=x.get("name"), first_less_than_symbol_to_0=True
+            ),
         )
 
         return histogram
@@ -372,7 +391,7 @@ class CampaignsMergedService:
         translator.set_target_language(target_language=self.__language)
 
         # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
-        for campaign_data in self.__campaigns_data_all_q:
+        for campaign_data in self.__campaigns_data_q1:
             if (
                 campaign_data.campaign_code
                 == CampaignCode.what_women_want_pakistan.value
@@ -388,7 +407,7 @@ class CampaignsMergedService:
                     coordinate["lon"] = coordinate_pk[1]
 
         # For campaign economic_empowerment_mexico, change the coordinate from region to the country's coordinate
-        for campaign_data in self.__campaigns_data_all_q:
+        for campaign_data in self.__campaigns_data_q1:
             if (
                 campaign_data.campaign_code
                 == CampaignCode.economic_empowerment_mexico.value
