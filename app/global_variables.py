@@ -1,1 +1,1 @@
-coordinates: dict = {}
+region_coordinates: dict = {}

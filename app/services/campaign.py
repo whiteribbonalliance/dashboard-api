@@ -1655,11 +1655,21 @@ class CampaignService:
                 canonical_country,
                 region,
             ), value in region_counts.items():
-                # TODO: Why is there an empty region?
+                # TODO: Check empty region
                 if not region:
+                    coordinate_country = constants.COUNTRY_COORDINATE[alpha2country]
+                    region_coordinates.append(
+                        {
+                            "location_code": alpha2country,
+                            "location_name": canonical_country,
+                            "n": value,
+                            "lat": coordinate_country[0],
+                            "lon": coordinate_country[1],
+                        }
+                    )
                     continue
 
-                country_regions_coordinates = global_variables.coordinates.get(
+                country_regions_coordinates = global_variables.region_coordinates.get(
                     alpha2country
                 )
 
@@ -1679,13 +1689,19 @@ class CampaignService:
                         continue
 
                     # Add the new coordinate
-                    if not global_variables.coordinates.get(alpha2country):
-                        global_variables.coordinates[alpha2country] = {}
-                    global_variables.coordinates[alpha2country][region] = coordinate
+                    if not global_variables.region_coordinates.get(alpha2country):
+                        global_variables.region_coordinates[alpha2country] = {}
+                    global_variables.region_coordinates[alpha2country][
+                        region
+                    ] = coordinate
 
                 # Create region_coordinates
-                lat = global_variables.coordinates[alpha2country][region].get("lat")
-                lon = global_variables.coordinates[alpha2country][region].get("lon")
+                lat = global_variables.region_coordinates[alpha2country][region].get(
+                    "lat"
+                )
+                lon = global_variables.region_coordinates[alpha2country][region].get(
+                    "lon"
+                )
                 region_coordinates.append(
                     {
                         "location_code": region,

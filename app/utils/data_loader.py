@@ -478,7 +478,7 @@ def load_initial_data():
     """Load initial data"""
 
     load_campaigns_data()
-    load_coordinates()
+    load_region_coordinates()
     load_translations_cache()
 
 
@@ -527,21 +527,21 @@ def load_translations_cache():
     print("INFO:\t  Loading translations cache completed.")
 
 
-def load_coordinates():
-    """Load coordinates"""
+def load_region_coordinates():
+    """Load region coordinates"""
 
-    print(f"INFO:\t  Loading coordinates...")
+    print(f"INFO:\t  Loading region coordinates...")
 
-    coordinates_json = "coordinates.json"
+    region_coordinates_json = "region_coordinates.json"
     new_coordinates_added = False
 
-    if global_variables.coordinates:
-        coordinates = global_variables.coordinates
+    if global_variables.region_coordinates:
+        coordinates = global_variables.region_coordinates
     else:
-        with open(coordinates_json, "r") as file:
+        with open(region_coordinates_json, "r") as file:
             coordinates: dict = json.loads(file.read())
 
-    # Get new coordinates (if coordinate is not in coordinates.json)
+    # Get new region coordinates (if coordinate is not in region_coordinates.json)
     focused_on_country_campaigns_codes = [
         CampaignCode.economic_empowerment_mexico,
         CampaignCode.what_women_want_pakistan,
@@ -588,11 +588,11 @@ def load_coordinates():
             if not new_coordinates_added:
                 new_coordinates_added = True
 
-    # Save coordinates (Only in development environment)
+    # Save region coordinates (Only in development environment)
     if os.getenv("stage", "").lower() == "dev" and new_coordinates_added:
-        with open(coordinates_json, "w") as file:
+        with open(region_coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 
-    global_variables.coordinates = coordinates
+    global_variables.region_coordinates = coordinates
 
-    print(f"INFO:\t  Loading coordinates completed.")
+    print(f"INFO:\t  Loading region coordinates completed.")

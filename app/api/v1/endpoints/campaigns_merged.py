@@ -80,7 +80,10 @@ def read_campaigns_merged(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        campaigns_data=campaigns, filter_1=filter_1, filter_2=filter_2
+        language=language,
+        campaigns_data=campaigns,
+        filter_1=filter_1,
+        filter_2=filter_2,
     )
 
     # Campaign
@@ -123,7 +126,7 @@ async def read_filter_options(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        campaigns_filter_options=campaigns_filter_options
+        language=language, campaigns_filter_options=campaigns_filter_options
     )
 
     # Filter options
@@ -170,7 +173,8 @@ async def read_who_the_people_are_options(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        campaigns_who_the_people_are_options=campaigns_who_the_people_are_options
+        language=language,
+        campaigns_who_the_people_are_options=campaigns_who_the_people_are_options,
     )
 
     # Who the people are options

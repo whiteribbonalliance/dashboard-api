@@ -4,11 +4,12 @@ Handles processing of data and business logic for campaigns merged
 
 import pandas as pd
 
-from app import helpers, constants
+from app import helpers, constants, global_variables
 from app.enums.campaign_code import CampaignCode
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
+from app.services.translator import Translator
 from app.types import FilterSequence
 from app.utils import filters
 
@@ -16,12 +17,15 @@ from app.utils import filters
 class CampaignsMergedService:
     def __init__(
         self,
+        language: str,
         campaigns_data: dict[str, list[Campaign]] = None,
         campaigns_filter_options: list[dict] = None,
         campaigns_who_the_people_are_options: list[list[dict]] = None,
         filter_1: Filter | None = None,
         filter_2: Filter | None = None,
     ):
+        self.__language = language
+
         if campaigns_data:
             self.__campaigns_data = campaigns_data
         else:
@@ -215,7 +219,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_all_q
                     if x.responses_breakdown
                 ],
-                by_key="description",
+                unique_key="description",
                 keys_to_merge=["count_1", "count_2"],
             ),
             "parent_or_sub_categories": [],  # Ignore, not all campaigns contain parent_or_sub_categories
@@ -240,7 +244,7 @@ class CampaignsMergedService:
                 for x in self.__campaigns_data_all_q
                 if x.top_words_and_phrases
             ],
-            by_key="text",
+            unique_key="text",
             keys_to_merge=["count_1"],
         )
 
@@ -257,7 +261,7 @@ class CampaignsMergedService:
                 for x in self.__campaigns_data_all_q
                 if x.top_words_and_phrases
             ],
-            by_key="word",
+            unique_key="word",
             keys_to_merge=["count_1", "count_2"],
         )
 
@@ -268,7 +272,7 @@ class CampaignsMergedService:
                 for x in self.__campaigns_data_all_q
                 if x.top_words_and_phrases
             ],
-            by_key="word",
+            unique_key="word",
             keys_to_merge=["count_1", "count_2"],
         )
 
@@ -342,7 +346,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_q1
                     if x.histogram
                 ],
-                by_key="name",
+                unique_key="name",
                 keys_to_merge=["count_1", "count_2"],
             ),
         }
@@ -363,6 +367,42 @@ class CampaignsMergedService:
     def __get_world_bubble_maps_coordinates(self) -> dict[str, list[dict]]:
         """Get world bubble maps coordinates"""
 
+        # Translator
+        translator = Translator()
+        translator.set_target_language(target_language=self.__language)
+
+        # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
+        for campaign_data in self.__campaigns_data_all_q:
+            if (
+                campaign_data.campaign_code
+                == CampaignCode.what_women_want_pakistan.value
+            ):
+                coordinate_pk = constants.COUNTRY_COORDINATE["PK"]
+                for coordinate in (
+                    campaign_data.world_bubble_maps_coordinates["coordinates_1"]
+                    + campaign_data.world_bubble_maps_coordinates["coordinates_2"]
+                ):
+                    coordinate["location_code"] = "PK"
+                    coordinate["location_name"] = translator.translate_text("Pakistan")
+                    coordinate["lat"] = coordinate_pk[0]
+                    coordinate["lon"] = coordinate_pk[1]
+
+        # For campaign economic_empowerment_mexico, change the coordinate from region to the country's coordinate
+        for campaign_data in self.__campaigns_data_all_q:
+            if (
+                campaign_data.campaign_code
+                == CampaignCode.economic_empowerment_mexico.value
+            ):
+                coordinate_mx = constants.COUNTRY_COORDINATE["MX"]
+                for coordinate in (
+                    campaign_data.world_bubble_maps_coordinates["coordinates_1"]
+                    + campaign_data.world_bubble_maps_coordinates["coordinates_2"]
+                ):
+                    coordinate["location_code"] = "MX"
+                    coordinate["location_name"] = translator.translate_text("Mexico")
+                    coordinate["lat"] = coordinate_mx[0]
+                    coordinate["lon"] = coordinate_mx[1]
+
         world_bubble_maps_coordinates = {
             "coordinates_1": helpers.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
@@ -370,7 +410,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_q1
                     if x.world_bubble_maps_coordinates
                 ],
-                by_key="location_code",
+                unique_key="location_code",
                 keys_to_merge=["n"],
             ),
             "coordinates_2": helpers.get_merged_flattened_list_of_dictionaries(
@@ -379,7 +419,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_q1
                     if x.world_bubble_maps_coordinates
                 ],
-                by_key="location_code",
+                unique_key="location_code",
                 keys_to_merge=["n"],
             ),
         }

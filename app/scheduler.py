@@ -48,7 +48,7 @@ async def do_every_12th_hour_reload_data():
         await concurrency.run_in_threadpool(
             data_loader.reload_campaigns_data, True, True
         )
-        await concurrency.run_in_threadpool(data_loader.load_coordinates)
+        await concurrency.run_in_threadpool(data_loader.load_region_coordinates)
     except (Exception,) as e:
         logger.error(f"Error while trying to load data: {str(e)}")
 
