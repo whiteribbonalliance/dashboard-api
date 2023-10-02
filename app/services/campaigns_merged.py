@@ -215,7 +215,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_all_q
                     if x.responses_breakdown
                 ],
-                by_key="code",
+                by_key="description",
                 keys_to_merge=["count_1", "count_2"],
             ),
             "parent_or_sub_categories": [],  # Ignore, not all campaigns contain parent_or_sub_categories
