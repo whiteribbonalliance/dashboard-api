@@ -134,7 +134,7 @@ class CampaignsMergedService:
         response_topics_options = self.__get_response_topics_options()
 
         # Age options
-        age_options = self.__get_age_options()
+        age_options = []
 
         # Age bucket options
         age_bucket_options = self.__get_age_bucket_options()
@@ -588,25 +588,41 @@ class CampaignsMergedService:
     def __get_age_options(self) -> list[dict]:
         """Get age options"""
 
-        ages_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
+        age_options = helpers.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("age") or []] for x in self.__campaigns_filter_options
             ]
         )
 
-        return ages_bucket_options
+        # Sort age options
+        age_options = sorted(
+            age_options,
+            key=lambda x: helpers.extract_first_occurring_numbers(
+                value=x.get("label"), first_less_than_symbol_to_0=True
+            ),
+        )
+
+        return age_options
 
     def __get_age_bucket_options(self) -> list[dict]:
         """Get age bucket options"""
 
-        ages_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
+        age_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("age_buckets_default") or []]
                 for x in self.__campaigns_filter_options
             ]
         )
 
-        return ages_bucket_options
+        # Sort age bucket options
+        age_bucket_options = sorted(
+            age_bucket_options,
+            key=lambda x: helpers.extract_first_occurring_numbers(
+                value=x.get("label"), first_less_than_symbol_to_0=True
+            ),
+        )
+
+        return age_bucket_options
 
     def __get_only_responses_from_categories_options(self) -> list[dict]:
         """Get only responses from categories options"""
