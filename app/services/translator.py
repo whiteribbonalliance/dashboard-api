@@ -331,6 +331,7 @@ class Translator(metaclass=SingletonMeta):
             key_depth_rules={
                 "parent_categories:code": ["ignore"],
                 "sub_categories:code": ["ignore"],
+                "parent_or_sub_categories:code": ["ignore"],
             },
         )
 
