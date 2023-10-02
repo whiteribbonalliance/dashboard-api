@@ -285,7 +285,12 @@ class Translator(metaclass=SingletonMeta):
         filter_1_description: str,
         filter_2_description: str,
     ):
-        """Apply extract/translate"""
+        """
+        Apply extract/translate.
+
+        If the data structure of any argument has changed (except t, campaign_code and language), make sure
+        key_depth_rules is updated.
+        """
 
         # Create deep replacer instance
         deep_replacer = DeepReplacer()

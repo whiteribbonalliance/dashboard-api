@@ -812,39 +812,6 @@ class CampaignService:
 
             return responses_breakdown_data
 
-        def get_df_responses_breakdown_special(df: pd.DataFrame) -> list[dict]:
-            """
-            Get df responses breakdown.
-
-            If there is only one parent category, then only include its sub-categories in the response.
-            Else, only include the parent categories in the response.
-            """
-
-            # Count occurrence of response topics (categories)
-            category_counter = Counter()
-
-            # Only include sub-categories from the parent category
-            if len(self.__response_topics_unique_parent_categories) == 1:
-                parent_category = list(self.__response_topics_unique_parent_categories)[
-                    0
-                ]
-                df = df[(df[parent_category_col_name] == parent_category)]
-                for canonical_code in df[canonical_code_col_name]:
-                    for c in canonical_code.split("/"):
-                        category_counter[c.strip()] += 1
-
-            # Only include parent categories
-            else:
-                for canonical_code in df[parent_category_col_name]:
-                    for c in canonical_code.split("/"):
-                        category_counter[c.strip()] += 1
-
-            responses_breakdown_data = category_counter_to_responses_breakdown_data(
-                category_counter
-            )
-
-            return responses_breakdown_data
-
         def get_df_responses_breakdown_parent_categories(
             df: pd.DataFrame,
         ) -> list[dict]:
@@ -885,7 +852,7 @@ class CampaignService:
 
             return responses_breakdown_data
 
-        # Get responses breakdown parent categories and sub-categories
+        # Responses breakdown
         if self.__campaign_code == CampaignCode.healthwellbeing:
             responses_breakdown_parent_1 = get_df_responses_breakdown_parent_categories(
                 df=self.__get_df_1_copy()
@@ -900,10 +867,19 @@ class CampaignService:
                 df=self.__get_df_2_copy()
             )
         elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
-            responses_breakdown_parent_1 = get_df_responses_breakdown_special(
+            if len(self.__response_topics_unique_parent_categories) == 1:
+                get_df_responses_breakdown_func = (
+                    get_df_responses_breakdown_sub_categories
+                )
+            else:
+                get_df_responses_breakdown_func = (
+                    get_df_responses_breakdown_parent_categories
+                )
+
+            responses_breakdown_parent_1 = get_df_responses_breakdown_func(
                 df=self.__get_df_1_copy()
             )
-            responses_breakdown_parent_2 = get_df_responses_breakdown_special(
+            responses_breakdown_parent_2 = get_df_responses_breakdown_func(
                 df=self.__get_df_2_copy()
             )
             responses_breakdown_sub_1 = []
@@ -1011,16 +987,6 @@ class CampaignService:
 
         df_1_copy = self.__get_df_1_copy()
         df_2_copy = self.__get_df_2_copy()
-
-        def fix_value(v: str):
-            # If value in lower case is 'prefer not to say', then rename to 'Prefer not to say'
-            if v and v.lower() == "prefer not to say":
-                v = "Prefer not to say"
-
-            return v
-
-        df_1_copy["setting"] = df_1_copy["setting"].apply(fix_value)
-        df_2_copy["setting"] = df_2_copy["setting"].apply(fix_value)
 
         # Get row count
         grouped_by_column_1 = df_1_copy.groupby("setting")["setting"].count()
