@@ -208,21 +208,9 @@ class CampaignsMergedService:
 
         # Response breakdown
         responses_breakdown = {
-            "parent_categories": helpers.get_merged_flattened_list_of_dictionaries(
-                data_lists=[
-                    x.responses_breakdown["parent_categories"]
-                    for x in self.__campaigns_data_all_q
-                    if x.responses_breakdown
-                ],
-                by_key="code",
-                keys_to_merge=["count_1", "count_2"],
-            ),
+            "parent_categories": [],  # Ignore, not all campaigns contain parent categories
             "sub_categories": helpers.get_merged_flattened_list_of_dictionaries(
-                data_lists=[
-                    x.responses_breakdown["sub_categories"]
-                    for x in self.__campaigns_data_all_q
-                    if x.responses_breakdown
-                ],
+                data_lists=[],
                 by_key="code",
                 keys_to_merge=["count_1", "count_2"],
             ),
