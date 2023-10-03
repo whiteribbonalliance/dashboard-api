@@ -506,8 +506,8 @@ class CampaignService:
             only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
         )
 
-    def get_who_the_people_are_options(self) -> list[Option]:
-        """Get who the people are options"""
+    def histogram_options(self) -> list[Option]:
+        """Get histogram options"""
 
         breakdown_country_option = Option(
             value="breakdown-country",
@@ -564,7 +564,7 @@ class CampaignService:
                 translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
-                translator.apply_t_who_the_people_are_options(
+                translator.apply_t_histogram_options(
                     translator.extract_text, options=options
                 )
 
@@ -572,12 +572,12 @@ class CampaignService:
                 translator.translate_extracted_texts()
 
                 # Apply translations to texts
-                options = translator.apply_t_who_the_people_are_options(
+                options = translator.apply_t_histogram_options(
                     translator.translate_text, options=options
                 )
         except (Exception,) as e:
             logger.warning(
-                f"An error occurred during translation of 'who_the_people_are_options': {str(e)}"
+                f"An error occurred during translation of 'histogram_options': {str(e)}"
             )
 
         return options

@@ -96,17 +96,17 @@ async def read_filter_options(
 
 
 @router.get(
-    path="/{campaign}/who-the-people-are-options",
+    path="/{campaign}/histogram-options",
     response_model=list[dict],
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_who_the_people_are_options(
+async def read_histogram_options(
     parameters: Annotated[
         CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ]
 ):
-    """Read who the people are options for campaign"""
+    """Read histogram options for campaign"""
 
     campaign_code = parameters.campaign_code
     language = parameters.language
@@ -114,10 +114,10 @@ async def read_who_the_people_are_options(
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
-    # Who the people are options
-    who_the_people_are_options = campaign_service.get_who_the_people_are_options()
+    # Histogram options
+    histogram_options = campaign_service.histogram_options()
 
-    return who_the_people_are_options
+    return histogram_options
 
 
 @router.post(

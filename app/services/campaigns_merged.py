@@ -4,7 +4,7 @@ Handles processing of data and business logic for campaigns merged
 
 import pandas as pd
 
-from app import helpers, constants, global_variables
+from app import helpers, constants
 from app.enums.campaign_code import CampaignCode
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
@@ -20,7 +20,7 @@ class CampaignsMergedService:
         language: str,
         campaigns_data: dict[str, list[Campaign]] = None,
         campaigns_filter_options: list[dict] = None,
-        campaigns_who_the_people_are_options: list[list[dict]] = None,
+        campaigns_histogram_options: list[list[dict]] = None,
         filter_1: Filter | None = None,
         filter_2: Filter | None = None,
     ):
@@ -36,12 +36,10 @@ class CampaignsMergedService:
         else:
             self.__campaigns_filter_options: list[dict] = []
 
-        if campaigns_who_the_people_are_options:
-            self.__campaigns_who_the_people_are_options = (
-                campaigns_who_the_people_are_options
-            )
+        if campaigns_histogram_options:
+            self.__campaigns_histogram_options = campaigns_histogram_options
         else:
-            self.__campaigns_who_the_people_are_options: list[list[dict]] = []
+            self.__campaigns_histogram_options: list[list[dict]] = []
 
         # Campaigns data list for question code 1 only
         self.__campaigns_data_q1 = [x[0] for x in self.__campaigns_data.values() if x]
@@ -161,22 +159,22 @@ class CampaignsMergedService:
             only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
         )
 
-    def get_who_the_people_are_options(self) -> list[dict]:
-        """Get who the people are options"""
+    def get_histogram_options(self) -> list[dict]:
+        """Get histogram options"""
 
-        who_the_people_are_options = helpers.get_unique_flattened_list_of_dictionaries(
-            data_lists=self.__campaigns_who_the_people_are_options
+        histogram_options = helpers.get_unique_flattened_list_of_dictionaries(
+            data_lists=self.__campaigns_histogram_options
         )
 
         # Only keep country breakdown and age bucket breakdown option
-        who_the_people_are_options = [
+        histogram_options = [
             x
-            for x in who_the_people_are_options
+            for x in histogram_options
             if x.get("value") == "breakdown-country"
             or x.get("value") == "breakdown-age-bucket"
         ]
 
-        return who_the_people_are_options
+        return histogram_options
 
     def __get_responses_sample(self) -> dict[str, list[dict] | list]:
         """Get responses sample"""

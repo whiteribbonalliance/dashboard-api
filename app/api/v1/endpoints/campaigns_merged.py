@@ -136,23 +136,23 @@ async def read_filter_options(
 
 
 @router.get(
-    path="/who-the-people-are-options",
+    path="/histogram-options",
     response_model=list[Option],
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_who_the_people_are_options(
+async def histogram_options(
     parameters: Annotated[
         CommonParametersCampaignsMerged,
         Depends(dependencies.dep_common_parameters_all_campaigns),
     ]
 ):
-    """Read who the people are options for campaign"""
+    """Read histogram options for campaign"""
 
     language = parameters.language
 
-    # Get all campaigns who the people are options
-    campaigns_who_the_people_are_options: list[list[dict]] = []
+    # Get all campaigns histogram options
+    campaigns_histogram_options: list[list[dict]] = []
     for campaign_code in CampaignCode:
         # TODO: Temporarily skip campaign 'wee'
         if campaign_code == CampaignCode.womens_economic_empowerment:
@@ -163,23 +163,19 @@ async def read_who_the_people_are_options(
             campaign_code=campaign_code, language=language
         )
 
-        # Who the people are options
-        campaign_who_the_people_are_options = (
-            campaign_service.get_who_the_people_are_options()
-        )
-        campaigns_who_the_people_are_options.append(
-            [x.dict() for x in campaign_who_the_people_are_options]
+        # Histogram options
+        campaign_histogram_options = campaign_service.histogram_options()
+        campaigns_histogram_options.append(
+            [x.dict() for x in campaign_histogram_options]
         )
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
         language=language,
-        campaigns_who_the_people_are_options=campaigns_who_the_people_are_options,
+        campaigns_histogram_options=campaigns_histogram_options,
     )
 
-    # Who the people are options
-    who_the_people_are_options = (
-        campaigns_merged_service.get_who_the_people_are_options()
-    )
+    # Histogram options
+    histogram_options = campaigns_merged_service.get_histogram_options()
 
-    return who_the_people_are_options
+    return histogram_options

@@ -397,7 +397,7 @@ class Translator(metaclass=SingletonMeta):
             filter_2_description,
         )
 
-    def apply_t_who_the_people_are_options(self, t: Callable, options: list[Option]):
+    def apply_t_histogram_options(self, t: Callable, options: list[Option]):
         """Apply extract/translate"""
 
         # Create deep replacer instance
