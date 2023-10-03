@@ -424,11 +424,11 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Set genders
     genders = []
+    # Make sure the gender value 'prefer not to say' always starts with a capital letter
+    df_responses["gender"] = df_responses["gender"].apply(
+        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+    )
     if "gender" in column_ids:
-        # Make sure the gender value 'prefer not to say' always starts with a capital letter
-        df_responses["gender"] = df_responses["gender"].apply(
-            lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
-        )
         for gender in df_responses["gender"].value_counts().index:
             if not gender:
                 continue
