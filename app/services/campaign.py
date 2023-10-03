@@ -523,23 +523,23 @@ class CampaignService:
 
         breakdown_country_option = Option(
             value="breakdown-country",
-            label=f"{'Show breakdown by country'}",
+            label="Show breakdown by country",
         )
         breakdown_age_option = Option(
             value="breakdown-age",
-            label=f"{'Show breakdown by age'}",
+            label="Show breakdown by age",
         )
         breakdown_age_bucket_option = Option(
             value="breakdown-age-bucket",
-            label="Show breakdown by age bucket",
+            label="Show breakdown by age range",
         )
         breakdown_gender_option = Option(
             value="breakdown-gender",
-            label=f"{'Show breakdown by gender'}",
+            label="Show breakdown by gender",
         )
         breakdown_profession_option = Option(
             value="breakdown-profession",
-            label=f"{'Show breakdown by profession'}",
+            label="Show breakdown by profession",
         )
 
         options: list[Option] = []
