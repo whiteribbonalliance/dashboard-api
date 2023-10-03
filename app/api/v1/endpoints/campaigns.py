@@ -1,5 +1,4 @@
 import logging
-import os.path
 from io import StringIO
 from typing import Annotated
 
@@ -153,83 +152,20 @@ def campaign_data(
             "User has no access to campaign"
         )
 
-    # CRUD
-    crud = CampaignCRUD(campaign_code=campaign_code)
+    # Service
+    campaign_service = CampaignService(campaign_code=campaign_code)
 
-    # Get dataframe
-    df = crud.get_dataframe()
-
-    # File name
-    csv_filename = f"wra_{campaign_code.value}.csv"
-
-    # Filter by date
-    date_format = "%Y_%m_%d"
-    if from_date and to_date:
-        df = df[
-            (df["ingestion_time"].dt.date >= from_date)
-            & (df["ingestion_time"].dt.date <= to_date)
-        ]
-        csv_filename = f"wra_{campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
-
-    # File paths
-    csv_filepath = f"/tmp/{csv_filename}"
-    creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
-    cloud_storage_csv_filepath = f"{csv_filename}"
-
-    # Raise exception if df has no data
-    if len(df.index) < 1:
-        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
-
-    # If file exists in Cloud Storage
-    if cloud_storage_interactions.file_exists(filename=cloud_storage_csv_filepath):
-        # Get storage url
-        url = cloud_storage_interactions.get_file_url(
-            filename=cloud_storage_csv_filepath
-        )
-
-    # If file does not exist in Cloud Storage
-    else:
-        if not os.path.isfile(csv_filepath):
-            # Create '/tmp' dir (only if 'dev' because this dir already exists when in production if using App Engine)
-            if os.getenv("STAGE") == "dev":
-                if not os.path.isdir("/tmp"):
-                    os.mkdir("/tmp")
-
-            # Cleanup
-            if os.path.isfile(creating_csv_filepath):
-                os.remove(creating_csv_filepath)
-
-            # Convert date to string
-            df["ingestion_time"] = df["ingestion_time"].apply(
-                lambda x: x.strftime(date_format) if x else ""
-            )
-
-            # Save dataframe to csv file
-            df.to_csv(path_or_buf=creating_csv_filepath, index=False, header=True)
-
-            # Rename
-            os.rename(src=creating_csv_filepath, dst=csv_filepath)
-
-        # Upload to storage
-        cloud_storage_interactions.upload_file(
-            source_filename=csv_filepath,
-            destination_filename=cloud_storage_csv_filepath,
-        )
-
-        # Remove from tmp
-        os.remove(csv_filepath)
-
-        # Get storage url
-        url = cloud_storage_interactions.get_file_url(
-            filename=cloud_storage_csv_filepath
-        )
+    # Get url and filename
+    url, csv_filename = campaign_service.get_campaign_data_url_and_csv_filename(
+        from_date=from_date, to_date=to_date
+    )
 
     def iter_file():
         session = requests.Session()
         response = session.get(url=url, stream=True)
 
         if not response.ok:
-            raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+            raise http_exceptions.ResourceNotFoundHTTPException("Error fetching data")
 
         for chunk in response.iter_content(1024 * 1024):
             yield chunk
@@ -239,7 +175,50 @@ def campaign_data(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            f"Content-Disposition": f"attachment; filename={csv_filename}",
+            "Content-Disposition": f"attachment; filename={csv_filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@router.get(
+    path="/{campaign}/public/data",
+    response_class=StreamingResponse,
+    status_code=status.HTTP_200_OK,
+)
+def campaign_public_data(
+    campaign_code: CampaignCode = Depends(dependencies.dep_campaign_code),
+):
+    """Read campaign public data"""
+
+    # Only allow campaign healthwellbeing
+    if campaign_code != CampaignCode.healthwellbeing:
+        raise http_exceptions.UnauthorizedHTTPException(
+            "Reading campaign data not allowed."
+        )
+
+    # Service
+    campaign_service = CampaignService(campaign_code=campaign_code)
+
+    # Get url and filename
+    url, csv_filename = campaign_service.get_campaign_data_url_and_csv_filename()
+
+    def iter_file():
+        session = requests.Session()
+        response = session.get(url=url, stream=True)
+
+        if not response.ok:
+            raise http_exceptions.ResourceNotFoundHTTPException("Error fetching data")
+
+        for chunk in response.iter_content(1024 * 1024):
+            yield chunk
+
+    return StreamingResponse(
+        content=iter_file(),
+        media_type="text/csv",
+        headers={
+            "Content-Type": "text/csv",
+            "Content-Disposition": f"attachment; filename={csv_filename}",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
@@ -257,17 +236,17 @@ async def campaign_countries_breakdown(
     """Read campaign countries breakdown"""
 
     # CRUD
-    crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
     # Get dataframe
-    df = crud.get_dataframe()
+    df = campaign_crud.get_dataframe()
 
     # Countries breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
 
     # Raise exception if df has no data
-    if len(df.index) < 1:
-        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+    # if len(df.index) < 1:
+    #     raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
     # Sort
     df = df.sort_values(by="count", ascending=False)
@@ -284,7 +263,7 @@ async def campaign_countries_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
@@ -302,17 +281,17 @@ async def campaign_source_files_breakdown(
     """Read campaign source files breakdown"""
 
     # CRUD
-    crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
 
     # Get dataframe
-    df = crud.get_dataframe()
+    df = campaign_crud.get_dataframe()
 
     # Source files breakdown
     df = pd.DataFrame({"count": df.groupby(["data_source"]).size()}).reset_index()
 
     # Raise exception if df has no data
-    if len(df.index) < 1:
-        raise http_exceptions.ResourceNotFoundHTTPException("No data found")
+    # if len(df.index) < 1:
+    #     raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
     # Sort
     df = df.sort_values(by="count", ascending=False)
@@ -326,7 +305,7 @@ async def campaign_source_files_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            f"Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
