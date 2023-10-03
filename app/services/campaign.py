@@ -379,7 +379,16 @@ class CampaignService:
                     )
                     provinces_found.add(region.province)
 
+            # Set region options
+            region_options["options"] = sorted(
+                region_options["options"], key=lambda x: x["label"]
+            )
             country_region_options.append(region_options)
+
+            # Set province options
+            province_options["options"] = sorted(
+                province_options["options"], key=lambda x: x["label"]
+            )
             country_province_options.append(province_options)
 
         # Response topic options
