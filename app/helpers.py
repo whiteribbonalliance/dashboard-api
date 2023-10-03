@@ -62,25 +62,6 @@ def clear_tmp_dir():
         os.remove(filename)
 
 
-def get_q_code_column_names() -> list:
-    """Get q code column names"""
-
-    columns = []
-    for q_code in QuestionCode:
-        columns.extend(
-            [
-                f"{q_code.value}_raw_response",
-                f"{q_code.value}_original_language",
-                f"{q_code.value}_canonical_code",
-                f"{q_code.value}_lemmatized",
-                f"{q_code.value}_tokenized",
-                f"{q_code.value}_parent_category",
-            ]
-        )
-
-    return columns
-
-
 def get_distributed_list_of_dictionaries(
     data_lists: list[list[dict]],
     sort_by_key: str = None,

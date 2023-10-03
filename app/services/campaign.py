@@ -1935,6 +1935,17 @@ class CampaignService:
         # Dataframe
         df = self.__crud.get_dataframe()
 
+        # Drop columns
+        df = df.drop(
+            columns=[
+                "age_bucket_default",
+                "q1_tokenized",
+                "q1_parent_category",
+                "data_source",
+            ],
+            errors="ignore",
+        )
+
         # File name
         csv_filename = f"wra_{self.__campaign_code.value}.csv"
 
