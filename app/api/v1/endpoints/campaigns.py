@@ -244,10 +244,6 @@ async def campaign_countries_breakdown(
     # Countries breakdown
     df = pd.DataFrame({"count": df.groupby(["canonical_country"]).size()}).reset_index()
 
-    # Raise exception if df has no data
-    # if len(df.index) < 1:
-    #     raise http_exceptions.ResourceNotFoundHTTPException("No data found")
-
     # Sort
     df = df.sort_values(by="count", ascending=False)
 
@@ -288,10 +284,6 @@ async def campaign_source_files_breakdown(
 
     # Source files breakdown
     df = pd.DataFrame({"count": df.groupby(["data_source"]).size()}).reset_index()
-
-    # Raise exception if df has no data
-    # if len(df.index) < 1:
-    #     raise http_exceptions.ResourceNotFoundHTTPException("No data found")
 
     # Sort
     df = df.sort_values(by="count", ascending=False)
