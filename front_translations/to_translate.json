@@ -88,5 +88,6 @@
   "healthwellbeing-results-analyzed": "These results were categorized and analyzed using Artificial Intelligence, which is constantly improving. The current predictive accuracy for these responses is 84% but this varies across languages.",
   "click-export-dataset": "Click here to export the dataset.",
   "categories": "Categories",
-  "subcategories": "Subcategories"
+  "subcategories": "Subcategories",
+  "download-start-shortly": "Your download will start shortly..."
 }
