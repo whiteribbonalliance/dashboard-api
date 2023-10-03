@@ -1925,12 +1925,12 @@ class CampaignService:
 
         return response_years
 
-    def get_campaign_data_url_and_csv_filename(
+    def get_campaign_data_url_and_filename(
         self,
         from_date: date = None,
         to_date: date = None,
     ) -> tuple[str, str]:
-        """Get campaign data url and CSV filename"""
+        """Get campaign data url and filename"""
 
         # Dataframe
         df = self.__crud.get_dataframe()

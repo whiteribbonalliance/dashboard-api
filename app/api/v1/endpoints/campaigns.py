@@ -156,7 +156,7 @@ def campaign_data(
     campaign_service = CampaignService(campaign_code=campaign_code)
 
     # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_csv_filename(
+    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
         from_date=from_date, to_date=to_date
     )
 
@@ -201,7 +201,7 @@ def campaign_public_data(
     campaign_service = CampaignService(campaign_code=campaign_code)
 
     # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_csv_filename()
+    url, csv_filename = campaign_service.get_campaign_data_url_and_filename()
 
     def iter_file():
         session = requests.Session()
