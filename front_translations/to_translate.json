@@ -89,5 +89,8 @@
   "export-dataset": "Export the dataset.",
   "categories": "Categories",
   "subcategories": "Subcategories",
-  "download-start-shortly": "Your download will start shortly..."
+  "download-start-shortly": "Your download will start shortly...",
+  "healthwellbeing-learn-more-about-categories": "Are you interested in learning more about the categories used in this Dashboard? Review the Women’s Health and Wellbeing campaign codebook",
+  "healthwellbeing-ai-constantly-improved": "Our AI is constantly being improved. If you see any errors on the Dashboard, please let us know",
+  "here-capitalized": "HERE"
 }
