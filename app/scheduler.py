@@ -1,5 +1,5 @@
 """
-Scheduler contains a task that runs every 12th hour
+Schedule tasks
 """
 
 import logging
