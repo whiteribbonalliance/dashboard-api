@@ -172,14 +172,14 @@ def generate_description_of_filter(
     # Professions
     if len(professions) == 0:
         if num_results == 1:
-            women = respondent_noun_singular
+            respondent = respondent_noun_singular
         else:
-            women = respondent_noun_plural
+            respondent = respondent_noun_plural
     else:
         if num_results == 1:
-            women = join_list_comma_and(professions, lower_words=True)
+            respondent = join_list_comma_and(professions, lower_words=True)
         else:
-            women = join_list_comma_and(
+            respondent = join_list_comma_and(
                 [inflect_engine.plural(p) for p in professions], lower_words=True
             )
 
@@ -188,18 +188,17 @@ def generate_description_of_filter(
         demonyms = []
         for country in countries:
             country_data = constants.COUNTRIES_DATA.get(country)
-            if not country_data:
-                # TODO: log?
-                continue
-
-            demonyms.append(country_data["demonym"])
+            if country_data:
+                demonyms.append(country_data["demonym"])
 
         if demonyms:
-            description = f"{join_list_comma_and(demonyms, lower_words=False)} {women}"
+            description = (
+                f"{join_list_comma_and(demonyms, lower_words=False)} {respondent}"
+            )
         else:
             description = ""
     else:
-        description = women
+        description = respondent
 
     # Genders
     if genders is not None and len(genders) > 0:
@@ -258,8 +257,8 @@ def generate_description_of_filter(
         else:
             description += ' who did not mention "' + str(keyword_exclude) + '"'
 
-    if description == women:
-        description = "all " + women
+    if description == respondent:
+        description = "all " + respondent
 
     # Capitalize first letter only
     if description:

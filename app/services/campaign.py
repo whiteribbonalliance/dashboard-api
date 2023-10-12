@@ -18,16 +18,11 @@ from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
-from app.schemas.age import Age
-from app.schemas.age_bucket import AgeBucket
 from app.schemas.campaign import Campaign
 from app.schemas.country import Country
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
-from app.schemas.gender import Gender
-from app.schemas.living_setting import LivingSetting
 from app.schemas.option import Option
-from app.schemas.profession import Profession
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import cloud_storage_interactions
@@ -408,39 +403,39 @@ class CampaignService:
 
         # Age options
         ages = self.__get_ages()
-        age_options = [Option(value=age.code, label=age.name).dict() for age in ages]
+        age_options = [Option(value=age, label=age).dict() for age in ages]
 
         # Age bucket options
         age_buckets = self.__get_age_buckets()
         age_bucket_options = [
-            Option(value=age_bucket.code, label=age_bucket.name).dict()
+            Option(value=age_bucket, label=age_bucket).dict()
             for age_bucket in age_buckets
         ]
 
         # Age buckets default options
         age_buckets_default = self.__get_age_buckets_default()
         age_bucket_default_options = [
-            Option(value=age_bucket_default.code, label=age_bucket_default.name).dict()
+            Option(value=age_bucket_default, label=age_bucket_default).dict()
             for age_bucket_default in age_buckets_default
         ]
 
         # Gender options
         genders = self.__get_genders()
         gender_options = [
-            Option(value=gender.code, label=gender.name).dict() for gender in genders
+            Option(value=gender, label=gender).dict() for gender in genders
         ]
 
         # Living setting options
         living_settings = self.__get_living_settings()
         living_setting_options = [
-            Option(value=living_setting.code, label=living_setting.name).dict()
+            Option(value=living_setting, label=living_setting).dict()
             for living_setting in living_settings
         ]
 
         # Profession options
         professions = self.__get_professions()
         profession_options = [
-            Option(value=profession.code, label=profession.name).dict()
+            Option(value=profession, label=profession).dict()
             for profession in professions
         ]
 
@@ -1807,7 +1802,7 @@ class CampaignService:
 
         return countries
 
-    def __get_ages(self) -> list[Age]:
+    def __get_ages(self) -> list[str]:
         """Get ages"""
 
         ages = self.__crud.get_ages()
@@ -1816,77 +1811,75 @@ class CampaignService:
         ages = sorted(
             ages,
             key=lambda x: helpers.extract_first_occurring_numbers(
-                value=x.code, first_less_than_symbol_to_0=True
+                value=x, first_less_than_symbol_to_0=True
             ),
         )
 
         return ages
 
-    def __get_age_buckets(self) -> list[AgeBucket]:
+    def __get_age_buckets(self) -> list[str]:
         """Get age buckets"""
 
         age_buckets = self.__crud.get_age_buckets()
 
         # Remove n/a
-        age_buckets = [x for x in age_buckets if x.code.lower() != "n/a"]
+        age_buckets = [x for x in age_buckets if x.lower() != "n/a"]
 
         # Sort
         age_buckets = sorted(
             age_buckets,
             key=lambda x: helpers.extract_first_occurring_numbers(
-                value=x.code, first_less_than_symbol_to_0=True
+                value=x, first_less_than_symbol_to_0=True
             ),
         )
 
         return age_buckets
 
-    def __get_age_buckets_default(self) -> list[AgeBucket]:
+    def __get_age_buckets_default(self) -> list[str]:
         """Get age buckets default"""
 
         age_buckets_default = self.__crud.get_age_buckets_default()
 
         # Remove n/a
-        age_buckets_default = [
-            x for x in age_buckets_default if x.code.lower() != "n/a"
-        ]
+        age_buckets_default = [x for x in age_buckets_default if x.lower() != "n/a"]
 
         # Sort
         age_buckets_default = sorted(
             age_buckets_default,
             key=lambda x: helpers.extract_first_occurring_numbers(
-                value=x.code, first_less_than_symbol_to_0=True
+                value=x, first_less_than_symbol_to_0=True
             ),
         )
 
         return age_buckets_default
 
-    def __get_genders(self) -> list[Gender]:
+    def __get_genders(self) -> list[str]:
         """Get genders"""
 
         genders = self.__crud.get_genders()
 
         # Sort
-        genders = sorted(genders, key=lambda x: x.name)
+        genders = sorted(genders, key=lambda x: x)
 
         return genders
 
-    def __get_living_settings(self) -> list[LivingSetting]:
+    def __get_living_settings(self) -> list[str]:
         """Get living settings"""
 
         living_settings = self.__crud.get_living_settings()
 
         # Sort
-        living_settings = sorted(living_settings, key=lambda x: x.name)
+        living_settings = sorted(living_settings, key=lambda x: x)
 
         return living_settings
 
-    def __get_professions(self) -> list[Profession]:
+    def __get_professions(self) -> list[str]:
         """Get professions"""
 
         professions = self.__crud.get_professions()
 
         # Sort
-        professions = sorted(professions, key=lambda x: x.name)
+        professions = sorted(professions, key=lambda x: x)
 
         return professions
 

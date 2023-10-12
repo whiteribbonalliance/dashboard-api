@@ -11,13 +11,8 @@ from app import databases
 from app.databases import Database
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
-from app.schemas.age import Age
-from app.schemas.age_bucket import AgeBucket
 from app.schemas.country import Country
-from app.schemas.gender import Gender
-from app.schemas.living_setting import LivingSetting
 from app.schemas.option import Option
-from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.schemas.response_column import ResponseColumn
 
@@ -74,57 +69,57 @@ class CampaignCRUD:
 
         return response_years
 
-    def get_ages(self) -> list[Age]:
+    def get_ages(self) -> list[str]:
         """Get ages"""
 
         ages = self.__db.ages
         if ages:
-            return [x.copy() for x in ages if x]
+            return [x for x in ages if x]
 
         return []
 
-    def get_age_buckets(self) -> list[AgeBucket]:
+    def get_age_buckets(self) -> list[str]:
         """Get age buckets"""
 
         age_buckets = self.__db.age_buckets
         if age_buckets:
-            return [x.copy() for x in age_buckets if x]
+            return [x for x in age_buckets if x]
 
         return []
 
-    def get_age_buckets_default(self) -> list[AgeBucket]:
+    def get_age_buckets_default(self) -> list[str]:
         """Get age buckets default"""
 
         age_buckets_default = self.__db.age_buckets_default
         if age_buckets_default:
-            return [x.copy() for x in age_buckets_default if x]
+            return [x for x in age_buckets_default if x]
 
         return []
 
-    def get_genders(self) -> list[Gender]:
+    def get_genders(self) -> list[str]:
         """Get genders"""
 
         genders = self.__db.genders
         if genders:
-            return [x.copy() for x in genders if x]
+            return [x for x in genders if x]
 
         return []
 
-    def get_living_settings(self) -> list[LivingSetting]:
+    def get_living_settings(self) -> list[str]:
         """Get living settings"""
 
         living_settings = self.__db.living_settings
         if living_settings:
-            return [x.copy() for x in living_settings if x]
+            return [x for x in living_settings if x]
 
         return []
 
-    def get_professions(self) -> list[Profession]:
+    def get_professions(self) -> list[str]:
         """Get professions"""
 
         professions = self.__db.professions
         if professions:
-            return [x.copy() for x in professions if x]
+            return [x for x in professions if x]
 
         return []
 
@@ -249,17 +244,17 @@ class CampaignCRUD:
 
         self.__db.response_years = response_years
 
-    def set_ages(self, ages: list[Age]):
+    def set_ages(self, ages: list[str]):
         """Set ages"""
 
         self.__db.ages = ages
 
-    def set_age_buckets(self, age_buckets: list[AgeBucket]):
+    def set_age_buckets(self, age_buckets: list[str]):
         """Set age buckets"""
 
         self.__db.age_buckets = age_buckets
 
-    def set_age_buckets_default(self, age_buckets_default: list[AgeBucket]):
+    def set_age_buckets_default(self, age_buckets_default: list[str]):
         """Set age buckets default"""
 
         self.__db.age_buckets_default = age_buckets_default
@@ -269,17 +264,17 @@ class CampaignCRUD:
 
         self.__db.countries = countries
 
-    def set_genders(self, genders: list[Gender]):
+    def set_genders(self, genders: list[str]):
         """Set genders"""
 
         self.__db.genders = genders
 
-    def set_living_settings(self, living_settings: list[LivingSetting]):
+    def set_living_settings(self, living_settings: list[str]):
         """Set living settings"""
 
         self.__db.living_settings = living_settings
 
-    def set_professions(self, professions: list[Profession]):
+    def set_professions(self, professions: list[str]):
         """Set professions"""
 
         self.__db.professions = professions
