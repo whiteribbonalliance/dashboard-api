@@ -1865,6 +1865,9 @@ class CampaignService:
 
         genders = self.__crud.get_genders()
 
+        # Sort
+        genders = sorted(genders, key=lambda x: x.name)
+
         return genders
 
     def __get_living_settings(self) -> list[LivingSetting]:
@@ -1872,12 +1875,18 @@ class CampaignService:
 
         living_settings = self.__crud.get_living_settings()
 
+        # Sort
+        living_settings = sorted(living_settings, key=lambda x: x.name)
+
         return living_settings
 
     def __get_professions(self) -> list[Profession]:
         """Get professions"""
 
         professions = self.__crud.get_professions()
+
+        # Sort
+        professions = sorted(professions, key=lambda x: x.name)
 
         return professions
 

@@ -262,8 +262,14 @@ def load_campaign_data(campaign_code: CampaignCode):
             q_col_names.get_lemmatized_col_name(q_code=q_code)
         ].apply(lambda x: str(x).split(" ") if x else x)
 
-    # Make sure the setting value 'prefer not to say' always starts with a capital letter
+    # Make sure the value 'prefer not to say' always starts with a capital letter
     df_responses["setting"] = df_responses["setting"].apply(
+        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+    )
+    df_responses["gender"] = df_responses["gender"].apply(
+        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+    )
+    df_responses["age"] = df_responses["age"].apply(
         lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
     )
 
@@ -281,11 +287,6 @@ def load_campaign_data(campaign_code: CampaignCode):
     if campaign_code == CampaignCode.what_young_people_want:
         df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
         df_responses = df_responses[df_responses["age"].notna()]
-
-    # Make sure the age value 'prefer not to say' always starts with a capital letter
-    df_responses["age"] = df_responses["age"].apply(
-        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
-    )
 
     # Set ages
     ages = df_responses["age"].unique().tolist()
@@ -423,25 +424,22 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set countries
     campaign_crud.set_countries(countries=countries)
 
-    # Get responses sample column ids
-    column_ids = [col.id for col in campaign_crud.get_responses_sample_columns()]
-
-    # Make sure the gender value 'prefer not to say' always starts with a capital letter
-    df_responses["gender"] = df_responses["gender"].apply(
-        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
-    )
-
     # Set genders
     genders = []
-    if "gender" in column_ids:
-        for gender in df_responses["gender"].value_counts().index:
-            if not gender:
-                continue
-            genders.append(Gender(code=gender, name=gender))
+    df_responses["gender"] = df_responses["gender"].apply(
+        lambda x: x.strip() if x else x
+    )
+    for gender in df_responses["gender"].value_counts().index:
+        if not gender:
+            continue
+        genders.append(Gender(code=gender, name=gender))
     campaign_crud.set_genders(genders=genders)
 
     # Set living settings
     living_settings = []
+    df_responses["setting"] = df_responses["setting"].apply(
+        lambda x: x.strip() if x else x
+    )
     for living_setting in df_responses["setting"].value_counts().index:
         if not living_setting:
             continue
@@ -450,9 +448,11 @@ def load_campaign_data(campaign_code: CampaignCode):
 
     # Set professions
     professions = []
-    if "profession" in column_ids:
-        for profession in df_responses["profession"].value_counts().index:
-            professions.append(Profession(code=profession, name=profession))
+    df_responses["profession"] = df_responses["profession"].apply(
+        lambda x: x.strip() if x else x
+    )
+    for profession in df_responses["profession"].value_counts().index:
+        professions.append(Profession(code=profession, name=profession))
     campaign_crud.set_professions(professions=professions)
 
     # Set dataframe
