@@ -73,7 +73,7 @@ def read_campaigns_merged(
             campaigns[campaign_code.value].append(
                 campaign_service.get_campaign(
                     q_code=campaign_q_code,
-                    include_list_of_ages=True,
+                    include_list_of_ages=False,
                     include_list_of_age_buckets_default=True,
                 )
             )
@@ -176,6 +176,6 @@ async def histogram_options(
     )
 
     # Histogram options
-    histogram_options = campaigns_merged_service.get_histogram_options()
+    options = campaigns_merged_service.get_histogram_options()
 
-    return histogram_options
+    return options
