@@ -1068,7 +1068,8 @@ class CampaignService:
 
             living_settings_breakdown.append(
                 {
-                    "name": name if helpers.contains_letters(name) else name,
+                    "value": name if helpers.contains_letters(name) else name,
+                    "label": name if helpers.contains_letters(name) else name,
                     "count_1": count_1,
                     "count_2": count_2,
                 }
@@ -1123,7 +1124,8 @@ class CampaignService:
 
         wordcloud_words_list = [
             {
-                "text": word["word"],
+                "value": word["label"],
+                "text": word["label"],
                 "count_1": word["count_1"],
                 "count_2": word["count_2"],
             }
@@ -1255,7 +1257,8 @@ class CampaignService:
 
         top_words = [
             {
-                "word": word.lower(),
+                "value": word.lower(),
+                "label": word.lower(),
                 "count_1": freq_list_top_1[(len(word_list) - 1) - index],
                 "count_2": freq_list_top_2[(len(word_list) - 1) - index],
             }
@@ -1582,7 +1585,8 @@ class CampaignService:
 
                 histogram[column_name].append(
                     {
-                        "name": name if helpers.contains_letters(name) else name,
+                        "value": name if helpers.contains_letters(name) else name,
+                        "label": name if helpers.contains_letters(name) else name,
                         "count_1": count_1,
                         "count_2": count_2,
                     }
@@ -1624,10 +1628,8 @@ class CampaignService:
 
         genders_breakdown = []
         for key, value in gender_counts.items():
-            if not key:
-                continue
-
-            genders_breakdown.append({"name": key, "count": value})
+            if key:
+                genders_breakdown.append({"value": key, "label": key, "count": value})
 
         # Sort
         genders_breakdown = sorted(

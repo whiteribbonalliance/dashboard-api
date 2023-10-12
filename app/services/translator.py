@@ -340,6 +340,9 @@ class Translator(metaclass=SingletonMeta):
             data=living_settings_breakdown,
             replace_func=t,
             pydantic_to_dict=True,
+            key_depth_rules={
+                "value": [key_depth_rules.IGNORE],
+            },
         )
 
         # Top words and phrases
@@ -347,6 +350,12 @@ class Translator(metaclass=SingletonMeta):
             data=top_words_and_phrases,
             replace_func=t,
             pydantic_to_dict=True,
+            key_depth_rules={
+                "top_words:value": [key_depth_rules.IGNORE],
+                "two_word_phrases:value": [key_depth_rules.IGNORE],
+                "three_word_phrases:value": [key_depth_rules.IGNORE],
+                "wordcloud_words:value": [key_depth_rules.IGNORE],
+            },
         )
 
         # Histogram
@@ -355,8 +364,14 @@ class Translator(metaclass=SingletonMeta):
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
-                "ages": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
-                "age_buckets": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
+                "ages:label": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
+                "age_buckets:label": [key_depth_rules.IGNORE_STR_WITHOUT_LETTERS],
+                "ages:value": [key_depth_rules.IGNORE],
+                "ages_buckets:value": [key_depth_rules.IGNORE],
+                "ages_buckets_default:value": [key_depth_rules.IGNORE],
+                "genders:value": [key_depth_rules.IGNORE],
+                "professions:value": [key_depth_rules.IGNORE],
+                "canonical_countries:value": [key_depth_rules.IGNORE],
             },
         )
 
@@ -365,6 +380,9 @@ class Translator(metaclass=SingletonMeta):
             data=genders_breakdown,
             replace_func=t,
             pydantic_to_dict=True,
+            key_depth_rules={
+                "value": [key_depth_rules.IGNORE],
+            },
         )
 
         # World bubble maps coordinates
