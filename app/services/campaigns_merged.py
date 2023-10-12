@@ -253,7 +253,7 @@ class CampaignsMergedService:
 
         # Get top words (use data from wordcloud words)
         top_words = [
-            {"word": x["text"], "count_1": x["count_1"], "count_2": x["count_2"]}
+            {"label": x["text"], "count_1": x["count_1"], "count_2": x["count_2"]}
             for x in wordcloud_words
         ][: constants.n_top_words]
 
@@ -264,7 +264,7 @@ class CampaignsMergedService:
                 for x in self.__campaigns_data_all_q
                 if x.top_words_and_phrases
             ],
-            unique_key="word",
+            unique_key="label",
             keys_to_merge=["count_1", "count_2"],
         )
 
@@ -275,7 +275,7 @@ class CampaignsMergedService:
                 for x in self.__campaigns_data_all_q
                 if x.top_words_and_phrases
             ],
-            unique_key="word",
+            unique_key="label",
             keys_to_merge=["count_1", "count_2"],
         )
 
@@ -347,7 +347,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_q1
                     if x.histogram
                 ],
-                unique_key="name",
+                unique_key="label",
                 keys_to_merge=["count_1", "count_2"],
             ),
             "genders": [],
@@ -358,7 +358,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_q1
                     if x.histogram
                 ],
-                unique_key="name",
+                unique_key="label",
                 keys_to_merge=["count_1", "count_2"],
             ),
         }
@@ -374,7 +374,7 @@ class CampaignsMergedService:
         histogram["age_buckets_default"] = sorted(
             histogram["age_buckets_default"],
             key=lambda x: helpers.extract_first_occurring_numbers(
-                value=x.get("name"), first_less_than_symbol_to_0=True
+                value=x.get("label"), first_less_than_symbol_to_0=True
             ),
         )
 
