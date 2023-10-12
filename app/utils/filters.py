@@ -24,6 +24,7 @@ def get_default_filter() -> Filter:
         response_topics=[],
         only_responses_from_categories=False,
         genders=[],
+        living_settings=[],
         professions=[],
         ages=[],
         age_buckets=[],
@@ -41,6 +42,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
     provinces = _filter.provinces
     response_topics = _filter.response_topics
     genders = _filter.genders
+    living_settings = _filter.living_settings
     professions = _filter.professions
     keyword_filter = _filter.keyword_filter
     keyword_exclude = _filter.keyword_exclude
@@ -71,6 +73,10 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
     # Filter genders
     if len(genders) > 0:
         df_copy = df_copy[df_copy["gender"].isin(genders)]
+
+    # Filter living settings
+    if len(living_settings) > 0:
+        df_copy = df_copy[df_copy["setting"].isin(living_settings)]
 
     # Filter professions
     if len(professions) > 0:

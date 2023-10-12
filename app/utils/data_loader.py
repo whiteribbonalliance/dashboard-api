@@ -98,7 +98,7 @@ def get_age_bucket(
     return "N/A"
 
 
-def filter_ages_10_to_24(age: str) -> str:
+def filter_ages_10_to_24(age: str) -> str | float:
     """Return age if between 10 and 24, else nan"""
 
     if isinstance(age, str):

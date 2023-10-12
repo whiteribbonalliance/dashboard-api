@@ -8,6 +8,7 @@ class Filter(BaseModel):
     ages: list[str] = Field(description="The selected ages")
     age_buckets: list[str] = Field(description="The selected age buckets")
     genders: list[str] = Field(description="The selected genders")
+    living_settings: list[str] = Field(description="The selected living settings")
     professions: list[str] = Field(description="The selected professions")
     response_topics: list[str] = Field(description="The selected response topics")
     only_responses_from_categories: bool = Field(

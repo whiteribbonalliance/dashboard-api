@@ -79,8 +79,12 @@ class CampaignsMergedService:
         filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
 
         # Average age
-        filter_1_average_age = "N/A"  # Not all campaigns contain ages
-        filter_2_average_age = "N/A"  # Not all campaigns contain ages
+        filter_1_average_age = (
+            "N/A"  # Not all campaigns contain ages, only use age buckets below
+        )
+        filter_2_average_age = (
+            "N/A"  # Not all campaigns contain ages, only use age buckets below
+        )
         filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
             filter_seq="1"
         )
