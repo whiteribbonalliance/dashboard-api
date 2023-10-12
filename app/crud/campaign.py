@@ -15,6 +15,7 @@ from app.schemas.age import Age
 from app.schemas.age_bucket import AgeBucket
 from app.schemas.country import Country
 from app.schemas.gender import Gender
+from app.schemas.living_setting import LivingSetting
 from app.schemas.option import Option
 from app.schemas.profession import Profession
 from app.schemas.region import Region
@@ -106,6 +107,15 @@ class CampaignCRUD:
         genders = self.__db.genders
         if genders:
             return [x.copy() for x in genders if x]
+
+        return []
+
+    def get_living_settings(self) -> list[LivingSetting]:
+        """Get living settings"""
+
+        living_settings = self.__db.living_settings
+        if living_settings:
+            return [x.copy() for x in living_settings if x]
 
         return []
 
@@ -263,6 +273,11 @@ class CampaignCRUD:
         """Set genders"""
 
         self.__db.genders = genders
+
+    def set_living_settings(self, living_settings: list[LivingSetting]):
+        """Set living settings"""
+
+        self.__db.living_settings = living_settings
 
     def set_professions(self, professions: list[Profession]):
         """Set professions"""

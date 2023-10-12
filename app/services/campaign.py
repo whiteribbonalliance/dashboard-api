@@ -25,6 +25,7 @@ from app.schemas.country import Country
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.gender import Gender
+from app.schemas.living_setting import LivingSetting
 from app.schemas.option import Option
 from app.schemas.profession import Profession
 from app.schemas.response_column import ResponseColumn
@@ -429,6 +430,13 @@ class CampaignService:
             Option(value=gender.code, label=gender.name).dict() for gender in genders
         ]
 
+        # Living setting options
+        living_settings = self.__get_living_settings()
+        living_setting_options = [
+            Option(value=living_setting.code, label=living_setting.name).dict()
+            for living_setting in living_settings
+        ]
+
         # Profession options
         professions = self.__get_professions()
         profession_options = [
@@ -464,6 +472,7 @@ class CampaignService:
                     age_bucket_options=age_bucket_options,
                     age_bucket_default_options=age_bucket_default_options,
                     gender_options=gender_options,
+                    living_setting_options=living_setting_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
                     only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
@@ -482,6 +491,7 @@ class CampaignService:
                     age_bucket_options,
                     age_bucket_default_options,
                     gender_options,
+                    living_setting_options,
                     profession_options,
                     only_responses_from_categories_options,
                     only_multi_word_phrases_containing_filter_term_options,
@@ -495,6 +505,7 @@ class CampaignService:
                     age_bucket_options=age_bucket_options,
                     age_bucket_default_options=age_bucket_default_options,
                     gender_options=gender_options,
+                    living_setting_options=living_setting_options,
                     profession_options=profession_options,
                     only_responses_from_categories_options=only_responses_from_categories_options,
                     only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
@@ -513,6 +524,7 @@ class CampaignService:
             age_buckets=age_bucket_options,
             age_buckets_default=age_bucket_default_options,
             genders=gender_options,
+            living_settings=living_setting_options,
             professions=profession_options,
             only_responses_from_categories=only_responses_from_categories_options,
             only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
@@ -1854,6 +1866,13 @@ class CampaignService:
         genders = self.__crud.get_genders()
 
         return genders
+
+    def __get_living_settings(self) -> list[LivingSetting]:
+        """Get living settings"""
+
+        living_settings = self.__crud.get_living_settings()
+
+        return living_settings
 
     def __get_professions(self) -> list[Profession]:
         """Get professions"""

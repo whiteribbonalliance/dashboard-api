@@ -19,6 +19,7 @@ from app.schemas.age import Age
 from app.schemas.age_bucket import AgeBucket
 from app.schemas.country import Country
 from app.schemas.gender import Gender
+from app.schemas.living_setting import LivingSetting
 from app.schemas.profession import Profession
 from app.schemas.region import Region
 from app.services import bigquery_interactions
@@ -438,6 +439,14 @@ def load_campaign_data(campaign_code: CampaignCode):
                 continue
             genders.append(Gender(code=gender, name=gender))
     campaign_crud.set_genders(genders=genders)
+
+    # Set living settings
+    living_settings = []
+    for living_setting in df_responses["setting"].value_counts().index:
+        if not living_setting:
+            continue
+        living_settings.append(LivingSetting(code=living_setting, name=living_setting))
+    campaign_crud.set_living_settings(living_settings=living_settings)
 
     # Set professions
     professions = []

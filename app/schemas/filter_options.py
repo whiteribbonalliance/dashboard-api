@@ -28,6 +28,9 @@ class FilterOptions(BaseModel):
     genders: list[dict] = Field(
         default=[], description="Options for respondents genders"
     )
+    living_settings: list[dict] = Field(
+        default=[], description="Options for respondents living settings"
+    )
     professions: list[dict] = Field(
         default=[], description="Options for unique respondents professions"
     )

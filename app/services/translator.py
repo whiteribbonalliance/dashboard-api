@@ -427,6 +427,7 @@ class Translator(metaclass=SingletonMeta):
         age_bucket_options: list[dict],
         age_bucket_default_options: list[dict],
         gender_options: list[dict],
+        living_setting_options: list[dict],
         profession_options: list[dict],
         only_responses_from_categories_options: list[dict],
         only_multi_word_phrases_containing_filter_term_options: list[dict],
@@ -526,6 +527,17 @@ class Translator(metaclass=SingletonMeta):
             },
         )
 
+        # Living setting options
+        living_setting_options = deep_replacer.replace(
+            data=living_setting_options,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "value": [key_depth_rules.IGNORE],
+                "metadata": [key_depth_rules.IGNORE],
+            },
+        )
+
         # Profession options
         profession_options = deep_replacer.replace(
             data=profession_options,
@@ -568,6 +580,7 @@ class Translator(metaclass=SingletonMeta):
             age_bucket_options,
             age_bucket_default_options,
             gender_options,
+            living_setting_options,
             profession_options,
             only_responses_from_categories_options,
             only_multi_word_phrases_containing_filter_term_options,
