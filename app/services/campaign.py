@@ -69,6 +69,12 @@ class CampaignService:
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
 
+        self.__translator = Translator()
+
+        # For filtering purposes, translate keyword_filter and keyword_exclude back to English
+        if self.__language != "en":
+            self.__translate_filter_keywords_to_en()
+
         # Get dataframe
         df = self.__crud.get_dataframe()
 
@@ -256,7 +262,7 @@ class CampaignService:
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator()
-                translator.set_target_language(target_language=self.__language)
+                translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_function_campaign(
@@ -454,7 +460,7 @@ class CampaignService:
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator()
-                translator.set_target_language(target_language=self.__language)
+                translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_filter_options(
@@ -580,7 +586,7 @@ class CampaignService:
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator()
-                translator.set_target_language(target_language=self.__language)
+                translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_histogram_options(
@@ -600,6 +606,51 @@ class CampaignService:
             )
 
         return options
+
+    def __translate_filter_keywords_to_en(self):
+        """Translate keyword_filter and keyword_exclude to English"""
+
+        if self.__filter_1 and self.__filter_1.keyword_filter:
+            translated_keyword_filter_1 = self.__translator.quick_translate_text(
+                text=self.__filter_1.keyword_filter,
+                source_language=self.__language,
+                target_language="en",
+            )
+            if translated_keyword_filter_1:
+                self.__filter_1.keyword_filter = translated_keyword_filter_1.lower()
+        if self.__filter_2 and self.__filter_2.keyword_filter:
+            translated_keyword_filter_2 = self.__translator.quick_translate_text(
+                text=self.__filter_2.keyword_filter,
+                source_language=self.__language,
+                target_language="en",
+            )
+            if translated_keyword_filter_2:
+                self.__filter_2.keyword_filter = translated_keyword_filter_2.lower()
+
+        if self.__filter_1 and self.__filter_1.keyword_exclude:
+            translated_keyword_exclude_filter_1 = (
+                self.__translator.quick_translate_text(
+                    text=self.__filter_1.keyword_exclude,
+                    source_language=self.__language,
+                    target_language="en",
+                )
+            )
+            if translated_keyword_exclude_filter_1:
+                self.__filter_1.keyword_exclude = (
+                    translated_keyword_exclude_filter_1.lower()
+                )
+        if self.__filter_2 and self.__filter_2.keyword_exclude:
+            translated_keyword_exclude_filter_2 = (
+                self.__translator.quick_translate_text(
+                    text=self.__filter_2.keyword_exclude,
+                    source_language=self.__language,
+                    target_language="en",
+                )
+            )
+            if translated_keyword_exclude_filter_2:
+                self.__filter_2.keyword_exclude = (
+                    translated_keyword_exclude_filter_2.lower()
+                )
 
     def __get_unique_parent_categories_from_response_topics(self) -> set:
         """
@@ -986,10 +1037,8 @@ class CampaignService:
                     {
                         "count_1": response_1.get(count_col_name) if response_1 else 0,
                         "count_2": response_2.get(count_col_name) if response_2 else 0,
-                        code_col_name.replace(f"{q_code.value}_", ""): code,
-                        description_col_name.replace(
-                            f"{q_code.value}_", ""
-                        ): description,
+                        "value": code,
+                        "label": description,
                     }
                 )
 
@@ -1411,11 +1460,7 @@ class CampaignService:
 
         # Stopwords
         all_stopwords = constants.STOPWORDS
-        if self.__language in all_stopwords:
-            stopwords = set(all_stopwords.get(self.__language))
-        else:
-            stopwords = set()
-
+        stopwords = set(all_stopwords.get("en"))
         extra_stopwords = self.__crud.get_extra_stopwords()
         stopwords = stopwords.union(extra_stopwords)
 
@@ -1888,9 +1933,12 @@ class CampaignService:
     def __get_only_responses_from_categories_options(self) -> list[Option]:
         """Get only responses from categories options"""
 
-        only_responses_from_categories_options = (
-            self.__crud.get_only_responses_from_categories_options()
-        )
+        only_responses_from_categories_options = [
+            Option(
+                value=True, label="Only show responses which match all these categories"
+            ),
+            Option(value=False, label="Show responses in any of these categories"),
+        ]
 
         return only_responses_from_categories_options
 
@@ -1899,9 +1947,16 @@ class CampaignService:
     ) -> list[Option]:
         """Get only multi-word phrases containing filter term options"""
 
-        only_multi_word_phrases_containing_filter_term_options = (
-            self.__crud.get_only_multi_word_phrases_containing_filter_term_options()
-        )
+        only_multi_word_phrases_containing_filter_term_options = [
+            Option(
+                value=True,
+                label="Only show multi-word phrases containing filter term",
+            ),
+            Option(
+                value=False,
+                label="Show all multi-word phrases",
+            ),
+        ]
 
         return only_multi_word_phrases_containing_filter_term_options
 

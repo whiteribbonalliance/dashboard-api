@@ -222,7 +222,7 @@ class CampaignsMergedService:
                     for x in self.__campaigns_data_all_q
                     if x.responses_breakdown
                 ],
-                unique_key="description",
+                unique_key="value",
                 keys_to_merge=["count_1", "count_2"],
             ),
             "parent_or_sub_categories": [],  # Ignore, not all campaigns contain parent_or_sub_categories
@@ -390,7 +390,7 @@ class CampaignsMergedService:
 
         # Translator
         translator = Translator()
-        translator.set_target_language(target_language=self.__language)
+        translator.change_target_language(target_language=self.__language)
 
         # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:

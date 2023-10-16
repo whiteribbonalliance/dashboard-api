@@ -251,7 +251,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Set professions
     professions = []
     df_responses["profession"] = df_responses["profession"].apply(
-        lambda x: x.strip() if x else x
+        lambda x: x.strip().capitalize() if x else x
     )
     for profession in df_responses["profession"].value_counts().index:
         professions.append(profession)
@@ -286,7 +286,7 @@ def get_age_bucket(
         if age.isnumeric():
             age = int(age)
         else:
-            return age  # Non-numeric e.g. 'prefer not to say' or already an age bucket
+            return age  # Non-numeric e.g. 'Prefer not to say' or age value is already an age bucket
 
     if campaign_code == CampaignCode.healthwellbeing:
         if age >= 65:

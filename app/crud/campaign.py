@@ -12,7 +12,6 @@ from app.databases import Database
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.country import Country
-from app.schemas.option import Option
 from app.schemas.region import Region
 from app.schemas.response_column import ResponseColumn
 
@@ -120,34 +119,6 @@ class CampaignCRUD:
         professions = self.__db.professions
         if professions:
             return [x for x in professions if x]
-
-        return []
-
-    def get_only_responses_from_categories_options(self) -> list[Option]:
-        """Get only responses from categories options"""
-
-        only_responses_from_categories_options = (
-            self.__db.only_responses_from_categories_options
-        )
-        if only_responses_from_categories_options:
-            return [x.copy() for x in only_responses_from_categories_options if x]
-
-        return []
-
-    def get_only_multi_word_phrases_containing_filter_term_options(
-        self,
-    ) -> list[Option]:
-        """Get only multi-word phrases containing filter term options"""
-
-        only_multi_word_phrases_containing_filter_term_options = (
-            self.__db.only_multi_word_phrases_containing_filter_term_options
-        )
-        if only_multi_word_phrases_containing_filter_term_options:
-            return [
-                x.copy()
-                for x in only_multi_word_phrases_containing_filter_term_options
-                if x
-            ]
 
         return []
 

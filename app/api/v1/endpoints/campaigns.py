@@ -38,7 +38,7 @@ api_cache = ApiCache()
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_campaign(
+def read_campaign(
     parameters: Annotated[
         CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ],
@@ -75,7 +75,7 @@ async def read_campaign(
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_filter_options(
+def read_filter_options(
     parameters: Annotated[
         CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ]
@@ -100,7 +100,7 @@ async def read_filter_options(
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_histogram_options(
+def read_histogram_options(
     parameters: Annotated[
         CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
     ]

@@ -98,7 +98,7 @@ def read_campaigns_merged(
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def read_filter_options(
+def read_filter_options(
     parameters: Annotated[
         CommonParametersCampaignsMerged,
         Depends(dependencies.dep_common_parameters_all_campaigns),
@@ -141,7 +141,7 @@ async def read_filter_options(
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
-async def histogram_options(
+def histogram_options(
     parameters: Annotated[
         CommonParametersCampaignsMerged,
         Depends(dependencies.dep_common_parameters_all_campaigns),

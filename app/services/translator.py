@@ -10,9 +10,9 @@ from google.oauth2 import service_account
 from app import constants, helpers
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
+from app.schemas.filter import Filter
 from app.schemas.option import Option
 from app.services.translations_cache import TranslationsCache
-from app.utils.singleton_meta import SingletonMeta
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -20,18 +20,19 @@ init_custom_logger(logger)
 CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST = 128
 
 
-class Translator(metaclass=SingletonMeta):
+class Translator:
     """
-    Singleton class
-    This class is responsible for applying translations
+    This class is responsible for applying translations, mainly from English to another language.
+    If English is target language, then no translation is applied.
+    To translate from any other language to English, use the quick_translate_text function.
     """
 
-    def __init__(self):
-        self.__target_language = "en"
+    def __init__(self, target_language: str = "en"):
+        self.__target_language = target_language
         self.__translations_cache = TranslationsCache()
 
         # Keep the latest generated keys per language from extracted texts that have been translated
-        self.__latest_generated_keys_per_language = {}
+        self.__latest_generated_keys = {}
 
         # Extracted texts are texts that were determined to be translated
         self.__extracted_texts = set()
@@ -87,7 +88,6 @@ class Translator(metaclass=SingletonMeta):
         """
         Get translation of text from cache.
         If not in cache, translate the text with Cloud Translate and add it to cache.
-        This function will only be used to translate texts on the fly.
         """
 
         # Conditions
@@ -127,8 +127,7 @@ class Translator(metaclass=SingletonMeta):
         Translate text
 
         :param text: Text to translate
-        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word
-        translated separately and returned as a whole string
+        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word translated separately and returned as a whole string
         """
 
         # Conditions
@@ -146,12 +145,42 @@ class Translator(metaclass=SingletonMeta):
         else:
             return self.__translate_text(text=text)
 
-    def extract_text(self, text: str, delimiter: str | None = None) -> str:
+    def quick_translate_text(
+        self, text: str, source_language: str, target_language: str
+    ) -> str:
+        """
+        Quick translate text.
+        Can translate from any other language to English.
+        Ignores __target_language.
+        Does not cache translations.
+        """
+
+        try:
+            translate_client = self.__get_translate_client()
+            output = translate_client.translate(
+                values=text,
+                source_language=source_language,
+                target_language=target_language,
+            )
+            translated_text = unescape(output["translatedText"])
+        except (Exception,):
+            logger.error(f"Error translating: {text} to {target_language}")
+            return text
+
+        return translated_text
+
+    def extract_text(
+        self,
+        text: str,
+        delimiter: str | None = None,
+        add_key_to_latest_generated_keys: bool = False,
+    ) -> str:
         """
         Extract text.
 
         :param text: Text to extract
         :param delimiter: Separate text by delimiter and add to texts to extract set
+        :param add_key_to_latest_generated_keys: Add key to latest generated keys
         """
 
         # Conditions
@@ -179,7 +208,8 @@ class Translator(metaclass=SingletonMeta):
                 self.__extracted_texts.add(extracted_text)
             else:
                 # Text has already been translated
-                self.__add_key_to_latest_generated_keys(key)
+                if add_key_to_latest_generated_keys:
+                    self.__add_latest_generated_key(key)
 
         return text
 
@@ -188,15 +218,18 @@ class Translator(metaclass=SingletonMeta):
 
         self.__extracted_texts.clear()
 
-    def __add_key_to_latest_generated_keys(self, key: str):
-        """Add key to latest generated keys"""
+    def __add_latest_generated_key(self, key: str):
+        """Add latest generated key"""
 
-        if not self.__latest_generated_keys_per_language.get(self.__target_language):
-            self.__latest_generated_keys_per_language[self.__target_language] = []
-        self.__latest_generated_keys_per_language[self.__target_language].append(key)
+        if not self.__latest_generated_keys.get(self.__target_language):
+            self.__latest_generated_keys[self.__target_language] = []
+        self.__latest_generated_keys[self.__target_language].append(key)
 
     def translate_extracted_texts(
-        self, count_chars_only: bool = False, skip_saving_to_json: bool = False
+        self,
+        count_chars_only: bool = False,
+        skip_saving_to_json: bool = False,
+        add_key_to_latest_generated_keys: bool = False,
     ):
         """Translate extracted texts and save them to translations.json"""
 
@@ -246,7 +279,9 @@ class Translator(metaclass=SingletonMeta):
                     key = f"{self.__target_language}.{input_text}"
                     self.__translations_cache.set(key=key, value=translated_text)
                     self.__translations_char_count += len(input_text)
-                    self.__add_key_to_latest_generated_keys(key)
+
+                    if add_key_to_latest_generated_keys:
+                        self.__add_latest_generated_key(key)
 
             if not skip_saving_to_json:
                 self.__save_translations()
@@ -258,15 +293,15 @@ class Translator(metaclass=SingletonMeta):
 
         return self.__translations_char_count
 
-    def set_target_language(self, target_language: str):
-        """Set target language"""
+    def change_target_language(self, target_language: str):
+        """Change target language"""
 
         self.__target_language = target_language
 
-    def get_latest_generated_keys_per_language(self) -> dict:
-        """Get latest generated keys per language"""
+    def get_latest_generated_keys(self) -> dict:
+        """Get latest generated keys"""
 
-        return self.__latest_generated_keys_per_language
+        return self.__latest_generated_keys
 
     def apply_t_function_campaign(
         self,
@@ -329,9 +364,9 @@ class Translator(metaclass=SingletonMeta):
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
-                "parent_categories:code": ["ignore"],
-                "sub_categories:code": ["ignore"],
-                "parent_or_sub_categories:code": ["ignore"],
+                "parent_categories:value": [key_depth_rules.IGNORE],
+                "sub_categories:value": [key_depth_rules.IGNORE],
+                "parent_or_sub_categories:value": [key_depth_rules.IGNORE],
             },
         )
 
@@ -357,6 +392,14 @@ class Translator(metaclass=SingletonMeta):
                 "wordcloud_words:value": [key_depth_rules.IGNORE],
             },
         )
+
+        # Top words and phrases (lower)
+        for key, value in top_words_and_phrases.items():
+            for word in value:
+                if word.get("label"):
+                    word["label"] = word["label"].lower()
+                elif word.get("text"):
+                    word["text"] = word["text"].lower()
 
         # Histogram
         histogram = deep_replacer.replace(

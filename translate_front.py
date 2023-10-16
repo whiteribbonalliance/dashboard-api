@@ -24,12 +24,14 @@ def translate_front():
     for language in constants.TRANSLATION_LANGUAGES.keys():
         print(f"Translating texts to {language}...")
 
-        translator.set_target_language(target_language=language)
+        translator.change_target_language(target_language=language)
 
         for text_id, text in texts.items():
-            translator.extract_text(text)
+            translator.extract_text(text=text, add_key_to_latest_generated_keys=True)
 
-        translator.translate_extracted_texts(count_chars_only=count_chars_only)
+        translator.translate_extracted_texts(
+            count_chars_only=count_chars_only, add_key_to_latest_generated_keys=True
+        )
 
     if not count_chars_only:
         # Create languages dir
@@ -41,10 +43,8 @@ def translate_front():
             os.mkdir(languages_dir_path)
 
         # Save translations for each language
-        latest_generated_keys_per_language = (
-            translator.get_latest_generated_keys_per_language()
-        )
-        for language, keys in latest_generated_keys_per_language.items():
+        latest_generated_keys = translator.get_latest_generated_keys()
+        for language, keys in latest_generated_keys.items():
             language_dir_path = f"{languages_dir_path}/{language}"
             os.mkdir(language_dir_path)
 
