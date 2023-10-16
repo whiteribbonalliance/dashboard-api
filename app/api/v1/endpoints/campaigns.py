@@ -114,7 +114,7 @@ def read_histogram_options(
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
 
     # Histogram options
-    histogram_options = campaign_service.histogram_options()
+    histogram_options = campaign_service.get_histogram_options()
 
     return histogram_options
 

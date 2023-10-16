@@ -164,10 +164,8 @@ def histogram_options(
         )
 
         # Histogram options
-        campaign_histogram_options = campaign_service.histogram_options()
-        campaigns_histogram_options.append(
-            [x.dict() for x in campaign_histogram_options]
-        )
+        campaign_histogram_options = campaign_service.get_histogram_options()
+        campaigns_histogram_options.append([x for x in campaign_histogram_options])
 
     # Service
     campaigns_merged_service = CampaignsMergedService(

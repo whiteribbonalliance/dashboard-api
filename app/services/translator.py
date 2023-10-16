@@ -10,8 +10,6 @@ from google.oauth2 import service_account
 from app import constants, helpers
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
-from app.schemas.filter import Filter
-from app.schemas.option import Option
 from app.services.translations_cache import TranslationsCache
 
 logger = logging.getLogger(__name__)
@@ -319,7 +317,7 @@ class Translator:
         filter_2_average_age: str,
         filter_1_description: str,
         filter_2_description: str,
-    ):
+    ) -> tuple:
         """
         Apply extract/translate.
 
@@ -458,7 +456,7 @@ class Translator:
             filter_2_description,
         )
 
-    def apply_t_histogram_options(self, t: Callable, options: list[Option]):
+    def apply_t_histogram_options(self, t: Callable, options: list[dict]) -> list[dict]:
         """Apply extract/translate"""
 
         # Create deep replacer instance
@@ -492,7 +490,7 @@ class Translator:
         profession_options: list[dict],
         only_responses_from_categories_options: list[dict],
         only_multi_word_phrases_containing_filter_term_options: list[dict],
-    ):
+    ) -> tuple:
         """Apply extract/translate"""
 
         # Create deep replacer instance

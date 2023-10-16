@@ -539,7 +539,7 @@ class CampaignService:
             only_multi_word_phrases_containing_filter_term=only_multi_word_phrases_containing_filter_term_options,
         )
 
-    def histogram_options(self) -> list[Option]:
+    def get_histogram_options(self) -> list[dict]:
         """Get histogram options"""
 
         breakdown_country_option = Option(
@@ -563,32 +563,35 @@ class CampaignService:
             label="Show breakdown by profession",
         )
 
-        options: list[Option] = []
+        options: list[dict] = []
 
         if self.__campaign_code == CampaignCode.what_women_want:
-            options = [breakdown_age_bucket_option, breakdown_country_option]
+            options = [
+                breakdown_age_bucket_option.dict(),
+                breakdown_country_option.dict(),
+            ]
         elif self.__campaign_code == CampaignCode.what_young_people_want:
             options = [
-                breakdown_age_option,
-                breakdown_gender_option,
-                breakdown_country_option,
+                breakdown_age_option.dict(),
+                breakdown_gender_option.dict(),
+                breakdown_country_option.dict(),
             ]
         elif self.__campaign_code == CampaignCode.midwives_voices:
             options = [
-                breakdown_age_bucket_option,
-                breakdown_profession_option,
-                breakdown_country_option,
+                breakdown_age_bucket_option.dict(),
+                breakdown_profession_option.dict(),
+                breakdown_country_option.dict(),
             ]
         elif self.__campaign_code == CampaignCode.healthwellbeing:
             options = [
-                breakdown_age_option,
-                breakdown_age_bucket_option,
-                breakdown_country_option,
+                breakdown_age_option.dict(),
+                breakdown_age_bucket_option.dict(),
+                breakdown_country_option.dict(),
             ]
         elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
-            options = [breakdown_age_bucket_option]
+            options = [breakdown_age_bucket_option.dict()]
         elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
-            options = [breakdown_age_bucket_option]
+            options = [breakdown_age_bucket_option.dict()]
 
         # Translate
         try:
@@ -2105,4 +2108,3 @@ class CampaignService:
             )
 
             return url, csv_filename
-
