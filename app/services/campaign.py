@@ -432,11 +432,19 @@ class CampaignService:
         ]
 
         # Living setting options
+        living_setting_options = []
         living_settings = self.__get_living_settings()
-        living_setting_options = [
-            Option(value=living_setting, label=living_setting).dict()
-            for living_setting in living_settings
-        ]
+        for index, setting in enumerate(living_settings):
+            # Value & label
+            value = setting
+            label = setting
+
+            # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
+            if self.__campaign_code == CampaignCode.healthwellbeing:
+                if label and label.lower() == "prefer not to say":
+                    label = "Blank/Prefer Not To Say"
+
+            living_setting_options.append(Option(value=value, label=label).dict())
 
         # Profession options
         professions = self.__get_professions()
@@ -1100,7 +1108,7 @@ class CampaignService:
         names = list(
             set(grouped_by_column_1.index.tolist() + grouped_by_column_2.index.tolist())
         )
-        names = [name for name in names if name]
+        names: list[str] = [name for name in names if name]
 
         living_settings_breakdown = []
 
@@ -1115,10 +1123,19 @@ class CampaignService:
             except KeyError:
                 count_2 = 0
 
+            # Value & label
+            value = name
+            label = name
+
+            # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
+            if self.__campaign_code == CampaignCode.healthwellbeing:
+                if label and label.lower() == "prefer not to say":
+                    label = "Blank/Prefer Not To Say"
+
             living_settings_breakdown.append(
                 {
-                    "value": name if helpers.contains_letters(name) else name,
-                    "label": name if helpers.contains_letters(name) else name,
+                    "value": value,
+                    "label": label,
                     "count_1": count_1,
                     "count_2": count_2,
                 }
