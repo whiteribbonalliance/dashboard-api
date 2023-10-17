@@ -53,7 +53,7 @@ async def main():
             host=settings.SERVER_HOST,
             port=settings.PORT,
             reload=settings.RELOAD,
-            workers=1,
+            workers=2,
             loop="asyncio",
         )
     )
