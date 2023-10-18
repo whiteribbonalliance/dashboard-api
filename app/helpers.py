@@ -7,8 +7,6 @@ import re
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
-from app.schemas.filter import Filter
-from app.services.translator import Translator
 
 
 def contains_letters(text: str):
