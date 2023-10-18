@@ -22,7 +22,8 @@ from app.schemas.campaign import Campaign
 from app.schemas.country import Country
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
-from app.schemas.option import Option
+from app.schemas.option_bool import OptionBool
+from app.schemas.option_str import OptionStr
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import cloud_storage_interactions
@@ -353,13 +354,13 @@ class CampaignService:
         # Country options
         countries = self.__get_countries_list()
         country_options = [
-            Option(value=country.alpha2_code, label=country.name).dict()
+            OptionStr(value=country.alpha2_code, label=country.name).dict()
             for country in countries
         ]
 
         # Region options and province options
-        country_region_options: list[dict[str, str | list[Option]]] = []
-        country_province_options: list[dict[str, str | list[Option]]] = []
+        country_region_options: list[dict[str, str | list[OptionStr]]] = []
+        country_province_options: list[dict[str, str | list[OptionStr]]] = []
         for country in countries:
             region_options = {
                 "country_alpha2_code": country.alpha2_code,
@@ -374,13 +375,13 @@ class CampaignService:
             for region in sorted(country.regions, key=lambda r: r.name):
                 # Region
                 region_options["options"].append(
-                    Option(value=region.code, label=region.name).dict()
+                    OptionStr(value=region.code, label=region.name).dict()
                 )
 
                 # Province
                 if region.province and region.province not in provinces_found:
                     province_options["options"].append(
-                        Option(value=region.province, label=region.province).dict()
+                        OptionStr(value=region.province, label=region.province).dict()
                     )
                     provinces_found.add(region.province)
 
@@ -399,7 +400,7 @@ class CampaignService:
         # Response topic options
         response_topics = self.__get_response_topics()
         response_topic_options = [
-            Option(
+            OptionStr(
                 value=response_topic.code,
                 label=response_topic.name,
                 metadata="is_parent" if response_topic.is_parent else "",
@@ -409,26 +410,26 @@ class CampaignService:
 
         # Age options
         ages = self.__get_ages()
-        age_options = [Option(value=age, label=age).dict() for age in ages]
+        age_options = [OptionStr(value=age, label=age).dict() for age in ages]
 
         # Age bucket options
         age_buckets = self.__get_age_buckets()
         age_bucket_options = [
-            Option(value=age_bucket, label=age_bucket).dict()
+            OptionStr(value=age_bucket, label=age_bucket).dict()
             for age_bucket in age_buckets
         ]
 
         # Age buckets default options
         age_buckets_default = self.__get_age_buckets_default()
         age_bucket_default_options = [
-            Option(value=age_bucket_default, label=age_bucket_default).dict()
+            OptionStr(value=age_bucket_default, label=age_bucket_default).dict()
             for age_bucket_default in age_buckets_default
         ]
 
         # Gender options
         genders = self.__get_genders()
         gender_options = [
-            Option(value=gender, label=gender).dict() for gender in genders
+            OptionStr(value=gender, label=gender).dict() for gender in genders
         ]
 
         # Living setting options
@@ -444,12 +445,12 @@ class CampaignService:
                 if label and label.lower() == "prefer not to say":
                     label = "Blank/Prefer Not To Say"
 
-            living_setting_options.append(Option(value=value, label=label).dict())
+            living_setting_options.append(OptionStr(value=value, label=label).dict())
 
         # Profession options
         professions = self.__get_professions()
         profession_options = [
-            Option(value=profession, label=profession).dict()
+            OptionStr(value=profession, label=profession).dict()
             for profession in professions
         ]
 
@@ -542,23 +543,23 @@ class CampaignService:
     def get_histogram_options(self) -> list[dict]:
         """Get histogram options"""
 
-        breakdown_country_option = Option(
+        breakdown_country_option = OptionStr(
             value="breakdown-country",
             label="Show breakdown by country",
         )
-        breakdown_age_option = Option(
+        breakdown_age_option = OptionStr(
             value="breakdown-age",
             label="Show breakdown by age",
         )
-        breakdown_age_bucket_option = Option(
+        breakdown_age_bucket_option = OptionStr(
             value="breakdown-age-bucket",
             label="Show breakdown by age range",
         )
-        breakdown_gender_option = Option(
+        breakdown_gender_option = OptionStr(
             value="breakdown-gender",
             label="Show breakdown by gender",
         )
-        breakdown_profession_option = Option(
+        breakdown_profession_option = OptionStr(
             value="breakdown-profession",
             label="Show breakdown by profession",
         )
@@ -1950,29 +1951,29 @@ class CampaignService:
 
         return professions
 
-    def __get_only_responses_from_categories_options(self) -> list[Option]:
+    def __get_only_responses_from_categories_options(self) -> list[OptionBool]:
         """Get only responses from categories options"""
 
         only_responses_from_categories_options = [
-            Option(
+            OptionBool(
                 value=True, label="Only show responses which match all these categories"
             ),
-            Option(value=False, label="Show responses in any of these categories"),
+            OptionBool(value=False, label="Show responses in any of these categories"),
         ]
 
         return only_responses_from_categories_options
 
     def __get_only_multi_word_phrases_containing_filter_term_options(
         self,
-    ) -> list[Option]:
+    ) -> list[OptionBool]:
         """Get only multi-word phrases containing filter term options"""
 
         only_multi_word_phrases_containing_filter_term_options = [
-            Option(
+            OptionBool(
                 value=True,
                 label="Only show multi-word phrases containing filter term",
             ),
-            Option(
+            OptionBool(
                 value=False,
                 label="Show all multi-word phrases",
             ),

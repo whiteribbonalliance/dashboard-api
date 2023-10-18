@@ -13,7 +13,7 @@ from app.schemas.common_parameters_campaigns_merged import (
     CommonParametersCampaignsMerged,
 )
 from app.schemas.filter_options import FilterOptions
-from app.schemas.option import Option
+from app.schemas.option_str import OptionStr
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 from app.services.campaigns_merged import CampaignsMergedService
@@ -137,7 +137,7 @@ def read_filter_options(
 
 @router.get(
     path="/histogram-options",
-    response_model=list[Option],
+    response_model=list[OptionStr],
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
