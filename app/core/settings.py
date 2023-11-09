@@ -51,7 +51,7 @@ class ProdSettings(Settings):
             "https://admin.whiteribbonalliance.org",
         ],
         "allow_credentials": True,
-        "allow_methods": ["GET", "POST", "OPTIONS"],
+        "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
         "allow_headers": [
             "Access-Control-Allow-Headers",
             "Access-Control-Allow-Methods",
