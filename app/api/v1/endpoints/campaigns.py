@@ -166,12 +166,10 @@ def campaign_data(
     def iter_file():
         session = requests.Session()
         response = session.get(url=url, stream=True)
-
-        if not response.ok:
-            raise http_exceptions.ResourceNotFoundHTTPException("Error fetching data")
-
+        response.raise_for_status()
         for chunk in response.iter_content(1024 * 1024):
             yield chunk
+        response.close()
 
     return StreamingResponse(
         content=iter_file(),
@@ -226,12 +224,10 @@ def campaign_public_data(
     def iter_file():
         session = requests.Session()
         response = session.get(url=url, stream=True)
-
-        if not response.ok:
-            raise http_exceptions.ResourceNotFoundHTTPException("Error fetching data")
-
+        response.raise_for_status()
         for chunk in response.iter_content(1024 * 1024):
             yield chunk
+        response.close()
 
     return StreamingResponse(
         content=iter_file(),
