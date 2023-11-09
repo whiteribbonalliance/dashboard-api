@@ -8,6 +8,7 @@ import os
 import random
 from collections import Counter
 from datetime import date
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -2053,11 +2054,12 @@ class CampaignService:
         self,
         from_date: date = None,
         to_date: date = None,
+        use_cache: bool = False,
     ) -> tuple[str, str]:
         """Get campaign data url and filename"""
 
         # Dataframe
-        df = self.__crud.get_dataframe()
+        df = self.__get_df_1_copy()
 
         # Drop columns
         df = df.drop(
@@ -2070,8 +2072,13 @@ class CampaignService:
             errors="ignore",
         )
 
-        # File name
-        csv_filename = f"wra_{self.__campaign_code.value}.csv"
+        uuid4_hex = uuid.uuid4().hex
+
+        # Use unique name for non-cached file
+        if use_cache:
+            csv_filename = f"wra_{self.__campaign_code.value}.csv"
+        else:
+            csv_filename = f"wra_{self.__campaign_code.value}_{uuid4_hex}.csv"
 
         # File paths
         csv_filepath = f"/tmp/{csv_filename}"
@@ -2088,7 +2095,9 @@ class CampaignService:
             csv_filename = f"wra_{self.__campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
         # If file exists in Cloud Storage
-        if cloud_storage_interactions.file_exists(filename=cloud_storage_csv_filepath):
+        if use_cache and cloud_storage_interactions.file_exists(
+            filename=cloud_storage_csv_filepath
+        ):
             # Get storage url
             url = cloud_storage_interactions.get_file_url(
                 filename=cloud_storage_csv_filepath
@@ -2133,4 +2142,10 @@ class CampaignService:
                 filename=cloud_storage_csv_filepath
             )
 
-            return url, csv_filename
+            # Remove uuid4 from non-cached filename
+            if use_cache:
+                csv_filename_result = csv_filename
+            else:
+                csv_filename_result = csv_filename.replace(f"_{uuid4_hex}", "")
+
+            return url, csv_filename_result

@@ -16,6 +16,9 @@ from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
+from app.schemas.common_parameters_campaign_public_data import (
+    CommonParametersCampaignPublicData,
+)
 from app.schemas.filter_options import FilterOptions
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
@@ -157,7 +160,7 @@ def campaign_data(
 
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        from_date=from_date, to_date=to_date
+        from_date=from_date, to_date=to_date, use_cache=True
     )
 
     def iter_file():
@@ -181,15 +184,24 @@ def campaign_data(
     )
 
 
-@router.get(
+@router.post(
     path="/{campaign}/public/data",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
 def campaign_public_data(
-    campaign_code: CampaignCode = Depends(dependencies.dep_campaign_code),
+    parameters: Annotated[
+        CommonParametersCampaignPublicData,
+        Depends(dependencies.dep_common_parameters_campaign_public_data),
+    ],
+    campaign_req: CampaignRequest,
 ):
     """Read campaign public data"""
+
+    campaign_code = parameters.campaign_code
+    response_year = parameters.response_year
+    filter_1 = campaign_req.filter_1
+    filter_2 = campaign_req.filter_2
 
     # Only allow campaign healthwellbeing
     if campaign_code != CampaignCode.healthwellbeing:
@@ -198,10 +210,18 @@ def campaign_public_data(
         )
 
     # Service
-    campaign_service = CampaignService(campaign_code=campaign_code)
+    campaign_service = CampaignService(
+        campaign_code=campaign_code,
+        response_year=response_year,
+        language="en",
+        filter_1=filter_1,
+        filter_2=filter_2,
+    )
 
     # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_filename()
+    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
+        use_cache=False
+    )
 
     def iter_file():
         session = requests.Session()

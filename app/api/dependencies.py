@@ -9,6 +9,9 @@ from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.common_parameters_campaign import CommonParametersCampaign
+from app.schemas.common_parameters_campaign_public_data import (
+    CommonParametersCampaignPublicData,
+)
 from app.schemas.common_parameters_campaigns_merged import (
     CommonParametersCampaignsMerged,
 )
@@ -60,6 +63,20 @@ def dep_common_parameters_campaign(
         campaign_code=campaign_code,
         language=lang,
         q_code=q_code_verified,
+        response_year=response_year,
+        request=request,
+    )
+
+
+def dep_common_parameters_campaign_public_data(
+    request: Request,
+    campaign_code: CampaignCode = Depends(dep_campaign_code),
+    response_year: str = "",
+) -> CommonParametersCampaignPublicData:
+    """Return the common parameters"""
+
+    return CommonParametersCampaignPublicData(
+        campaign_code=campaign_code,
         response_year=response_year,
         request=request,
     )

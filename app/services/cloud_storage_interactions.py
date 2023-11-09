@@ -53,7 +53,7 @@ def get_file_url(filename: str, expire_in: str = EXPIRE_IN) -> str:
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(BUCKET_NAME)
-    url = bucket.blob(filename).generate_signed_url(expire_in)
+    url = bucket.blob(filename).generate_signed_url(expiration=expire_in)
 
     return url
 
