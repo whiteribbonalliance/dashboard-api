@@ -85,7 +85,7 @@ def clear_bucket():
 
 
 def cleanup():
-    """Cleanup"""
+    """Cleanup if bucket size is >= 5GB"""
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(BUCKET_NAME)

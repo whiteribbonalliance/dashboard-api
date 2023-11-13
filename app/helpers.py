@@ -1,4 +1,6 @@
 import glob
+import hashlib
+import json
 import math
 import os
 import random
@@ -59,7 +61,10 @@ def clear_tmp_dir():
         return
 
     for filename in glob.glob("/tmp/wra_*"):
-        os.remove(filename)
+        try:
+            os.remove(filename)
+        except OSError:
+            pass
 
 
 def get_distributed_list_of_dictionaries(
@@ -218,3 +223,13 @@ def extract_first_occurring_numbers(
         return 0
 
     return int("".join(numbers))
+
+
+def get_dict_hash_value(dictionary: dict[str, any]) -> str:
+    """Get dictionary hash value"""
+
+    md5_hash = hashlib.md5()
+    encoded = json.dumps(dictionary, sort_keys=True).encode()
+    md5_hash.update(encoded)
+
+    return md5_hash.hexdigest()

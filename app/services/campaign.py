@@ -2054,9 +2054,21 @@ class CampaignService:
         self,
         from_date: date = None,
         to_date: date = None,
-        use_cache: bool = False,
+        unique_filename_code: str = "",
     ) -> tuple[str, str]:
-        """Get campaign data url and filename"""
+        """
+        Get campaign data url and filename
+
+        :param from_date: From Date
+        :param to_date: to date
+        :param unique_filename_code: Code to attach to filename uploaded to Cloud Storage.
+        This code is unique per filters combination so that requesting the same filters does not have to create a new CSV file, but the existing file will be used.
+        """
+
+        def remove_unique_filename_code(_csv_filename: str, _unique_filename_code):
+            _csv_filename = _csv_filename.replace(_unique_filename_code, "")
+
+            return _csv_filename
 
         # Dataframe
         df = self.__get_df_1_copy()
@@ -2072,13 +2084,10 @@ class CampaignService:
             errors="ignore",
         )
 
-        uuid4_hex = uuid.uuid4().hex
-
-        # Use unique name for non-cached file
-        if use_cache:
-            csv_filename = f"wra_{self.__campaign_code.value}.csv"
-        else:
-            csv_filename = f"wra_{self.__campaign_code.value}_{uuid4_hex}.csv"
+        # CSV filename
+        if unique_filename_code:
+            unique_filename_code = f"_{unique_filename_code}"
+        csv_filename = f"wra_{self.__campaign_code.value}{unique_filename_code}.csv"
 
         # File paths
         csv_filepath = f"/tmp/{csv_filename}"
@@ -2095,13 +2104,18 @@ class CampaignService:
             csv_filename = f"wra_{self.__campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
         # If file exists in Cloud Storage
-        if use_cache and cloud_storage_interactions.file_exists(
-            filename=cloud_storage_csv_filepath
-        ):
+        if cloud_storage_interactions.file_exists(filename=cloud_storage_csv_filepath):
             # Get storage url
             url = cloud_storage_interactions.get_file_url(
                 filename=cloud_storage_csv_filepath
             )
+
+            # Remove unique filename code
+            if unique_filename_code:
+                csv_filename = remove_unique_filename_code(
+                    _csv_filename=csv_filename,
+                    _unique_filename_code=unique_filename_code,
+                )
 
             return url, csv_filename
 
@@ -2142,10 +2156,11 @@ class CampaignService:
                 filename=cloud_storage_csv_filepath
             )
 
-            # Remove uuid4 from non-cached filename
-            if use_cache:
-                csv_filename_result = csv_filename
-            else:
-                csv_filename_result = csv_filename.replace(f"_{uuid4_hex}", "")
+            # Remove unique filename code
+            if unique_filename_code:
+                csv_filename = remove_unique_filename_code(
+                    _csv_filename=csv_filename,
+                    _unique_filename_code=unique_filename_code,
+                )
 
-            return url, csv_filename_result
+            return url, csv_filename

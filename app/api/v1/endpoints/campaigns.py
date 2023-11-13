@@ -7,6 +7,7 @@ import requests
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 
+from app import helpers
 from app import databases, auth_handler
 from app import http_exceptions
 from app.api import dependencies
@@ -160,16 +161,15 @@ def campaign_data(
 
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        from_date=from_date, to_date=to_date, use_cache=True
+        from_date=from_date, to_date=to_date
     )
 
     def iter_file():
-        session = requests.Session()
-        response = session.get(url=url, stream=True)
-        response.raise_for_status()
-        for chunk in response.iter_content(1024 * 1024):
-            yield chunk
-        response.close()
+        with requests.Session() as session:
+            response = session.get(url=url, stream=True)
+            response.raise_for_status()
+            for chunk in response.iter_content(1024 * 1024):
+                yield chunk
 
     return StreamingResponse(
         content=iter_file(),
@@ -216,18 +216,28 @@ def campaign_public_data(
         filter_2=filter_2,
     )
 
+    # Create unique filename code from filters by hashing the filter objects
+    unique_filename_code = ""
+    if filter_1:
+        unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
+            filter_1.dict()
+        )
+    if filter_2:
+        unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
+            filter_2.dict()
+        )
+
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        use_cache=False
+        unique_filename_code=unique_filename_code
     )
 
     def iter_file():
-        session = requests.Session()
-        response = session.get(url=url, stream=True)
-        response.raise_for_status()
-        for chunk in response.iter_content(1024 * 1024):
-            yield chunk
-        response.close()
+        with requests.Session() as session:
+            response = session.get(url=url, stream=True)
+            response.raise_for_status()
+            for chunk in response.iter_content(1024 * 1024):
+                yield chunk
 
     return StreamingResponse(
         content=iter_file(),
