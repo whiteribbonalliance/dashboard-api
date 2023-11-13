@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 BUCKET_NAME = "wra"
-EXPIRE_IN = datetime.today() + timedelta(1)  # after 1 day
+EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
 
 def get_storage_client() -> Client:
@@ -81,10 +81,13 @@ def clear_bucket():
     bucket: Bucket = storage_client.bucket(BUCKET_NAME)
     blobs: Iterator[Blob] = bucket.list_blobs()
     for blob in blobs:
-        blob.delete()
+        try:
+            blob.delete()
+        except (Exception,):
+            pass
 
 
-def cleanup():
+def cleanup_if_over_5gb():
     """Cleanup if bucket size is >= 5GB"""
 
     storage_client = get_storage_client()
