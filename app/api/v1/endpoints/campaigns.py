@@ -142,7 +142,7 @@ def campaign_data(
     to_date = parameters.to_date
 
     # Cleanup
-    cloud_storage_interactions.cleanup()
+    cloud_storage_interactions.cleanup_if_over_5gb()
 
     # Get user
     users = databases.get_users()
