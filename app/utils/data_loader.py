@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from app import constants, databases
-from app import global_variables
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger

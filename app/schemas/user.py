@@ -6,11 +6,11 @@ from app.enums.campaign_code import CampaignCode
 class UserBase(BaseModel):
     username: str
     campaign_access: list[CampaignCode]
-    is_admin: bool = False
 
 
 class UserInternal(UserBase):
     password: str
+    is_admin: bool = False
 
 
 class UserResponse(UserBase):
