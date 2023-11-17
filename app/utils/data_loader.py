@@ -25,6 +25,7 @@ from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.utils import code_hierarchy
 from app.utils import q_col_names
+from app import global_variables
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -485,9 +486,43 @@ def load_campaign_ngrams_unfiltered(campaign_code: CampaignCode):
 def load_initial_data():
     """Load initial data"""
 
-    load_campaigns_data()
-    load_region_coordinates()
-    load_translations_cache()
+    global_variables.is_loading_data = True
+
+    try:
+        # Load data
+        load_campaigns_data()
+        load_region_coordinates()
+        load_translations_cache()
+    except (Exception,) as e:
+        logger.error(f"An error occurred while loading initial data: {str(e)}")
+
+    global_variables.is_loading_data = False
+
+
+def reload_data(clear_api_cache: bool, clear_bucket: bool):
+    """Reload data"""
+
+    if global_variables.is_loading_data:
+        return
+
+    global_variables.is_loading_data = True
+
+    try:
+        # Reload data
+        load_campaigns_data()
+        load_region_coordinates()
+
+        # Clear the API cache
+        if clear_api_cache:
+            ApiCache().clear_cache()
+
+        # Clear bucket
+        if clear_bucket:
+            cloud_storage_interactions.clear_bucket()
+    except (Exception,) as e:
+        logger.error(f"An error occurred while reloading data: {str(e)}")
+
+    global_variables.is_loading_data = False
 
 
 def load_campaigns_data():
@@ -509,20 +544,6 @@ def load_campaigns_data():
             )
 
     print(f"INFO:\t  Loading campaigns data completed.")
-
-
-def reload_campaigns_data(clear_api_cache: bool, clear_bucket: bool):
-    """Reload campaigns data"""
-
-    load_campaigns_data()
-
-    # Clear the API cache
-    if clear_api_cache:
-        ApiCache().clear_cache()
-
-    # Clear bucket
-    if clear_bucket:
-        cloud_storage_interactions.clear_bucket()
 
 
 def load_translations_cache():
