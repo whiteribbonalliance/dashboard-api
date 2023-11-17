@@ -5,6 +5,7 @@ import math
 import os
 import random
 import re
+from hashlib import sha256
 
 from app import constants
 from app.enums.campaign_code import CampaignCode
@@ -233,3 +234,9 @@ def get_dict_hash_value(dictionary: dict[str, any]) -> str:
     md5_hash.update(encoded)
 
     return md5_hash.hexdigest()
+
+
+def get_string_hash_value(string: str) -> str:
+    """Get string hash value"""
+
+    return sha256(string.encode()).hexdigest()

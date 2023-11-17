@@ -216,7 +216,7 @@ def campaign_public_data(
         filter_2=filter_2,
     )
 
-    # Create unique filename code from filters by hashing the filter objects
+    # Create unique filename code from campaign_code and filters by hashing
     unique_filename_code = ""
     if filter_1:
         unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
@@ -226,6 +226,8 @@ def campaign_public_data(
         unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
             filter_2.dict()
         )
+    if filter_1 or filter_2:
+        unique_filename_code = f"{helpers.get_string_hash_value(campaign_code.value)}{unique_filename_code}"
 
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(

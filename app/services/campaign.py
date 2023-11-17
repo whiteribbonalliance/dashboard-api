@@ -2062,10 +2062,15 @@ class CampaignService:
         :param from_date: From Date
         :param to_date: to date
         :param unique_filename_code: Code to attach to filename uploaded to Cloud Storage.
-        This code is unique per filters combination so that requesting the same filters does not have to create a new CSV file, but the existing file will be used.
+        This code is unique per campaign_code and filters so that requesting the same filters does not have to create a new CSV file, but the existing file will be used.
         """
 
         def remove_unique_filename_code(_csv_filename: str, _unique_filename_code):
+            """
+            Function used after the file has been uploaded to cloud Storage.
+            Remove the filename code because the user should not see it in the filename.
+            """
+
             _csv_filename = _csv_filename.replace(_unique_filename_code, "")
 
             return _csv_filename

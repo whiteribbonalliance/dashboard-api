@@ -1,12 +1,12 @@
 import inspect
 import json
 from functools import wraps
-from hashlib import sha256
 
 from cachetools import LRUCache
 from fastapi.encoders import jsonable_encoder
 
 from app.utils.singleton_meta import SingletonMeta
+from app import helpers
 
 
 class ApiCache(metaclass=SingletonMeta):
@@ -75,7 +75,7 @@ class ApiCache(metaclass=SingletonMeta):
 
         # Create hash value
         kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
-        hash_value = sha256(kwargs_json.encode()).hexdigest()
+        hash_value = helpers.get_string_hash_value(kwargs_json)
 
         return hash_value
 
