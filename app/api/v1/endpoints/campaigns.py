@@ -183,7 +183,7 @@ def campaign_data(
 
 
 @router.post(
-    path="/{campaign}/public/data",
+    path="/{campaign}/data/public",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
@@ -253,7 +253,7 @@ def campaign_public_data(
 
 
 @router.get(
-    path="/{campaign}/countries-breakdown",
+    path="/{campaign}/data/countries-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
@@ -294,7 +294,7 @@ async def campaign_countries_breakdown(
 
 
 @router.get(
-    path="/{campaign}/source-files-breakdown",
+    path="/{campaign}/data/source-files-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
