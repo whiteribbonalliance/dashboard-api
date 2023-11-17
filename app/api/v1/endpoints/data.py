@@ -13,11 +13,11 @@ from app import global_variables
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
-router = APIRouter(prefix="/admin")
+router = APIRouter(prefix="/data")
 
 
 @router.get(
-    path="/data/loading-status",
+    path="/loading-status",
     response_model=DataIsLoading,
     status_code=status.HTTP_200_OK,
 )
@@ -30,14 +30,14 @@ def read_data_loading_status(
 
 
 @router.post(
-    path="/data/reload",
+    path="/reload",
     status_code=status.HTTP_202_ACCEPTED,
 )
-def data_reload(
+def init_data_reloading(
     _: Annotated[ParametersUser, Depends(dependencies.dep_parameters_user_admin)],
     background_tasks: BackgroundTasks,
 ):
-    """Data reload"""
+    """Init data reloading"""
 
     if not global_variables.is_loading_data:
         try:
