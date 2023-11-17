@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class ParametersAdmin(BaseModel):
+class ParametersUser(BaseModel):
     username: str

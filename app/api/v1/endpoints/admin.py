@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from app.api import dependencies
 from app.logginglib import init_custom_logger
 from app.schemas.data_is_loading import DataIsLoading
-from app.schemas.parameters_admin import ParametersAdmin
+from app.schemas.parameters_user import ParametersUser
 from app.utils import data_loader
 from app import global_variables
 
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/admin")
     status_code=status.HTTP_200_OK,
 )
 def read_data_loading_status(
-    _: Annotated[ParametersAdmin, Depends(dependencies.dep_parameters_admin)]
+    _: Annotated[ParametersUser, Depends(dependencies.dep_parameters_user)]
 ):
     """Check if data is loading"""
 
@@ -34,7 +34,7 @@ def read_data_loading_status(
     status_code=status.HTTP_202_ACCEPTED,
 )
 def data_reload(
-    _: Annotated[ParametersAdmin, Depends(dependencies.dep_parameters_admin)],
+    _: Annotated[ParametersUser, Depends(dependencies.dep_parameters_user_admin)],
     background_tasks: BackgroundTasks,
 ):
     """Data reload"""

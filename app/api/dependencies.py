@@ -16,7 +16,7 @@ from app.schemas.common_parameters_campaigns_merged import (
     CommonParametersCampaignsMerged,
 )
 from app.schemas.date_filter import DateFilter
-from app.schemas.parameters_admin import ParametersAdmin
+from app.schemas.parameters_user import ParametersUser
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
@@ -130,9 +130,9 @@ def dep_parameters_campaign_data(
     )
 
 
-def dep_parameters_admin(
+def dep_parameters_user_admin(
     username: str = Depends(auth_handler.auth_wrapper_access_token),
-) -> ParametersAdmin:
+) -> ParametersUser:
     """Return the common parameters"""
 
     # Get user
@@ -145,6 +145,22 @@ def dep_parameters_admin(
     if not db_user.is_admin:
         raise http_exceptions.UnauthorizedHTTPException("Unauthorized")
 
-    return ParametersAdmin(
+    return ParametersUser(
+        username=username,
+    )
+
+
+def dep_parameters_user(
+    username: str = Depends(auth_handler.auth_wrapper_access_token),
+) -> ParametersUser:
+    """Return the common parameters"""
+
+    # Get user
+    users = databases.get_users()
+    db_user = users.get(username)
+    if not db_user:
+        raise http_exceptions.UnauthorizedHTTPException("Unknown user")
+
+    return ParametersUser(
         username=username,
     )

@@ -48,7 +48,9 @@ async def login(
     )
 
     return UserResponse(
-        username=db_user.username, campaign_access=db_user.campaign_access
+        username=db_user.username,
+        campaign_access=db_user.campaign_access,
+        is_admin=db_user.is_admin,
     )
 
 
@@ -77,5 +79,7 @@ async def check(
         raise http_exceptions.UnauthorizedHTTPException("Unauthorized")
 
     return UserResponse(
-        username=db_user.username, campaign_access=db_user.campaign_access
+        username=db_user.username,
+        campaign_access=db_user.campaign_access,
+        is_admin=db_user.is_admin,
     )
