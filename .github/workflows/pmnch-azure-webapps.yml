@@ -20,7 +20,7 @@
 name: "Azure: Build and deploy dashboard API (FastAPI)"
 
 env:
-  AZURE_WEBAPP_NAME: pmnch-dashboard-api  # set this to the name of your Azure Web App
+  AZURE_WEBAPP_NAME: pmnch-api  # set this to the name of your Azure Web App
   PYTHON_VERSION: '3.10'              # set this to the Python version to use
 
 on:
