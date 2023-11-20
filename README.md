@@ -72,13 +72,13 @@ Copy the `translations` folder to the front-end project at `src/app/i18n`.
 3. In `app/services/campaign.py` modify any of the functions if needed for the campaign.
 4. In `app/databases.py` include the new `q_cdoe` for the campaign.
 
-## PMNCH
+## PMNCH - Azure deployment
 
 Because of organization policies, the dashboard at `https://whatyoungpeoplewant.whiteribbonalliance.org` should be
-hosted on `Azure` and make use of its services instead of `Google`. To solve this issue, two new repositories are
-created and are deployed to `Azure`, these repositories should always stay in sync with the original repositories.
+deployed on `Azure` and make use of its services instead of `Google`. To solve this issue, two new repositories are
+created, these repositories should always stay in sync with the original repositories.
 
-For development locally for any of the campaigns, please work on the original repositories:
+For development locally regarding any of the campaigns, please work on the original repositories:
 
 - Back-end: https://github.com/whiteribbonalliance/wwwdashboardapi
 - Front-end: https://github.com/whiteribbonalliance/global_directory_dashboard
@@ -96,14 +96,14 @@ new deployment is needed at that moment for `PMNCH`.
 
 After cloning the `PMNCH` repositories locally, change the remote urls.
 
-Back-end:
+On the back-end repository:
 
 ```bash
 git remote set-url origin https://github.com/whiteribbonalliance/wwwdashboardapi.git
 git remote set-url --push origin https://github.com/pmnch/pmnch-dashboard-api.git
 ```
 
-Front-end:
+On the front-end repository:
 
 ```bash
 git remote set-url origin https://github.com/whiteribbonalliance/global_directory_dashboard.git
@@ -117,5 +117,5 @@ for `PMNCH`.
 
 #### Workflows
 
-There are two workflows (To deploy to `Google` or `Azure`), make sure to enable the correct workflow in the
-repository `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
+In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to enable the correct workflow in
+the repository on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
