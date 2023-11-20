@@ -89,8 +89,8 @@ For development locally regarding any of the campaigns, please work on the origi
 - Front-end: https://github.com/pmnch/pmnch-dashboard
 
 These `PMNCH` repositories are exact copies of the original repositories, but they will be deployed on `Azure`.
-When a change has been pushed to the original repositories, pull these changes into the repositories for `PMNCH` if a
-new deployment is needed at that moment for `PMNCH`.
+When a change has been pushed to the original repositories, keep the `PMNCH` repositories in sync by pulling from
+the original repository and pushing into the `PMNCH` repository.
 
 #### Remotes
 
@@ -117,5 +117,6 @@ for `PMNCH`.
 
 #### Workflows
 
-In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct workflow in
+In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct
+workflow in
 the repository on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
