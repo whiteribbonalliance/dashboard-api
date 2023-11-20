@@ -117,5 +117,5 @@ for `PMNCH`.
 
 #### Workflows
 
-In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to enable the correct workflow in
+In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct workflow in
 the repository on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
