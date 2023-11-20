@@ -76,14 +76,14 @@ Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
 Because of organization policies, the dashboard at `https://whatyoungpeoplewant.whiteribbonalliance.org` should be
 hosted on `Azure` and make use of its services instead of `Google`. To solve this issue, two new repositories are
-created and deployed on `Azure`, these repositories should always stay in sync with the original repositories.
+created and are deployed to `Azure`, these repositories should always stay in sync with the original repositories.
 
 For development locally for any of the campaigns, please work on the original repositories:
 
 - Back-end: https://github.com/whiteribbonalliance/wwwdashboardapi
 - Front-end: https://github.com/whiteribbonalliance/global_directory_dashboard
 
-`PMNCH` Will use the following repositories:
+`PMNCH` Will use the following repositories for deployment:
 
 - Back-end: https://github.com/pmnch/pmnch-dashboard-api
 - Front-end: https://github.com/pmnch/pmnch-dashboard
@@ -114,3 +114,8 @@ git remote set-url --push origin https://github.com/pmnch/pmnch-dashboard.git
 for `PMNCH`.
 
 `git remote -v` to check the remotes.
+
+#### Workflows
+
+There are two workflows (To deploy to `Google` or `Azure`), make sure to enable the correct workflow in the
+repository `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
