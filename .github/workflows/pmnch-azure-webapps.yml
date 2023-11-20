@@ -20,8 +20,8 @@
 name: "Azure: Build and deploy dashboard API (FastAPI)"
 
 env:
-  AZURE_WEBAPP_NAME: pmnch-api  # set this to the name of your Azure Web App
-  PYTHON_VERSION: '3.10'              # set this to the Python version to use
+  AZURE_WEBAPP_NAME: pmnch-api # set this to the name of your Azure Web App
+  PYTHON_VERSION: '3.10' # set this to the Python version to use
 
 on:
   push:
@@ -82,5 +82,5 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: pmnch-api
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
