@@ -79,7 +79,7 @@ def get_query(campaign_code: CampaignCode):
        """
 
 
-def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
+def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
     """
     Get the dataframe of a campaign from BigQuery
 

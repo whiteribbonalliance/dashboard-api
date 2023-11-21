@@ -52,12 +52,14 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Get data
     if os.getenv("ONLY_PMNCH", "").lower() == "true":
         # Get data from Azure Blob Storage
-        df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
-            campaign_code=campaign_code
+        df_responses = pd.read_csv(
+            filepath_or_buffer="/pmnch_data/pmn01a.csv",
+            keep_default_na=False,
+            dtype=str,
         )
     else:
         # Get data from BigQuery
-        df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
+        df_responses = bigquery_interactions.get_campaign_df(
             campaign_code=campaign_code
         )
 
