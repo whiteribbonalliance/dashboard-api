@@ -1,3 +1,14 @@
 .git*
 **/*.pyc
 .venv/
+
+# Pickle files
+giz.pkl
+healthwellbeing.pkl
+midwife.pkl
+pmn01a.pkl
+wra03a.pkl
+wwwpakistan.pkl
+
+# CSV files
+pmn01a.csv

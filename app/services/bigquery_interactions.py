@@ -42,23 +42,8 @@ def get_bigquery_storage_client() -> bigquery_storage.BigQueryReadClient:
     return bigquery_storage.BigQueryReadClient(credentials=credentials)
 
 
-def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
-    """
-    Get the dataframe of a campaign from BigQuery
-
-    :param campaign_code: The campaign code
-    """
-
-    # Load from .pkl file
-    if os.getenv("LOAD_FROM_LOCAL_PKL_FILE", "").lower() == "true":
-        df_responses = pd.read_pickle(f"{campaign_code.value}.pkl")
-
-        return df_responses
-
-    bigquery_client = get_bigquery_client()
-
-    # Use BigQuery Storage client for faster results to dataframe
-    bigquery_storage_client = get_bigquery_storage_client()
+def get_query(campaign_code: CampaignCode):
+    """Get query"""
 
     # Set minimum age
     if campaign_code == CampaignCode.what_young_people_want:
@@ -68,8 +53,7 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
     else:
         min_age = "15"
 
-    query_job = bigquery_client.query(
-        f"""
+    return f"""
         SELECT CASE WHEN response_english_text IS null THEN response_original_text ELSE CONCAT(response_original_text, ' (', response_english_text, ')')  END as q1_raw_response,
         response_original_lang as q1_original_language,
         response_nlu_category AS q1_canonical_code,
@@ -93,10 +77,37 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         AND response_lemmatized_text is not null
         AND LENGTH(response_original_text) > 3
        """
-    )
 
+
+def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
+    """
+    Get the dataframe of a campaign from BigQuery
+
+    :param campaign_code: The campaign code
+    """
+
+    # Load from .pkl file
+    if os.getenv("LOAD_FROM_LOCAL_PKL_FILE", "").lower() == "true":
+        df_responses = pd.read_pickle(f"{campaign_code.value}.pkl")
+
+        return df_responses
+
+    # BQ client
+    bigquery_client = get_bigquery_client()
+
+    # Use BigQuery Storage client for faster results to dataframe
+    bigquery_storage_client = get_bigquery_storage_client()
+
+    # Query
+    query = get_query(campaign_code=campaign_code)
+
+    # Query job
+    query_job = bigquery_client.query(query)
+
+    # Results
     results = query_job.result()
 
+    # Dataframe
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Save to .pkl file
@@ -104,3 +115,28 @@ def get_campaign_df_from_bigquery(campaign_code: CampaignCode) -> DataFrame:
         df_responses.to_pickle(f"{campaign_code.value}.pkl")
 
     return df_responses
+
+
+def export_pmn01a_data_to_csv():
+    """Export data from campaign pmn01a to a CSV file"""
+
+    # Client
+    bigquery_client = get_bigquery_client()
+
+    # Use BigQuery Storage client for faster results to dataframe
+    bigquery_storage_client = get_bigquery_storage_client()
+
+    # Query
+    query = get_query(campaign_code=CampaignCode.what_young_people_want)
+
+    # Query job
+    query_job = bigquery_client.query(query)
+
+    # Results
+    results = query_job.result()
+
+    # Dataframe
+    df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
+
+    # Save to CSV
+    df_responses.to_csv("pmn01a.csv", index=False, header=True)

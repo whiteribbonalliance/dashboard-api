@@ -20,7 +20,15 @@ Then it is deployed to Google App Engine using a Flex environment (see `app.yaml
 
 ### install
 
-Set the value for the environment variable `STAGE` as `dev`.
+Environment variables:
+
+- `STAGE=` prod or dev.
+- `NEWRELIC_API_KEY=` The New Relic API key.
+- `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
+- `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
+- `LOAD_FROM_LOCAL_PKL_FILE=` Whether to load data from local `.pkl` file or not. Accepts `True` or `False`.
+- `SAVE_TO_PKL_FILE=` Whether to save data to `.pkl` file after loading from BigQuery. Accepts `True` or `False`.
+- `ONLY_PMNCH=` Whether to only load data for `pmnch` or not. Accepts `True` or `False`.
 
 ```bash
 pip install -r requirements.txt
