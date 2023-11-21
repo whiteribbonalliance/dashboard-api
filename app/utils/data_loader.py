@@ -49,10 +49,17 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Q codes available in a campaign
     campaign_q_codes = campaign_crud.get_q_codes()
 
-    # Get the dataframe from BigQuery
-    df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
-        campaign_code=campaign_code
-    )
+    # Get data
+    if os.getenv("ONLY_PMNCH", "").lower() == "true":
+        # Get data from Azure Blob Storage
+        df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
+            campaign_code=campaign_code
+        )
+    else:
+        # Get data from BigQuery
+        df_responses = bigquery_interactions.get_campaign_df_from_bigquery(
+            campaign_code=campaign_code
+        )
 
     # Create additional q columns (q1_, q2_, etc.)
     df_responses = create_additional_q_columns(
@@ -528,9 +535,15 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_code in CampaignCode:
+        # Only load data for what_young_people_want
+        if os.getenv("ONLY_PMNCH", "").lower() == "true":
+            if campaign_code != CampaignCode.what_young_people_want:
+                continue
+
         # TODO: Temporarily skip campaign 'wee'
         if campaign_code == CampaignCode.womens_economic_empowerment:
             continue
+
         print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")
 
         try:
