@@ -86,4 +86,5 @@ def translate_front(translation_api_code: TranslationApiCode):
 translate_front(translation_api_code="google")
 
 # Values already translated by Google will not be translated again
+# Azure has languages that Google does not
 translate_front(translation_api_code="azure")
