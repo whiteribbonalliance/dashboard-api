@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 
-from app import constants
+from app import helpers
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import TranslationApiCode
@@ -28,7 +28,7 @@ def translate_front(translation_api_code: TranslationApiCode):
 
     # Translate text for every language
     translator = Translator(translation_api_code=translation_api_code)
-    for language in constants.get_translation_languages(
+    for language in helpers.get_translation_languages(
         translation_api_code=translation_api_code
     ).keys():
         print(f"{name} - Translating texts to {language}...")

@@ -269,3 +269,15 @@ def get_string_hash_value(string: str) -> str:
     """Get string hash value"""
 
     return sha256(string.encode()).hexdigest()
+
+
+def get_translation_languages(translation_api_code: TranslationApiCode) -> dict:
+    """Get translation languages"""
+
+    # Languages supported by Cloud Translation API
+    if translation_api_code == "google":
+        return constants.LANGUAGES_GOOGLE
+    elif translation_api_code == "azure":
+        return constants.LANGUAGES_AZURE
+
+    return {}

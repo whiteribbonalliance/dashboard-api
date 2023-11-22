@@ -21,7 +21,6 @@ from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
 from app import databases
-from app import constants
 from app.types import TranslationApiCode
 
 logger = logging.getLogger(__name__)
@@ -66,7 +65,7 @@ def dep_common_parameters_campaign(
     translation_api = helpers.get_translation_api_code_by_campaign(
         campaign_code=campaign_code
     )
-    if lang not in constants.get_translation_languages(
+    if lang not in helpers.get_translation_languages(
         translation_api_code=translation_api
     ):
         lang = "en"
@@ -101,7 +100,7 @@ def dep_common_parameters_all_campaigns(
     """Return the common parameters"""
 
     translation_api_code: TranslationApiCode = "google"
-    if lang not in constants.get_translation_languages(
+    if lang not in helpers.get_translation_languages(
         translation_api_code=translation_api_code
     ):
         lang = "en"

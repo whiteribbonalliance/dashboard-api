@@ -114,9 +114,7 @@ class Translator:
         """Save translations to translations.json"""
 
         with open(constants.TRANSLATIONS_JSON, "w") as file:
-            file.write(
-                json.dumps(self.__translations_cache.get_all())
-            )
+            file.write(json.dumps(self.__translations_cache.get_all()))
 
     def __translate_text_delimiter_separated(self, text: str, delimiter: str) -> str:
         """
