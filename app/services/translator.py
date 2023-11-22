@@ -75,7 +75,7 @@ class Translator:
         translations = []
         for data in output:
             translations.append(
-                {"input": [data["input"]], "output": unescape(data["translatedText"])}
+                {"input": data["input"], "output": unescape(data["translatedText"])}
             )
 
         return translations
@@ -137,7 +137,7 @@ class Translator:
 
         for index, word in enumerate(split_text):
             word = word.strip()
-            translated_text += f"{self.translate_text(word)}"
+            translated_text += f"{self.__translate_text(word)}"
             if index < len(split_text) - 1:
                 if delimiter == " ":
                     translated_text += f"{delimiter}"

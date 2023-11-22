@@ -48,7 +48,7 @@ def read_campaign(
     ],
     campaign_req: CampaignRequest,
 ):
-    """Read a campaign"""
+    """Read campaign"""
 
     campaign_code = parameters.campaign_code
     language = parameters.language

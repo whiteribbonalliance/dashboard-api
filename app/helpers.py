@@ -20,7 +20,9 @@ def contains_letters(text: str):
         return re.search(r"[a-zA-Z]", text)
 
 
-def divide_list_into_chunks_by_text_count(my_list: list[str], n: int) -> list[list]:
+def divide_list_into_chunks_by_text_count(
+    my_list: list[str], n: int
+) -> list[list[str]]:
     """Divide list into chunks by text count"""
 
     def divide():
@@ -30,7 +32,9 @@ def divide_list_into_chunks_by_text_count(my_list: list[str], n: int) -> list[li
     return list(divide())
 
 
-def divide_list_into_chunks_by_char_count(my_list: list[str], n: int) -> list[list]:
+def divide_list_into_chunks_by_char_count(
+    my_list: list[str], n: int
+) -> list[list[str]]:
     """Divide list into chunks by char count"""
 
     total_chars_count = sum(len(i) for i in my_list)
