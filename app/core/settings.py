@@ -49,6 +49,7 @@ class ProdSettings(Settings):
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
             "https://midwivesvoices.whiteribbonalliance.org",
             "https://admin.whiteribbonalliance.org",
+            "https://pmnch-front.azurewebsites.net"
         ],
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
