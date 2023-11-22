@@ -8,7 +8,6 @@ import os
 import random
 from collections import Counter
 from datetime import date
-import uuid
 
 import numpy as np
 import pandas as pd
@@ -31,7 +30,7 @@ from app.services import cloud_storage_interactions
 from app.services import googlemaps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
-from app.types import FilterSequence
+from app.types import FilterSequence, TranslationApiCode
 from app.utils import code_hierarchy
 from app.utils import filters
 from app.utils import q_col_names
@@ -71,7 +70,15 @@ class CampaignService:
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
 
-        self.__translator = Translator()
+        # Translation API code
+        self.__translation_api_code: TranslationApiCode = (
+            helpers.get_translation_api_code_by_campaign(
+                campaign_code=self.__campaign_code
+            )
+        )
+
+        # Translator
+        self.__translator = Translator(translation_api_code=self.__translation_api_code)
 
         # For filtering purposes, translate keyword_filter and keyword_exclude back to English
         if self.__language != "en":
@@ -258,7 +265,9 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
+                translator = Translator(
+                    translation_api_code=self.__translation_api_code
+                )
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -464,7 +473,9 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
+                translator = Translator(
+                    translation_api_code=self.__translation_api_code
+                )
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -593,7 +604,9 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator()
+                translator = Translator(
+                    translation_api_code=self.__translation_api_code
+                )
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts

@@ -21,6 +21,8 @@ from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
 from app import databases
+from app import constants
+from app.types import TranslationApiCode
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -42,7 +44,7 @@ def dep_common_parameters_campaign(
     campaign_code: CampaignCode = Depends(dep_campaign_code),
     q_code: str = "q1",
     response_year: str = "",
-    lang: str = Depends(helpers.check_language),
+    lang: str = "en",
 ) -> CommonParametersCampaign:
     """Return the common parameters"""
 
@@ -60,6 +62,14 @@ def dep_common_parameters_campaign(
         raise http_exceptions.ResourceNotFoundHTTPException(
             "Campaign does not have the provided q_code"
         )
+
+    translation_api = helpers.get_translation_api_code_by_campaign(
+        campaign_code=campaign_code
+    )
+    if lang not in constants.get_translation_languages(
+        translation_api_code=translation_api
+    ):
+        lang = "en"
 
     return CommonParametersCampaign(
         campaign_code=campaign_code,
@@ -86,9 +96,15 @@ def dep_common_parameters_campaign_public_data(
 
 def dep_common_parameters_all_campaigns(
     request: Request,
-    lang: str = Depends(helpers.check_language),
+    lang: str = "en",
 ) -> CommonParametersCampaignsMerged:
     """Return the common parameters"""
+
+    translation_api_code: TranslationApiCode = "google"
+    if lang not in constants.get_translation_languages(
+        translation_api_code=translation_api_code
+    ):
+        lang = "en"
 
     return CommonParametersCampaignsMerged(
         language=lang,

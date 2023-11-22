@@ -5,12 +5,20 @@ import shutil
 from app import constants
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
+from app.types import TranslationApiCode
 
 count_chars_only = False
 
 
-def translate_front():
+def translate_front(translation_api_code: TranslationApiCode):
     """Apply translation on texts"""
+
+    if translation_api_code == "google":
+        name = "Google"
+    elif translation_api_code == "azure":
+        name = "Azure"
+    else:
+        name = ""
 
     translations_cache = TranslationsCache()
     translations_cache.load()
@@ -18,11 +26,12 @@ def translate_front():
     with open("front_translations/to_translate.json", "r", encoding="utf8") as file:
         texts: dict = json.loads(file.read())
 
-    translator = Translator()
-
     # Translate text for every language
-    for language in constants.TRANSLATION_LANGUAGES.keys():
-        print(f"Translating texts to {language}...")
+    translator = Translator(translation_api_code=translation_api_code)
+    for language in constants.get_translation_languages(
+        translation_api_code=translation_api_code
+    ).keys():
+        print(f"{name} - Translating texts to {language}...")
 
         translator.change_target_language(target_language=language)
 
@@ -74,4 +83,7 @@ def translate_front():
         )
 
 
-translate_front()
+translate_front(translation_api_code="google")
+
+# Values already translated by Google will not be translated again
+translate_front(translation_api_code="azure")

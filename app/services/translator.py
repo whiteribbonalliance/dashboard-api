@@ -1,8 +1,10 @@
 import json
 import logging
+import os
 from html import unescape
 from typing import Callable
 
+import requests
 from deep_replacer import DeepReplacer, key_depth_rules
 from google.cloud import translate_v2
 from google.oauth2 import service_account
@@ -11,11 +13,15 @@ from app import constants, helpers
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
+from app.types import TranslationApiCode
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
-CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST = 128
+azure_translator_key = os.getenv("AZURE_TRANSLATOR_KEY")
+
+GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST = 128
+AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST = 50000
 
 
 class Translator:
@@ -25,9 +31,13 @@ class Translator:
     To translate from any other language to English, use the quick_translate_text function.
     """
 
-    def __init__(self, target_language: str = "en"):
+    def __init__(
+        self, translation_api_code: TranslationApiCode, target_language: str = "en"
+    ):
         self.__target_language = target_language
         self.__translations_cache = TranslationsCache()
+
+        self.__translation_api_code = translation_api_code
 
         # Keep the latest generated keys per language from extracted texts that have been translated
         self.__latest_generated_keys = {}
@@ -36,21 +46,77 @@ class Translator:
         self.__extracted_texts = set()
         self.__translations_char_count = 0
 
-    def __get_translate_client(self) -> translate_v2.Client:
-        """Get Translate client"""
+        # Translation function
+        if self.__translation_api_code == "google":
+            self.__get_translation = self.__get_translation_with_google
+        elif self.__translation_api_code == "azure":
+            self.__get_translation = self.__get_translation_with_azure
+        else:
+            self.__get_translation = self.__get_translation_with_google
+
+    def __get_translation_with_google(
+        self, values: list[str], source_language: str, target_language: str
+    ) -> list[dict[str, str]]:
+        """Get translation with Google"""
 
         credentials = service_account.Credentials.from_service_account_file(
             filename="credentials.json",
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
 
-        return translate_v2.Client(credentials=credentials)
+        client = translate_v2.Client(credentials=credentials)
+
+        output = client.translate(
+            values=values,
+            source_language=source_language,
+            target_language=target_language,
+        )
+
+        translations = []
+        for data in output:
+            translations.append(
+                {"input": [data["input"]], "output": unescape(data["translatedText"])}
+            )
+
+        return translations
+
+    def __get_translation_with_azure(
+        self, values: list[str], source_language: str, target_language: str
+    ) -> list[dict[str, str]]:
+        """Get translation with Azure"""
+
+        url = "https://api.cognitive.microsofttranslator.com/translate"
+        params = {"api-version": "3.0", "from": source_language, "to": target_language}
+        headers = {
+            "Ocp-Apim-Subscription-Key": azure_translator_key,
+            "Ocp-Apim-Subscription-Region": "eastus",
+            "Content-type": "application/json",
+        }
+
+        body = [{"text": x} for x in values]
+
+        response = requests.post(url, params=params, headers=headers, json=body)
+
+        if not response.ok:
+            raise Exception("Error translating with Azure")
+
+        output = response.json()
+
+        translations = []
+        for _input, _output in zip(values, output):
+            translations.append(
+                {"input": _input, "output": _output["translations"][0]["text"]}
+            )
+
+        return translations
 
     def __save_translations(self):
         """Save translations to translations.json"""
 
-        with open(constants.TRANSLATIONS_JSON, "w") as file:
-            file.write(json.dumps(self.__translations_cache.get_all()))
+        with open(constants.TRANSLATIONS_JSON, "w", encoding="utf-8") as file:
+            file.write(
+                json.dumps(self.__translations_cache.get_all(), ensure_ascii=False)
+            )
 
     def __translate_text_delimiter_separated(self, text: str, delimiter: str) -> str:
         """
@@ -104,21 +170,19 @@ class Translator:
         else:
             # If translated text does not exist, translate it and add it to cache
             try:
-                translate_client = self.__get_translate_client()
-                output = translate_client.translate(
-                    values=text,
+                translated_texts = self.__get_translation(
+                    values=[text],
                     source_language="en",
                     target_language=self.__target_language,
                 )
-                translated_text = unescape(output["translatedText"])
             except (Exception,):
                 logger.error(f"Error translating: {text} to {self.__target_language}")
                 return text
 
             # Add translation to cache
-            self.__translations_cache.set(key, translated_text)
+            self.__translations_cache.set(key, translated_texts[0]["output"])
 
-            return translated_text
+            return translated_texts[0]["output"]
 
     def translate_text(self, text: str, delimiter: str | None = None) -> str:
         """
@@ -154,18 +218,17 @@ class Translator:
         """
 
         try:
-            translate_client = self.__get_translate_client()
-            output = translate_client.translate(
-                values=text,
+            translated_texts = self.__get_translation(
+                values=[text],
                 source_language=source_language,
                 target_language=target_language,
             )
-            translated_text = unescape(output["translatedText"])
         except (Exception,):
             logger.error(f"Error translating: {text} to {target_language}")
+
             return text
 
-        return translated_text
+        return translated_texts[0]["output"]
 
     def extract_text(
         self,
@@ -239,10 +302,21 @@ class Translator:
             return
 
         # Divide extracted_texts into chunks
-        extracted_texts_chunks = helpers.divide_list_into_chunks(
-            my_list=list(self.__extracted_texts),
-            n=CLOUD_TRANSLATION_API_MAX_MESSAGES_PER_REQUEST,
-        )
+        if self.__translation_api_code == "azure":
+            extracted_texts_chunks = helpers.divide_list_into_chunks_by_char_count(
+                my_list=list(self.__extracted_texts),
+                n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
+            )
+        elif self.__translation_api_code == "google":
+            extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
+                my_list=list(self.__extracted_texts),
+                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
+            )
+        else:
+            extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
+                my_list=list(self.__extracted_texts),
+                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
+            )
 
         # Skip translation, count characters instead
         # 1. Add the key to the TranslationsCache with the value as the text not translated
@@ -259,21 +333,20 @@ class Translator:
         else:
             for extracted_texts_chunk in extracted_texts_chunks:
                 try:
-                    translate_client = self.__get_translate_client()
-                    output = translate_client.translate(
+                    translated_texts = self.__get_translation(
                         values=extracted_texts_chunk,
                         source_language="en",
                         target_language=self.__target_language,
                     )
                 except (Exception,):
                     logger.error(
-                        f"Error translating: extracted_texts_chunk to {self.__target_language}"
+                        f"Error translating: texts from extracted_texts_chunk to {self.__target_language}"
                     )
                     continue
 
-                for data in output:
-                    input_text = data["input"]
-                    translated_text = unescape(data["translatedText"])
+                for translated_text in translated_texts:
+                    input_text = translated_text["input"]
+                    translated_text = translated_text["output"]
                     key = f"{self.__target_language}.{input_text}"
                     self.__translations_cache.set(key=key, value=translated_text)
                     self.__translations_char_count += len(input_text)

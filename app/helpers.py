@@ -10,6 +10,7 @@ from hashlib import sha256
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
+from app.types import TranslationApiCode
 
 
 def contains_letters(text: str):
@@ -19,14 +20,38 @@ def contains_letters(text: str):
         return re.search(r"[a-zA-Z]", text)
 
 
-def divide_list_into_chunks(my_list: list, n: int):
-    """divide list into chunks"""
+def divide_list_into_chunks_by_text_count(my_list: list[str], n: int) -> list[list]:
+    """Divide list into chunks by text count"""
 
     def divide():
         for i in range(0, len(my_list), n):
             yield my_list[i : i + n]
 
     return list(divide())
+
+
+def divide_list_into_chunks_by_char_count(my_list: list[str], n: int) -> list[list]:
+    """Divide list into chunks by char count"""
+
+    total_chars_count = sum(len(i) for i in my_list)
+    if total_chars_count <= n:
+        return [my_list]
+
+    result_list = []
+    tmp_list = []
+    char_count = 0
+    for index, text in enumerate(my_list):
+        char_count += len(text)
+        if char_count <= n:
+            tmp_list.append(text)
+        else:
+            result_list.append(tmp_list)
+            char_count = len(text)
+            tmp_list = [text]
+        if index + 1 == len(my_list):
+            result_list.append(tmp_list)
+
+    return result_list
 
 
 def check_campaign(campaign: str) -> CampaignCode:
@@ -38,13 +63,17 @@ def check_campaign(campaign: str) -> CampaignCode:
                 return campaign_code
 
 
-def check_language(lang: str = "en") -> str:
-    """Check if language exists, if not, default to 'en'"""
+def get_translation_api_code_by_campaign(
+    campaign_code: CampaignCode,
+) -> TranslationApiCode:
+    """Get translation api code"""
 
-    if lang in constants.TRANSLATION_LANGUAGES:
-        return lang
+    if campaign_code == CampaignCode.what_young_people_want:
+        translation_api_code: TranslationApiCode = "azure"
     else:
-        return "en"
+        translation_api_code: TranslationApiCode = "google"
+
+    return translation_api_code
 
 
 def check_q_code(q_code: str) -> QuestionCode:
