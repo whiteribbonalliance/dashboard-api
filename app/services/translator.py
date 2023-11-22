@@ -308,7 +308,6 @@ class Translator:
                 n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
             )
         elif self.__translation_api_code == "google":
-            print("Google")
             extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
                 my_list=list(self.__extracted_texts),
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
