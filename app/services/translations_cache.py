@@ -21,7 +21,7 @@ class TranslationsCache(metaclass=SingletonMeta):
 
         if not self.__cache:
             if os.path.isfile(constants.TRANSLATIONS_JSON):
-                with open(constants.TRANSLATIONS_JSON, "r", encoding="utf-8") as file:
+                with open(constants.TRANSLATIONS_JSON, "r") as file:
                     self.__cache: dict = json.loads(file.read())
                     self.__is_loaded = True
 

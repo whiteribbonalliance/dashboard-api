@@ -113,9 +113,9 @@ class Translator:
     def __save_translations(self):
         """Save translations to translations.json"""
 
-        with open(constants.TRANSLATIONS_JSON, "w", encoding="utf-8") as file:
+        with open(constants.TRANSLATIONS_JSON, "w") as file:
             file.write(
-                json.dumps(self.__translations_cache.get_all(), ensure_ascii=False)
+                json.dumps(self.__translations_cache.get_all())
             )
 
     def __translate_text_delimiter_separated(self, text: str, delimiter: str) -> str:
@@ -308,6 +308,7 @@ class Translator:
                 n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
             )
         elif self.__translation_api_code == "google":
+            print("Google")
             extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
                 my_list=list(self.__extracted_texts),
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
