@@ -117,8 +117,8 @@ def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
     return df_responses
 
 
-def export_pmn01a_data_to_csv():
-    """Export data from campaign pmn01a to a CSV file"""
+def export_pmn01a_data_to_pkl():
+    """Export data from campaign pmn01a to a Pickle file"""
 
     # Client
     bigquery_client = get_bigquery_client()
@@ -139,4 +139,4 @@ def export_pmn01a_data_to_csv():
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Save to CSV
-    df_responses.to_csv("pmn01a.csv", index=False, header=True)
+    df_responses.to_pickle(f"{CampaignCode.what_young_people_want.value}.pkl")
