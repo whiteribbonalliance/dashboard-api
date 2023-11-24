@@ -26,8 +26,8 @@ from app.schemas.option_bool import OptionBool
 from app.schemas.option_str import OptionStr
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
-from app.services import cloud_storage_interactions
-from app.services import googlemaps_interactions
+from app.services import google_cloud_storage_interactions
+from app.services import google_maps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import FilterSequence, TranslationApiCode
@@ -1807,7 +1807,7 @@ class CampaignService:
 
                 # Get coordinate from googlemaps if it was not found
                 if not coordinate_found:
-                    coordinate = googlemaps_interactions.get_coordinate(
+                    coordinate = google_maps_interactions.get_coordinate(
                         location=f"{canonical_country}, {region}"
                     )
                     if not coordinate:
@@ -2063,30 +2063,14 @@ class CampaignService:
 
         return response_years
 
-    def get_campaign_data_url_and_filename(
+    def get_campaign_df_export_and_filename(
         self,
+        date_format: str,
         from_date: date = None,
         to_date: date = None,
         unique_filename_code: str = "",
-    ) -> tuple[str, str]:
-        """
-        Get campaign data url and filename
-
-        :param from_date: From Date
-        :param to_date: to date
-        :param unique_filename_code: Code to attach to filename uploaded to Cloud Storage.
-        This code is unique per campaign_code and filters so that requesting the same filters does not have to create a new CSV file, but the existing file will be used.
-        """
-
-        def remove_unique_filename_code(_csv_filename: str, _unique_filename_code):
-            """
-            Function used after the file has been uploaded to cloud Storage.
-            Remove the filename code because the user should not see it in the filename.
-            """
-
-            _csv_filename = _csv_filename.replace(_unique_filename_code, "")
-
-            return _csv_filename
+    ):
+        """Get campaign dataframe for exporting and filename"""
 
         # Dataframe
         df = self.__get_df_1_copy()
@@ -2107,24 +2091,69 @@ class CampaignService:
             unique_filename_code = f"_{unique_filename_code}"
         csv_filename = f"wra_{self.__campaign_code.value}{unique_filename_code}.csv"
 
-        # File paths
-        csv_filepath = f"/tmp/{csv_filename}"
-        creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
-        cloud_storage_csv_filepath = f"{csv_filename}"
-
         # Filter by date
-        date_format = "%Y_%m_%d"
         if from_date and to_date:
             df = df[
                 (df["ingestion_time"].dt.date >= from_date)
                 & (df["ingestion_time"].dt.date <= to_date)
             ]
-            csv_filename = f"wra_{self.__campaign_code.value}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
+            csv_filename_without_ext = csv_filename.replace(".csv", "")
+            csv_filename = f"{csv_filename_without_ext}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
-        # If file exists in Cloud Storage
-        if cloud_storage_interactions.file_exists(filename=cloud_storage_csv_filepath):
+        # Convert date to string
+        df["ingestion_time"] = df["ingestion_time"].apply(
+            lambda x: x.strftime(date_format) if x and not isinstance(x, str) else ""
+        )
+
+        return df, csv_filename
+
+    def get_campaign_data_url_and_filename_from_google(
+        self,
+        from_date: date = None,
+        to_date: date = None,
+        unique_filename_code: str = "",
+    ) -> tuple[str, str]:
+        """
+        Get campaign data url and filename
+
+        :param from_date: From Date
+        :param to_date: to date
+        :param unique_filename_code: Code to attach to filename uploaded to Cloud Storage.
+        This code is unique per campaign_code and filters so that requesting the same filters does not have to create a new CSV file, but the existing file will be used.
+        """
+
+        def remove_unique_filename_code(_csv_filename: str, _unique_filename_code):
+            """
+            Function used after the file has been uploaded to cloud Storage.
+            Remove the filename code because the user should not see it in the filename.
+            """
+
+            _csv_filename = _csv_filename.replace(f"_{_unique_filename_code}", "")
+
+            return _csv_filename
+
+        # Date format
+        date_format = "%Y_%m_%d"
+
+        # Get df and filename
+        df, csv_filename = self.get_campaign_df_export_and_filename(
+            date_format=date_format,
+            from_date=from_date,
+            to_date=to_date,
+            unique_filename_code=unique_filename_code,
+        )
+
+        # File paths
+        csv_filepath = f"/tmp/{csv_filename}"
+        creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
+        cloud_storage_csv_filepath = f"{csv_filename}"
+
+        # If file exists in Google Cloud Storage
+        if google_cloud_storage_interactions.file_exists(
+            filename=cloud_storage_csv_filepath
+        ):
             # Get storage url
-            url = cloud_storage_interactions.get_file_url(
+            url = google_cloud_storage_interactions.get_file_url(
                 filename=cloud_storage_csv_filepath
             )
 
@@ -2137,22 +2166,12 @@ class CampaignService:
 
             return url, csv_filename
 
-        # If file does not exist in Cloud Storage
+        # If file does not exist in Google Cloud Storage
         else:
             if not os.path.isfile(csv_filepath):
-                # Create '/tmp' dir (only if 'dev' because this dir already exists when in production if using App Engine)
-                if os.getenv("STAGE") == "dev":
-                    if not os.path.isdir("/tmp"):
-                        os.mkdir("/tmp")
-
                 # Cleanup
                 if os.path.isfile(creating_csv_filepath):
                     os.remove(creating_csv_filepath)
-
-                # Convert date to string
-                df["ingestion_time"] = df["ingestion_time"].apply(
-                    lambda x: x.strftime(date_format) if x else ""
-                )
 
                 # Save dataframe to csv file
                 df.to_csv(path_or_buf=creating_csv_filepath, index=False, header=True)
@@ -2161,7 +2180,7 @@ class CampaignService:
                 os.rename(src=creating_csv_filepath, dst=csv_filepath)
 
             # Upload to storage
-            cloud_storage_interactions.upload_file(
+            google_cloud_storage_interactions.upload_file(
                 source_filename=csv_filepath,
                 destination_filename=cloud_storage_csv_filepath,
             )
@@ -2170,7 +2189,7 @@ class CampaignService:
             os.remove(csv_filepath)
 
             # Get storage url
-            url = cloud_storage_interactions.get_file_url(
+            url = google_cloud_storage_interactions.get_file_url(
                 filename=cloud_storage_csv_filepath
             )
 

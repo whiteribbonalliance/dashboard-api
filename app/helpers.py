@@ -10,7 +10,7 @@ from hashlib import sha256
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
-from app.types import TranslationApiCode
+from app.types import TranslationApiCode, AzureBlobStorageContainerMountPath
 
 
 def contains_letters(text: str):
@@ -285,3 +285,33 @@ def get_translation_languages(translation_api_code: TranslationApiCode) -> dict:
         return constants.LANGUAGES_AZURE
 
     return {}
+
+
+def create_tmp_dir_if_not_exists():
+    """Create '/tmp' dir"""
+
+    tmp_dir_path = "/tmp"
+    if not os.path.isdir(tmp_dir_path):
+        os.mkdir(tmp_dir_path)
+
+
+def create_pmnch_main_dir_if_not_exists():
+    """
+    Create '/pmnch_main' dir.
+    Is a path mapping to an Azure Blob storage container.
+    """
+
+    container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
+    if not os.path.isdir(container_mount_path):
+        os.mkdir(container_mount_path)
+
+
+def create_pmnch_csv_dir_if_not_exists():
+    """
+    Create '/pmnch_csv' dir.
+    Is a path mapping to an Azure Blob storage container.
+    """
+
+    container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_csv"
+    if not os.path.isdir(container_mount_path):
+        os.mkdir(container_mount_path)

@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 import uvicorn
 from fastapi import FastAPI
@@ -7,10 +8,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
 from app.core.settings import settings
 from app.scheduler import app as app_rocketry
+from app import helpers
 
 description = """
 What Women Want Dashboard API.
 """
+
+# Create dirs required in local development.
+# In production these dirs are already present.
+if os.getenv("STAGE") == "dev" and os.getenv("ONLY_PMNCH", "").lower() != "true":
+    helpers.create_tmp_dir_if_not_exists()
+if os.getenv("STAGE") == "dev" and os.getenv("ONLY_PMNCH", "").lower() == "true":
+    helpers.create_pmnch_main_dir_if_not_exists()
+    helpers.create_pmnch_csv_dir_if_not_exists()
 
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,

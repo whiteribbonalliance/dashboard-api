@@ -41,6 +41,6 @@ def init_data_reloading(
 
     if not global_variables.is_loading_data:
         try:
-            background_tasks.add_task(data_loader.reload_data, True, True)
+            background_tasks.add_task(data_loader.reload_data, True, True, True)
         except (Exception,) as e:
             logger.error(f"An error occurred while reloading data: {str(e)}")

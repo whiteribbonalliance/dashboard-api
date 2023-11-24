@@ -2,6 +2,7 @@
 Schedule tasks
 """
 
+import os
 import logging
 
 from fastapi import concurrency
@@ -45,17 +46,28 @@ async def do_every_12th_hour_reload_data():
     """
 
     try:
-        await concurrency.run_in_threadpool(data_loader.reload_data, True, True)
+        await concurrency.run_in_threadpool(data_loader.reload_data, True, True, True)
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 
 
 @app.task(cron("0 * * * *"))
-async def do_every_hour_clear_tmp_dir():
+async def do_every_hour_clear_tmp_dir(session=Session()):
     """
     Clear tmp dir.
     Runs every hour.
     """
+
+    # This task is not needed if ONLY_PMNCH as this means deployment is done on Azure Web Apps
+    # The tmp dir is only used when deploying to Google App Engine
+    if os.getenv("ONLY_PMNCH", "").lower() == "true":
+        # Get task
+        task = session["do_every_hour_clear_tmp_dir"]
+
+        # Disable task
+        task.disabled = True
+
+        return
 
     try:
         await concurrency.run_in_threadpool(helpers.clear_tmp_dir)

@@ -16,12 +16,14 @@ from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.schemas.region import Region
-from app.services import bigquery_interactions
-from app.services import cloud_storage_interactions
-from app.services import googlemaps_interactions
+from app.services import google_bigquery_interactions
+from app.services import google_cloud_storage_interactions
+from app.services import google_maps_interactions
+from app.services import azure_blob_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignCRUD, CampaignService
 from app.services.translations_cache import TranslationsCache
+from app.types import AzureBlobStorageContainerMountPath
 from app.utils import code_hierarchy
 from app.utils import q_col_names
 from app import global_variables
@@ -52,14 +54,16 @@ def load_campaign_data(campaign_code: CampaignCode):
     # Get data
     if os.getenv("ONLY_PMNCH", "").lower() == "true":
         # Get data from Azure Blob Storage
+        mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
         df_responses = pd.read_csv(
-            filepath_or_buffer="/pmnch_data/pmn01a.csv",
+            filepath_or_buffer=f"{mount_path}/pmn01a.csv",
+            parse_dates=["ingestion_time"],
             keep_default_na=False,
             dtype=str,
         )
     else:
         # Get data from BigQuery
-        df_responses = bigquery_interactions.get_campaign_df(
+        df_responses = google_bigquery_interactions.get_campaign_df(
             campaign_code=campaign_code
         )
 
@@ -507,7 +511,11 @@ def load_initial_data():
     global_variables.is_loading_data = False
 
 
-def reload_data(clear_api_cache: bool, clear_bucket: bool):
+def reload_data(
+    clear_api_cache: bool,
+    clear_google_cloud_storage_bucket: bool,
+    clear_azure_blob_storage_container,
+):
     """Reload data"""
 
     if global_variables.is_loading_data:
@@ -525,8 +533,12 @@ def reload_data(clear_api_cache: bool, clear_bucket: bool):
             ApiCache().clear_cache()
 
         # Clear bucket
-        if clear_bucket:
-            cloud_storage_interactions.clear_bucket()
+        if clear_google_cloud_storage_bucket:
+            google_cloud_storage_interactions.clear_bucket()
+
+        # Clear container
+        if clear_azure_blob_storage_container:
+            azure_blob_storage_interactions.clear_container(mount_path="/pmnch_csv")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 
@@ -619,7 +631,7 @@ def load_region_coordinates():
                 continue
 
             # Get coordinate
-            coordinate = googlemaps_interactions.get_coordinate(
+            coordinate = google_maps_interactions.get_coordinate(
                 location=f"{location_country_name}, {location_name}"
             )
 

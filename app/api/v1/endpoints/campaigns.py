@@ -1,3 +1,4 @@
+import os
 import logging
 from io import StringIO
 from typing import Annotated
@@ -5,7 +6,7 @@ from typing import Annotated
 import pandas as pd
 import requests
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 
 from app import helpers
 from app import databases, auth_handler
@@ -24,9 +25,11 @@ from app.schemas.filter_options import FilterOptions
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
-from app.services import cloud_storage_interactions
+from app.services import google_cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
+from app.services import azure_blob_storage_interactions
+from app.types import AzureBlobStorageContainerMountPath
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -141,9 +144,6 @@ def campaign_data(
     from_date = parameters.from_date
     to_date = parameters.to_date
 
-    # Cleanup
-    cloud_storage_interactions.cleanup_if_over_5gb()
-
     # Get user
     users = databases.get_users()
     db_user = users.get(username)
@@ -159,27 +159,66 @@ def campaign_data(
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code)
 
-    # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        from_date=from_date, to_date=to_date
-    )
+    # Use Azure for what_young_people_want
+    if campaign_code == CampaignCode.what_young_people_want:
+        container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_csv"
 
-    def iter_file():
-        with requests.Session() as session:
-            response = session.get(url=url, stream=True)
-            response.raise_for_status()
-            for chunk in response.iter_content(1024 * 1024):
-                yield chunk
+        # Cleanup
+        azure_blob_storage_interactions.cleanup(mount_path=container_mount_path)
 
-    return StreamingResponse(
-        content=iter_file(),
-        media_type="text/csv",
-        headers={
-            "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename={csv_filename}",
-            "Access-Control-Expose-Headers": "Content-Disposition",
-        },
-    )
+        # Get df and filename
+        df, csv_filename = campaign_service.get_campaign_df_export_and_filename(
+            date_format="%Y_%m_%d", from_date=from_date, to_date=to_date
+        )
+
+        # File path
+        file_path = f"{container_mount_path}/{csv_filename}"
+
+        # If file does not exist in Azure Blob Storage
+        if not os.path.isfile(file_path):
+            azure_blob_storage_interactions.upload_df_as_csv_file(
+                df=df, mount_path=container_mount_path, csv_filename=csv_filename
+            )
+
+        return FileResponse(
+            path=file_path,
+            media_type="text/csv",
+            headers={
+                "Content-Type": "text/csv",
+                "Content-Disposition": f"attachment; filename={csv_filename}",
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+
+    # Use Google
+    else:
+        # Cleanup
+        google_cloud_storage_interactions.cleanup()
+
+        # Get url and filename
+        (
+            url,
+            csv_filename,
+        ) = campaign_service.get_campaign_data_url_and_filename_from_google(
+            from_date=from_date, to_date=to_date
+        )
+
+        def iter_file():
+            with requests.Session() as session:
+                response = session.get(url=url, stream=True)
+                response.raise_for_status()
+                for chunk in response.iter_content(1024 * 1024):
+                    yield chunk
+
+        return StreamingResponse(
+            content=iter_file(),
+            media_type="text/csv",
+            headers={
+                "Content-Type": "text/csv",
+                "Content-Disposition": f"attachment; filename={csv_filename}",
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
 
 
 @router.post(
@@ -202,6 +241,7 @@ def campaign_public_data(
     filter_2 = campaign_req.filter_2
 
     # Only allow campaign healthwellbeing
+    # Note: If campaign what_young_people_want should use this endpoint, make sure the data comes from Azure
     if campaign_code != CampaignCode.healthwellbeing:
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."
@@ -230,7 +270,7 @@ def campaign_public_data(
         unique_filename_code = f"{helpers.get_string_hash_value(campaign_code.value)}{unique_filename_code}"
 
     # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
+    url, csv_filename = campaign_service.get_campaign_data_url_and_filename_from_google(
         unique_filename_code=unique_filename_code
     )
 
