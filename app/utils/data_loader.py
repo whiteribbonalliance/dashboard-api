@@ -530,11 +530,11 @@ def reload_data(
             ApiCache().clear_cache()
 
         # Clear bucket
-        if clear_google_cloud_storage_bucket:
+        if clear_google_cloud_storage_bucket and not env.ONLY_PMNCH:
             google_cloud_storage_interactions.clear_bucket()
 
         # Clear container
-        if clear_azure_blob_storage_container:
+        if clear_azure_blob_storage_container and env.ONLY_PMNCH:
             azure_blob_storage_interactions.clear_container(mount_path="/pmnch_csv")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
