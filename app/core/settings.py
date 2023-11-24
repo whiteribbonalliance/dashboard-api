@@ -1,8 +1,7 @@
-import os
-
 from pydantic import BaseSettings
 
 from app.enums.api_prefix import ApiPrefix
+from app import env
 
 
 class Settings(BaseSettings):
@@ -66,8 +65,7 @@ class ProdSettings(Settings):
     }
 
 
-env = os.getenv("STAGE")
-if env == "dev":
+if env.STAGE == "dev":
     settings = DevSettings()
 else:
     settings = ProdSettings()

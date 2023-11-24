@@ -1,16 +1,14 @@
 """Google Maps interactions"""
 
-import os
-
 import googlemaps
 
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+from app import env
 
 
 def get_googlemaps_client() -> googlemaps.Client:
     """Get Google Maps client"""
 
-    return googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
+    return googlemaps.Client(key=env.GOOGLE_MAPS_API_KEY)
 
 
 def get_coordinate(location: str) -> dict:

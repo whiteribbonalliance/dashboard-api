@@ -2,7 +2,6 @@
 Schedule tasks
 """
 
-import os
 import logging
 
 from fastapi import concurrency
@@ -13,6 +12,7 @@ from rocketry.conds import cron
 from app import helpers
 from app.logginglib import init_custom_logger
 from app.utils import data_loader
+from app import env
 
 app = Rocketry(executation="async")
 
@@ -60,7 +60,7 @@ async def do_every_hour_clear_tmp_dir(session=Session()):
 
     # This task is not needed if ONLY_PMNCH as this means deployment is done on Azure Web Apps
     # The tmp dir is only used when deploying to Google App Engine
-    if os.getenv("ONLY_PMNCH", "").lower() == "true":
+    if env.ONLY_PMNCH:
         # Get task
         task = session["do_every_hour_clear_tmp_dir"]
 

@@ -5,7 +5,6 @@ Requests the dataframe of a campaign from BigQuery and stores the data into the 
 import copy
 import json
 import logging
-import os
 
 import numpy as np
 import pandas as pd
@@ -27,6 +26,7 @@ from app.types import AzureBlobStorageContainerMountPath
 from app.utils import code_hierarchy
 from app.utils import q_col_names
 from app import global_variables
+from app import env
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -52,7 +52,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     campaign_q_codes = campaign_crud.get_q_codes()
 
     # Get data
-    if os.getenv("ONLY_PMNCH", "").lower() == "true":
+    if env.ONLY_PMNCH:
         # Get data from Azure Blob Storage
         mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
         df_responses = pd.read_csv(
@@ -554,7 +554,7 @@ def load_campaigns_data():
             continue
 
         # Only load data for what_young_people_want
-        if os.getenv("ONLY_PMNCH", "").lower() == "true":
+        if env.ONLY_PMNCH:
             if campaign_code != CampaignCode.what_young_people_want:
                 continue
 
@@ -644,7 +644,7 @@ def load_region_coordinates():
                 new_coordinates_added = True
 
     # Save region coordinates (Only in development environment)
-    if os.getenv("stage", "").lower() == "dev" and new_coordinates_added:
+    if env.STAGE == "dev" and new_coordinates_added:
         with open(region_coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 

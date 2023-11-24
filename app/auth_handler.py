@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta
 
 from fastapi import Depends
@@ -6,8 +5,8 @@ from jose import jwt, JWTError
 
 from app import http_exceptions, constants
 from app.oauth2_password_bearer_with_cookie import OAuth2PasswordBearerWithCookie
+from app import env
 
-ACCESS_TOKEN_SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY")
 ALGORITHM = "HS256"
 
 oauth2_scheme_access = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/login")
@@ -28,7 +27,7 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"iat": issued_at})
 
     encoded_jwt = jwt.encode(
-        claims=to_encode, key=ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM
+        claims=to_encode, key=env.ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM
     )
 
     return encoded_jwt
@@ -44,7 +43,7 @@ def decode_access_token(token: str) -> dict:
 
     try:
         payload = jwt.decode(
-            token=token, key=ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM]
+            token=token, key=env.ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM]
         )
         username: str = payload.get("sub")
         exp: int = payload.get("exp")

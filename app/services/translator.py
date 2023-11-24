@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from html import unescape
 from typing import Callable
 
@@ -14,11 +13,10 @@ from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.types import TranslationApiCode
+from app import env
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
-
-azure_translator_key = os.getenv("AZURE_TRANSLATOR_KEY")
 
 GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST = 128
 AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST = 50000
@@ -88,7 +86,7 @@ class Translator:
         url = "https://api.cognitive.microsofttranslator.com/translate"
         params = {"api-version": "3.0", "from": source_language, "to": target_language}
         headers = {
-            "Ocp-Apim-Subscription-Key": azure_translator_key,
+            "Ocp-Apim-Subscription-Key": env.AZURE_TRANSLATOR_KEY,
             "Ocp-Apim-Subscription-Region": "eastus",
             "Content-type": "application/json",
         }

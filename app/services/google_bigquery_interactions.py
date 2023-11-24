@@ -1,7 +1,6 @@
 """Google BigQuery interactions"""
 
 import logging
-import os
 
 from google.cloud import bigquery
 from google.cloud import bigquery_storage
@@ -10,6 +9,7 @@ from pandas import DataFrame
 import pandas as pd
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
+from app import env
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -87,7 +87,7 @@ def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
     """
 
     # Load from .pkl file
-    if os.getenv("LOAD_FROM_LOCAL_PKL_FILE", "").lower() == "true":
+    if env.LOAD_FROM_LOCAL_PKL_FILE:
         df_responses = pd.read_pickle(f"{campaign_code.value}.pkl")
 
         return df_responses
@@ -111,7 +111,7 @@ def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Save to .pkl file
-    if os.getenv("SAVE_TO_PKL_FILE", "").lower() == "true":
+    if env.SAVE_TO_PKL_FILE:
         df_responses.to_pickle(f"{campaign_code.value}.pkl")
 
     return df_responses

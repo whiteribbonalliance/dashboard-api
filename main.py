@@ -9,6 +9,7 @@ from app.api.v1.api import api_router
 from app.core.settings import settings
 from app.scheduler import app as app_rocketry
 from app import helpers
+from app import env
 
 description = """
 What Women Want Dashboard API.
@@ -16,9 +17,9 @@ What Women Want Dashboard API.
 
 # Create dirs required in local development.
 # In production these dirs are already present.
-if os.getenv("STAGE") == "dev" and os.getenv("ONLY_PMNCH", "").lower() != "true":
+if env.STAGE == "dev" and env.ONLY_PMNCH:
     helpers.create_tmp_dir_if_not_exists()
-if os.getenv("STAGE") == "dev" and os.getenv("ONLY_PMNCH", "").lower() == "true":
+if env.STAGE == "dev" and env.ONLY_PMNCH:
     helpers.create_pmnch_main_dir_if_not_exists()
     helpers.create_pmnch_csv_dir_if_not_exists()
 
