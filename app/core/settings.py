@@ -49,6 +49,7 @@ class ProdSettings(Settings):
             "https://midwivesvoices.whiteribbonalliance.org",
             "https://admin.whiteribbonalliance.org",
             "https://pmnch-front.azurewebsites.net",
+            "https://wypw.1point8b.org"
         ],
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
