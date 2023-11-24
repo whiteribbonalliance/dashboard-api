@@ -56,7 +56,7 @@ def load_campaign_data(campaign_code: CampaignCode):
         # Get data from Azure Blob Storage
         mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
         df_responses = pd.read_csv(
-            filepath_or_buffer=f"{mount_path}/pmn01a.csv",
+            filepath_or_buffer=f"{mount_path}/pmn01a.pkl",
             parse_dates=["ingestion_time"],
             keep_default_na=False,
             dtype=str,
