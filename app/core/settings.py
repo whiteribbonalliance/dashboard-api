@@ -23,6 +23,7 @@ class DevSettings(Settings):
             "http://localhost",
             "http://localhost:3000",
             "http://explore.whiteribbonalliance.local:3000",
+            "http://whatyoungpeoplewant.whiteribbonalliance.local:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],

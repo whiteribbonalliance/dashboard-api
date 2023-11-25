@@ -59,7 +59,7 @@ async def do_every_hour_clear_tmp_dir(session=Session()):
     """
 
     # This task is not needed if ONLY_PMNCH as this means deployment is done on Azure Web Apps
-    # The tmp dir is only used when deploying to Google App Engine
+    # The tmp dir is only used when deployment is done at Google App Engine
     if env.ONLY_PMNCH:
         # Get task
         task = session["do_every_hour_clear_tmp_dir"]
