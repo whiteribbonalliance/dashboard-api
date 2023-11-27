@@ -535,7 +535,7 @@ def reload_data(
 
         # Clear container
         if clear_azure_blob_storage_container and env.ONLY_PMNCH:
-            azure_blob_storage_interactions.clear_container(mount_path="/pmnch_csv")
+            azure_blob_storage_interactions.clear_container(container_name="csv")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 

@@ -5,17 +5,17 @@ import shutil
 from app import helpers
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
-from app.types import TranslationApiCode
+from app.types import CloudService
 
 count_chars_only = False
 
 
-def translate_front(translation_api_code: TranslationApiCode):
+def translate_front(cloud_service: CloudService):
     """Apply translation on texts"""
 
-    if translation_api_code == "google":
+    if cloud_service == "google":
         name = "Google"
-    elif translation_api_code == "azure":
+    elif cloud_service == "azure":
         name = "Azure"
     else:
         name = ""
@@ -27,9 +27,9 @@ def translate_front(translation_api_code: TranslationApiCode):
         texts: dict = json.loads(file.read())
 
     # Translate text for every language
-    translator = Translator(translation_api_code=translation_api_code)
+    translator = Translator(cloud_service=cloud_service)
     for language in helpers.get_translation_languages(
-        translation_api_code=translation_api_code
+        cloud_service=cloud_service
     ).keys():
         print(f"{name} - Translating texts to {language}...")
 
@@ -83,8 +83,8 @@ def translate_front(translation_api_code: TranslationApiCode):
         )
 
 
-translate_front(translation_api_code="google")
+translate_front(cloud_service="google")
 
 # Values already translated by Google will not be translated again
 # Azure has languages that Google does not
-translate_front(translation_api_code="azure")
+translate_front(cloud_service="azure")

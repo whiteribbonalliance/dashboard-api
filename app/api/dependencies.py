@@ -21,7 +21,7 @@ from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
 from app import databases
-from app.types import TranslationApiCode
+from app.types import CloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -62,12 +62,8 @@ def dep_common_parameters_campaign(
             "Campaign does not have the provided q_code"
         )
 
-    translation_api = helpers.get_translation_api_code_by_campaign(
-        campaign_code=campaign_code
-    )
-    if lang not in helpers.get_translation_languages(
-        translation_api_code=translation_api
-    ):
+    translation_api = helpers.get_cloud_service_by_campaign(campaign_code=campaign_code)
+    if lang not in helpers.get_translation_languages(cloud_service=translation_api):
         lang = "en"
 
     return CommonParametersCampaign(
@@ -99,10 +95,8 @@ def dep_common_parameters_all_campaigns(
 ) -> CommonParametersCampaignsMerged:
     """Return the common parameters"""
 
-    translation_api_code: TranslationApiCode = "google"
-    if lang not in helpers.get_translation_languages(
-        translation_api_code=translation_api_code
-    ):
+    cloud_service: CloudService = "google"
+    if lang not in helpers.get_translation_languages(cloud_service=cloud_service):
         lang = "en"
 
     return CommonParametersCampaignsMerged(

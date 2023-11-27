@@ -1,17 +1,24 @@
 """Azure Blob Storage interactions"""
 
-import os
-import glob
+from datetime import datetime, timedelta
 from io import StringIO
 
 import pandas as pd
-from azure.storage.blob import ContainerClient
-
-from app.types import AzureBlobStorageContainerMountPath, AzureContainerName
+from azure.storage.blob import (
+    ContainerClient,
+    BlobSasPermissions,
+    BlobClient,
+    generate_blob_sas,
+)
+from app.types import AzureBlobStorageContainerName
 from app import env
 
+EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
-def get_container_client(container_name: AzureContainerName) -> ContainerClient:
+
+def get_container_client(
+    container_name: AzureBlobStorageContainerName,
+) -> ContainerClient:
     """Get container client"""
 
     if container_name == "csv":
@@ -26,18 +33,17 @@ def get_container_client(container_name: AzureContainerName) -> ContainerClient:
         )
 
 
-def cleanup(container_name: AzureContainerName, limit_gb: int = 5):
+def cleanup(container_name: AzureBlobStorageContainerName, limit_gb: int = 5):
     """Cleanup"""
 
-    # Get mount path
-    mount_path = get_container_mount_path(container_name=container_name)
+    # Get container client
+    container_client = get_container_client(container_name=container_name)
 
     # Get size of all files
     size_bytes = 0
-    for path, dirs, files in os.walk(mount_path):
-        for f in files:
-            fp = os.path.join(path, f)
-            size_bytes += os.path.getsize(fp)
+    blob_list = container_client.list_blobs()
+    for blob in blob_list:
+        size_bytes += blob.size
 
     # Get size in megabytes
     size_megabytes = size_bytes / 1024 / 1024
@@ -47,60 +53,59 @@ def cleanup(container_name: AzureContainerName, limit_gb: int = 5):
         clear_container(container_name=container_name)
 
 
-def clear_container(container_name: AzureContainerName):
+def clear_container(container_name: AzureBlobStorageContainerName):
     """Clear container"""
 
-    if env.STAGE == "prod":
-        # Get container client
-        container_client = get_container_client(container_name=container_name)
+    # Get container client
+    container_client = get_container_client(container_name=container_name)
 
-        # Get list
-        blob_list = container_client.list_blobs()
+    # Get list
+    blob_list = container_client.list_blobs()
 
-        # Delete blobs
-        for blob in blob_list:
-            container_client.delete_blob(blob.name)
-    else:
-        # Get mount path
-        mount_path = get_container_mount_path(container_name=container_name)
-
-        files = glob.glob(os.path.join(mount_path, "*"))
-        for file in files:
-            if os.path.isfile(file):
-                try:
-                    os.remove(file)
-                except OSError:
-                    pass
+    # Delete blobs
+    for blob in blob_list:
+        container_client.delete_blob(blob.name)
 
 
 def upload_df_as_csv(
-    container_name: AzureContainerName, df: pd.DataFrame, csv_filename: str
+    container_name: AzureBlobStorageContainerName, df: pd.DataFrame, csv_filename: str
 ):
     """Upload dataframe as CSV"""
 
-    if env.STAGE == "prod":
-        # Get container client
-        container_client = get_container_client(container_name=container_name)
+    # Get container client
+    container_client = get_container_client(container_name=container_name)
 
-        # Save to buffer
-        buffer = StringIO()
-        df.to_csv(path_or_buf=buffer, index=False, header=True)
+    # Save to buffer
+    buffer = StringIO()
+    df.to_csv(path_or_buf=buffer, index=False, header=True)
 
-        # Upload
-        container_client.upload_blob(name=csv_filename, data=buffer.getvalue())
-    else:
-        # Get mount path
-        mount_path = get_container_mount_path(container_name=container_name)
-
-        df.to_csv(path_or_buf=f"{mount_path}/{csv_filename}", index=False, header=True)
+    # Upload
+    container_client.upload_blob(name=csv_filename, data=buffer.getvalue())
 
 
-def get_container_mount_path(container_name: AzureContainerName):
-    """Get container mount path"""
+def blob_exists(container_name: AzureBlobStorageContainerName, blob_name: str) -> bool:
+    """Check if blob exists"""
 
-    if container_name == "main":
-        mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
-        return mount_path
-    elif container_name == "csv":
-        mount_path: AzureBlobStorageContainerMountPath = "/pmnch_csv"
-        return mount_path
+    # Get blob
+    blob = BlobClient.from_connection_string(
+        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        container_name=container_name,
+        blob_name=blob_name,
+    )
+
+    return blob.exists()
+
+
+def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) -> str:
+    """Get blob url"""
+
+    sas_blob = generate_blob_sas(
+        account_name=env.AZURE_STORAGE_ACCOUNT_NAME,
+        container_name=container_name,
+        blob_name=blob_name,
+        account_key=env.AZURE_STORAGE_ACCOUNT_KEY,
+        permission=BlobSasPermissions(read=True),
+        expiry=EXPIRE_IN,
+    )
+
+    return f"https://{env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"

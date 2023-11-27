@@ -12,7 +12,7 @@ from app import constants, helpers
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
-from app.types import TranslationApiCode
+from app.types import CloudService
 from app import env
 
 logger = logging.getLogger(__name__)
@@ -29,13 +29,11 @@ class Translator:
     To translate from any other language to English, use the quick_translate_text function.
     """
 
-    def __init__(
-        self, translation_api_code: TranslationApiCode, target_language: str = "en"
-    ):
+    def __init__(self, cloud_service: CloudService, target_language: str = "en"):
         self.__target_language = target_language
         self.__translations_cache = TranslationsCache()
 
-        self.__translation_api_code = translation_api_code
+        self.__cloud_service = cloud_service
 
         # Keep the latest generated keys per language from extracted texts that have been translated
         self.__latest_generated_keys = {}
@@ -45,9 +43,9 @@ class Translator:
         self.__translations_char_count = 0
 
         # Translation function
-        if self.__translation_api_code == "google":
+        if self.__cloud_service == "google":
             self.__get_translation = self.__get_translation_with_google
-        elif self.__translation_api_code == "azure":
+        elif self.__cloud_service == "azure":
             self.__get_translation = self.__get_translation_with_azure
         else:
             self.__get_translation = self.__get_translation_with_google
@@ -298,12 +296,12 @@ class Translator:
             return
 
         # Divide extracted_texts into chunks
-        if self.__translation_api_code == "azure":
+        if self.__cloud_service == "azure":
             extracted_texts_chunks = helpers.divide_list_into_chunks_by_char_count(
                 my_list=list(self.__extracted_texts),
                 n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
             )
-        elif self.__translation_api_code == "google":
+        elif self.__cloud_service == "google":
             extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
                 my_list=list(self.__extracted_texts),
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,

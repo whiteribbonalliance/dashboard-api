@@ -10,7 +10,7 @@ from hashlib import sha256
 from app import constants
 from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
-from app.types import TranslationApiCode, AzureBlobStorageContainerMountPath
+from app.types import CloudService, AzureBlobStorageContainerMountPath
 
 
 def contains_letters(text: str):
@@ -67,17 +67,17 @@ def check_campaign(campaign: str) -> CampaignCode:
                 return campaign_code
 
 
-def get_translation_api_code_by_campaign(
+def get_cloud_service_by_campaign(
     campaign_code: CampaignCode,
-) -> TranslationApiCode:
+) -> CloudService:
     """Get translation api code"""
 
     if campaign_code == CampaignCode.what_young_people_want:
-        translation_api_code: TranslationApiCode = "azure"
+        cloud_service: CloudService = "azure"
     else:
-        translation_api_code: TranslationApiCode = "google"
+        cloud_service: CloudService = "google"
 
-    return translation_api_code
+    return cloud_service
 
 
 def check_q_code(q_code: str) -> QuestionCode:
@@ -275,13 +275,13 @@ def get_string_hash_value(string: str) -> str:
     return sha256(string.encode()).hexdigest()
 
 
-def get_translation_languages(translation_api_code: TranslationApiCode) -> dict:
+def get_translation_languages(cloud_service: CloudService) -> dict:
     """Get translation languages"""
 
     # Languages supported by Cloud Translation API
-    if translation_api_code == "google":
+    if cloud_service == "google":
         return constants.LANGUAGES_GOOGLE
-    elif translation_api_code == "azure":
+    elif cloud_service == "azure":
         return constants.LANGUAGES_AZURE
 
     return {}

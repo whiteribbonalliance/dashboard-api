@@ -48,22 +48,22 @@ def upload_file(source_filename: str, destination_filename: str):
     blob.upload_from_filename(source_filename, timeout=3600)
 
 
-def get_file_url(filename: str, expire_in: str = EXPIRE_IN) -> str:
-    """Get file url"""
+def get_blob_url(blob_ame: str, expire_in: str = EXPIRE_IN) -> str:
+    """Get blob url"""
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(BUCKET_NAME)
-    url = bucket.blob(filename).generate_signed_url(expiration=expire_in)
+    url = bucket.blob(blob_ame).generate_signed_url(expiration=expire_in)
 
     return url
 
 
-def file_exists(filename: str) -> bool:
-    """Check if file exists"""
+def blob_exists(blob_name: str) -> bool:
+    """Check if blob exists"""
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(BUCKET_NAME)
-    blob: Blob = bucket.blob(filename)
+    blob: Blob = bucket.blob(blob_name)
 
     return blob.exists()
 

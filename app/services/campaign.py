@@ -27,10 +27,11 @@ from app.schemas.option_str import OptionStr
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import google_cloud_storage_interactions
+from app.services import azure_blob_storage_interactions
 from app.services import google_maps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
-from app.types import FilterSequence, TranslationApiCode
+from app.types import FilterSequence, CloudService, AzureBlobStorageContainerName
 from app.utils import code_hierarchy
 from app.utils import filters
 from app.utils import q_col_names
@@ -71,14 +72,12 @@ class CampaignService:
         self.__filter_2 = filter_2
 
         # Translation API code
-        self.__translation_api_code: TranslationApiCode = (
-            helpers.get_translation_api_code_by_campaign(
-                campaign_code=self.__campaign_code
-            )
+        self.__cloud_service: CloudService = helpers.get_cloud_service_by_campaign(
+            campaign_code=self.__campaign_code
         )
 
         # Translator
-        self.__translator = Translator(translation_api_code=self.__translation_api_code)
+        self.__translator = Translator(cloud_service=self.__cloud_service)
 
         # For filtering purposes, translate keyword_filter and keyword_exclude back to English
         if self.__language != "en":
@@ -265,9 +264,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(
-                    translation_api_code=self.__translation_api_code
-                )
+                translator = Translator(cloud_service=self.__cloud_service)
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -473,9 +470,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(
-                    translation_api_code=self.__translation_api_code
-                )
+                translator = Translator(cloud_service=self.__cloud_service)
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -604,9 +599,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(
-                    translation_api_code=self.__translation_api_code
-                )
+                translator = Translator(cloud_service=self.__cloud_service)
                 translator.change_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -2063,7 +2056,7 @@ class CampaignService:
 
         return response_years
 
-    def get_campaign_df_export_and_filename(
+    def __get_campaign_df_export_and_filename(
         self,
         date_format: str,
         from_date: date = None,
@@ -2107,8 +2100,9 @@ class CampaignService:
 
         return df, csv_filename
 
-    def get_campaign_data_url_and_filename_from_google(
+    def get_campaign_data_url_and_filename(
         self,
+        cloud_service: CloudService,
         from_date: date = None,
         to_date: date = None,
         unique_filename_code: str = "",
@@ -2116,6 +2110,7 @@ class CampaignService:
         """
         Get campaign data url and filename
 
+        :param cloud_service: Cloud service
         :param from_date: From Date
         :param to_date: to date
         :param unique_filename_code: Code to attach to filename uploaded to Cloud Storage.
@@ -2136,68 +2131,116 @@ class CampaignService:
         date_format = "%Y_%m_%d"
 
         # Get df and filename
-        df, csv_filename = self.get_campaign_df_export_and_filename(
+        df, csv_filename = self.__get_campaign_df_export_and_filename(
             date_format=date_format,
             from_date=from_date,
             to_date=to_date,
             unique_filename_code=unique_filename_code,
         )
 
-        # File paths
-        csv_filepath = f"/tmp/{csv_filename}"
-        creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
-        cloud_storage_csv_filepath = f"{csv_filename}"
+        if cloud_service == "google":
+            # File paths
+            csv_filepath = f"/tmp/{csv_filename}"
+            creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
+            storage_csv_filepath = f"{csv_filename}"
 
-        # If file exists in Google Cloud Storage
-        if google_cloud_storage_interactions.file_exists(
-            filename=cloud_storage_csv_filepath
-        ):
-            # Get storage url
-            url = google_cloud_storage_interactions.get_file_url(
-                filename=cloud_storage_csv_filepath
-            )
-
-            # Remove unique filename code
-            if unique_filename_code:
-                csv_filename = remove_unique_filename_code(
-                    _csv_filename=csv_filename,
-                    _unique_filename_code=unique_filename_code,
+            # If file exists in Google Cloud Storage
+            if google_cloud_storage_interactions.blob_exists(
+                blob_name=storage_csv_filepath
+            ):
+                # Get url
+                url = google_cloud_storage_interactions.get_blob_url(
+                    blob_ame=storage_csv_filepath
                 )
 
-            return url, csv_filename
+                # Remove unique filename code
+                if unique_filename_code:
+                    csv_filename = remove_unique_filename_code(
+                        _csv_filename=csv_filename,
+                        _unique_filename_code=unique_filename_code,
+                    )
 
-        # If file does not exist in Google Cloud Storage
-        else:
-            if not os.path.isfile(csv_filepath):
-                # Cleanup
-                if os.path.isfile(creating_csv_filepath):
-                    os.remove(creating_csv_filepath)
+                return url, csv_filename
 
-                # Save dataframe to csv file
-                df.to_csv(path_or_buf=creating_csv_filepath, index=False, header=True)
+            # If file does not exist in Google Cloud Storage
+            else:
+                if not os.path.isfile(csv_filepath):
+                    # Cleanup
+                    if os.path.isfile(creating_csv_filepath):
+                        os.remove(creating_csv_filepath)
 
-                # Rename
-                os.rename(src=creating_csv_filepath, dst=csv_filepath)
+                    # Save dataframe to csv file
+                    df.to_csv(
+                        path_or_buf=creating_csv_filepath, index=False, header=True
+                    )
 
-            # Upload to storage
-            google_cloud_storage_interactions.upload_file(
-                source_filename=csv_filepath,
-                destination_filename=cloud_storage_csv_filepath,
-            )
+                    # Rename
+                    os.rename(src=creating_csv_filepath, dst=csv_filepath)
 
-            # Remove from tmp
-            os.remove(csv_filepath)
-
-            # Get storage url
-            url = google_cloud_storage_interactions.get_file_url(
-                filename=cloud_storage_csv_filepath
-            )
-
-            # Remove unique filename code
-            if unique_filename_code:
-                csv_filename = remove_unique_filename_code(
-                    _csv_filename=csv_filename,
-                    _unique_filename_code=unique_filename_code,
+                # Upload
+                google_cloud_storage_interactions.upload_file(
+                    source_filename=csv_filepath,
+                    destination_filename=storage_csv_filepath,
                 )
 
-            return url, csv_filename
+                # Remove from tmp
+                os.remove(csv_filepath)
+
+                # Get url
+                url = google_cloud_storage_interactions.get_blob_url(
+                    blob_ame=storage_csv_filepath
+                )
+
+                # Remove unique filename code
+                if unique_filename_code:
+                    csv_filename = remove_unique_filename_code(
+                        _csv_filename=csv_filename,
+                        _unique_filename_code=unique_filename_code,
+                    )
+
+                return url, csv_filename
+
+        elif cloud_service == "azure":
+            # If file exists in Azure Blob Storage
+            if azure_blob_storage_interactions.blob_exists(
+                container_name="csv", blob_name=csv_filename
+            ):
+                # Get url
+                url = azure_blob_storage_interactions.get_blob_url(
+                    container_name="csv", blob_name=csv_filename
+                )
+
+                # Remove unique filename code
+                if unique_filename_code:
+                    csv_filename = remove_unique_filename_code(
+                        _csv_filename=csv_filename,
+                        _unique_filename_code=unique_filename_code,
+                    )
+
+                return url, csv_filename
+
+            # If file does not exist in Azure Blob Storage
+            else:
+                # Container name
+                container_name: AzureBlobStorageContainerName = "csv"
+
+                # Upload
+                azure_blob_storage_interactions.upload_df_as_csv(
+                    container_name=container_name,
+                    df=df,
+                    csv_filename=csv_filename,
+                )
+
+                # Get url
+                url = azure_blob_storage_interactions.get_blob_url(
+                    container_name=container_name, blob_name=csv_filename
+                )
+
+                # Remove unique filename code
+                if unique_filename_code:
+                    csv_filename = remove_unique_filename_code(
+                        _csv_filename=csv_filename,
+                        _unique_filename_code=unique_filename_code,
+                    )
+
+                return url, csv_filename

@@ -389,7 +389,7 @@ class CampaignsMergedService:
         """Get world bubble maps coordinates"""
 
         # Translator
-        translator = Translator(translation_api_code="google")
+        translator = Translator(cloud_service="google")
         translator.change_target_language(target_language=self.__language)
 
         # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
