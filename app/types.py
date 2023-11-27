@@ -5,3 +5,5 @@ FilterSequence = Literal["1", "2"]
 TranslationApiCode = Literal["google", "azure"]
 
 AzureBlobStorageContainerMountPath = Literal["/pmnch_main", "/pmnch_csv"]
+
+AzureContainerName = Literal["main", "csv"]

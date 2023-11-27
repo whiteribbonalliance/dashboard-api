@@ -164,7 +164,7 @@ def campaign_data(
         container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_csv"
 
         # Cleanup
-        azure_blob_storage_interactions.cleanup(mount_path=container_mount_path)
+        azure_blob_storage_interactions.cleanup(container_name="csv")
 
         # Get df and filename
         df, csv_filename = campaign_service.get_campaign_df_export_and_filename(
@@ -176,8 +176,8 @@ def campaign_data(
 
         # If file does not exist in Azure Blob Storage
         if not os.path.isfile(file_path):
-            azure_blob_storage_interactions.upload_df_as_csv_file(
-                df=df, mount_path=container_mount_path, csv_filename=csv_filename
+            azure_blob_storage_interactions.upload_df_as_csv(
+                container_name="csv", df=df, csv_filename=csv_filename
             )
 
         return FileResponse(
