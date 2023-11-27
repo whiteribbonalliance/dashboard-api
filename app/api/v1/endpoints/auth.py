@@ -48,7 +48,7 @@ async def login(
         data={"sub": db_user.username, "user": json.loads(user.json())}
     )
 
-    # Max age of cookie
+    # Max age of cookie (in seconds)
     max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS * 86400) - 3600
 
     return Token(access_token=access_token, max_age=max_age)
