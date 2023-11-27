@@ -23,7 +23,7 @@ async def login(
 
     # If ONLY_PMNCH only allow admin and whatyoungpeoplewant
     if env.ONLY_PMNCH:
-        if form_username != "admin" or form_username != "whatyoungpeoplewant":
+        if not (form_username == "admin" or form_username == "whatyoungpeoplewant"):
             raise http_exceptions.UnauthorizedHTTPException("Login failed")
 
     # Check if user exists
