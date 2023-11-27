@@ -1,24 +1,30 @@
-from fastapi import Depends, APIRouter, Response, status
+import json
+from fastapi import Depends, APIRouter, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app import auth_handler, constants
 from app import databases
 from app import http_exceptions
-from app.core.settings import settings
-from app.schemas.user import UserResponse
+from app.schemas.token import Token
+from app.schemas.user import UserBase
+from app import env
 
 router = APIRouter(prefix="/auth")
 
 
-@router.post("/login", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
 async def login(
-    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
-    """Login: Set access token cookie"""
+    """Login: Return access token cookie"""
 
     form_username = form_data.username
     form_password = form_data.password
+
+    # If ONLY_PMNCH only allow admin and whatyoungpeoplewant
+    if env.ONLY_PMNCH:
+        if form_username != "admin" or form_username != "whatyoungpeoplewant":
+            raise http_exceptions.UnauthorizedHTTPException("Login failed")
 
     # Check if user exists
     users = databases.get_users()
@@ -30,44 +36,38 @@ async def login(
     if form_password != db_user.password:
         raise http_exceptions.UnauthorizedHTTPException("Login failed")
 
-    # Create access token
-    access_token = auth_handler.create_access_token(data={"sub": db_user.username})
-
-    # Max age of cookie
-    max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS * 86400) - 3600
-
-    # Set access token as HttpOnly cookie
-    response.set_cookie(
-        key="token",
-        value=f"Bearer {access_token}",
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        domain=settings.COOKIE_DOMAIN,
-        samesite=settings.COOKIE_SAMESITE,
-        max_age=max_age,
-    )
-
-    return UserResponse(
+    # User
+    user = UserBase(
         username=db_user.username,
         campaign_access=db_user.campaign_access,
         is_admin=db_user.is_admin,
     )
 
-
-@router.post("/logout", status_code=status.HTTP_200_OK)
-async def logout(response: Response):
-    """Logout: Remove access token cookie"""
-
-    response.delete_cookie(
-        key="token",
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        domain=settings.COOKIE_DOMAIN,
-        samesite=settings.COOKIE_SAMESITE,
+    # Create access token
+    access_token = auth_handler.create_access_token(
+        data={"sub": db_user.username, "user": json.loads(user.json())}
     )
 
+    # Max age of cookie
+    max_age = (constants.ACCESS_TOKEN_EXPIRE_DAYS * 86400) - 3600
 
-@router.post("/check", response_model=UserResponse, status_code=status.HTTP_200_OK)
+    return Token(access_token=access_token, max_age=max_age)
+
+
+# @router.post("/logout", status_code=status.HTTP_200_OK)
+# async def logout(response: Response):
+#     """Logout: Remove access token cookie"""
+#
+#     response.delete_cookie(
+#         key="token",
+#         httponly=True,
+#         secure=settings.COOKIE_SECURE,
+#         domain=settings.COOKIE_DOMAIN,
+#         samesite=settings.COOKIE_SAMESITE
+#     )
+
+
+@router.post("/check", status_code=status.HTTP_200_OK)
 async def check(
     username: str = Depends(auth_handler.auth_wrapper_access_token),
 ):
@@ -77,9 +77,3 @@ async def check(
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unauthorized")
-
-    return UserResponse(
-        username=db_user.username,
-        campaign_access=db_user.campaign_access,
-        is_admin=db_user.is_admin,
-    )

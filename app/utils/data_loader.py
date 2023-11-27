@@ -550,9 +550,13 @@ def load_campaigns_data():
         if campaign_code == CampaignCode.womens_economic_empowerment:
             continue
 
-        # Only load data for what_young_people_want
         if env.ONLY_PMNCH:
+            # Only load data for what_young_people_want
             if campaign_code != CampaignCode.what_young_people_want:
+                continue
+        else:
+            # Skip loading data for what_young_people_want
+            if campaign_code == CampaignCode.what_young_people_want:
                 continue
 
         print(f"INFO:\t  Loading data for campaign {campaign_code.value}...")

@@ -11,7 +11,3 @@ class UserBase(BaseModel):
 
 class UserInternal(UserBase):
     password: str
-
-
-class UserResponse(UserBase):
-    campaign_access: list[CampaignCode]

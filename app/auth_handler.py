@@ -1,15 +1,17 @@
 from datetime import datetime, timedelta
 
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
 from app import http_exceptions, constants
-from app.oauth2_password_bearer_with_cookie import OAuth2PasswordBearerWithCookie
+
+# from app.oauth2_password_bearer_with_cookie import OAuth2PasswordBearerWithCookie
 from app import env
 
 ALGORITHM = "HS256"
 
-oauth2_scheme_access = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_access = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def create_access_token(data: dict) -> str:

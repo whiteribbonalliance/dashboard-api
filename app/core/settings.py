@@ -11,9 +11,9 @@ class Settings(BaseSettings):
 
 
 class DevSettings(Settings):
-    COOKIE_DOMAIN: str = "localhost"
-    COOKIE_SECURE: bool = False
-    COOKIE_SAMESITE: str = "Strict"
+    # COOKIE_DOMAIN: str = "localhost"
+    # COOKIE_SECURE: bool = False
+    # COOKIE_SAMESITE: str = "Strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = True
     PORT: int = 8000
@@ -32,9 +32,9 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
-    COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "strict"
+    # COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
+    # COOKIE_SECURE: bool = True
+    # COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
@@ -50,7 +50,7 @@ class ProdSettings(Settings):
             "https://midwivesvoices.whiteribbonalliance.org",
             "https://admin.whiteribbonalliance.org",
             "https://pmnch-front.azurewebsites.net",
-            "https://wypw.1point8b.org"
+            "https://wypw.1point8b.org",
         ],
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
