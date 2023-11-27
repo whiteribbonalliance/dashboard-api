@@ -2138,6 +2138,7 @@ class CampaignService:
             unique_filename_code=unique_filename_code,
         )
 
+        # Google
         if cloud_service == "google":
             # File paths
             csv_filepath = f"/tmp/{csv_filename}"
@@ -2200,14 +2201,17 @@ class CampaignService:
 
                 return url, csv_filename
 
+        # Azure
         elif cloud_service == "azure":
+            container_name: AzureBlobStorageContainerName = "csv"
+
             # If file exists in Azure Blob Storage
             if azure_blob_storage_interactions.blob_exists(
-                container_name="csv", blob_name=csv_filename
+                container_name=container_name, blob_name=csv_filename
             ):
                 # Get url
                 url = azure_blob_storage_interactions.get_blob_url(
-                    container_name="csv", blob_name=csv_filename
+                    container_name=container_name, blob_name=csv_filename
                 )
 
                 # Remove unique filename code
@@ -2221,9 +2225,6 @@ class CampaignService:
 
             # If file does not exist in Azure Blob Storage
             else:
-                # Container name
-                container_name: AzureBlobStorageContainerName = "csv"
-
                 # Upload
                 azure_blob_storage_interactions.upload_df_as_csv(
                     container_name=container_name,

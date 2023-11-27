@@ -80,7 +80,9 @@ def upload_df_as_csv(
     df.to_csv(path_or_buf=buffer, index=False, header=True)
 
     # Upload
-    container_client.upload_blob(name=csv_filename, data=buffer.getvalue())
+    container_client.upload_blob(
+        name=csv_filename, data=buffer.getvalue(), connection_timeout=600
+    )
 
 
 def blob_exists(container_name: AzureBlobStorageContainerName, blob_name: str) -> bool:

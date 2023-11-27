@@ -158,7 +158,7 @@ def campaign_data(
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code)
 
-    # Use Azure for what_young_people_want
+    # Azure
     if campaign_code == CampaignCode.what_young_people_want:
         cloud_service: CloudService = "azure"
 
@@ -170,7 +170,7 @@ def campaign_data(
             cloud_service=cloud_service, from_date=from_date, to_date=to_date
         )
 
-    # Use Google
+    # Google
     else:
         cloud_service: CloudService = "google"
 
