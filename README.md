@@ -20,7 +20,7 @@ Then it is deployed to Google App Engine using a Flex environment (see `app.yaml
 
 ### install
 
-Environment variables:
+Environment variables (Azure related env variables are only needed if `ONLY_PMNCH=True`):
 
 - `STAGE=` prod or dev.
 - `NEWRELIC_API_KEY=` The New Relic API key.
@@ -30,6 +30,9 @@ Environment variables:
 - `SAVE_TO_PKL_FILE=` Whether to save data to `.pkl` file after loading from BigQuery. Accepts `True` or `False`.
 - `ONLY_PMNCH=` `PMNCH` exclusive. Accepts `True` or `False`.
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
+- `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
+- `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
+- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string
 
 ```bash
 pip install -r requirements.txt

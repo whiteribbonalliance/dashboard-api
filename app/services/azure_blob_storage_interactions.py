@@ -72,16 +72,23 @@ def upload_df_as_csv(
 ):
     """Upload dataframe as CSV"""
 
-    # Get container client
-    container_client = get_container_client(container_name=container_name)
-
     # Save to buffer
     buffer = StringIO()
     df.to_csv(path_or_buf=buffer, index=False, header=True)
 
+    # Get blob client
+    blob_client = BlobClient.from_connection_string(
+        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        container_name=container_name,
+        blob_name=csv_filename,
+        max_block_size=4 * 1024 * 1024,  # 4mb
+        max_single_put_size=16 * 1024 * 1024,  # 16mb
+    )
+
     # Upload
-    container_client.upload_blob(
-        name=csv_filename, data=buffer.getvalue(), connection_timeout=600
+    blob_client.upload_blob(
+        data=buffer.getvalue(),
+        connection_timeout=10 * 60,  # 10 minutes
     )
 
 
