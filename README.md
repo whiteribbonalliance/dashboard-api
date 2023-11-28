@@ -20,7 +20,7 @@ Then it is deployed to Google App Engine using a Flex environment (see `app.yaml
 
 ### install
 
-Environment variables (Azure related env variables are only needed if `ONLY_PMNCH=True`):
+Environment variables:
 
 - `STAGE=` prod or dev.
 - `NEWRELIC_API_KEY=` The New Relic API key.

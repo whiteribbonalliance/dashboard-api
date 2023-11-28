@@ -68,12 +68,6 @@ def blob_exists(blob_name: str) -> bool:
     return blob.exists()
 
 
-def delete_blob(blob: Blob):
-    """Delete blob"""
-
-    blob.delete()
-
-
 def clear_bucket():
     """Clear bucket"""
 
