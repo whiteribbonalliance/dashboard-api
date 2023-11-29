@@ -32,7 +32,7 @@ Environment variables:
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
 - `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
-- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string
+- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
 
 ```bash
 pip install -r requirements.txt

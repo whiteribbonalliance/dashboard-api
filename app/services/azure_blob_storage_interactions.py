@@ -1,5 +1,6 @@
 """Azure Blob Storage interactions"""
 
+import os
 from datetime import datetime, timedelta
 from io import StringIO
 
@@ -10,6 +11,8 @@ from azure.storage.blob import (
     BlobClient,
     generate_blob_sas,
 )
+
+from app.enums.campaign_code import CampaignCode
 from app.types import AzureBlobStorageContainerName
 from app import env
 
@@ -118,3 +121,25 @@ def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) 
     )
 
     return f"https://{env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"
+
+
+def upload_pmnch_pkl():
+    """Upload PMNCH Pickle file"""
+
+    filename = f"{CampaignCode.what_young_people_want.value}.pkl"
+
+    # Get blob client
+    blob_client = BlobClient.from_connection_string(
+        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        container_name="main",
+        blob_name=filename,
+        max_block_size=4 * 1024 * 1024,  # 4mb
+        max_single_put_size=16 * 1024 * 1024,  # 16mb
+    )
+
+    # Upload
+    with open(file=os.path.join(filename), mode="rb") as data:
+        blob_client.upload_blob(
+            data=data,
+            connection_timeout=10 * 60,  # 10 minutes
+        )
