@@ -46,7 +46,7 @@ app_fastapi.include_router(api_router, prefix=settings.API_V1)
 
 @app_fastapi.get(path="/", status_code=status.HTTP_200_OK)
 def index():
-    return {"status": "ok"}
+    return {"message": "API to supply dashboard with response data."}
 
 
 class Server(uvicorn.Server):
