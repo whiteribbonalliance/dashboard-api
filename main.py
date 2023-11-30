@@ -1,14 +1,14 @@
 import asyncio
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import env
+from app import helpers
 from app.api.v1.api import api_router
 from app.core.settings import settings
 from app.scheduler import app as app_rocketry
-from app import helpers
-from app import env
 
 description = """
 What Women Want Dashboard API.
@@ -42,6 +42,11 @@ app_fastapi.add_middleware(
 )
 
 app_fastapi.include_router(api_router, prefix=settings.API_V1)
+
+
+@app_fastapi.get(path="/", status_code=status.HTTP_200_OK)
+def index():
+    return {"status": "ok"}
 
 
 class Server(uvicorn.Server):
