@@ -958,8 +958,11 @@ class CampaignService:
             # Count occurrence of response topics (categories)
             category_counter = Counter()
             for canonical_code in df[parent_category_col_name]:
+                seen_codes = set()
                 for c in canonical_code.split("/"):
-                    category_counter[c.strip()] += 1
+                    if c not in seen_codes:
+                        category_counter[c.strip()] += 1
+                    seen_codes.add(c)
 
             responses_breakdown_data = category_counter_to_responses_breakdown_data(
                 category_counter
