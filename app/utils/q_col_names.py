@@ -64,9 +64,3 @@ def get_original_language_col_name(q_code: QuestionCode) -> str:
     """Get original language column name"""
 
     return f"{q_code.value}_original_language"
-
-
-def get_categories_set_col_name(q_code: QuestionCode) -> str:
-    """Get categories set column name"""
-
-    return f"{q_code.value}_categories_set"

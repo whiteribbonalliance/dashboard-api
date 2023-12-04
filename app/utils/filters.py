@@ -104,18 +104,15 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
         canonical_code_column_name = q_col_names.get_canonical_code_col_name(
             q_code=q_code
         )
-        categories_set_column_name = q_col_names.get_categories_set_col_name(
-            q_code=q_code
-        )
         lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
         parent_category_col_name = q_col_names.get_parent_category_col_name(
             q_code=q_code
         )
 
-        def filter_response_topic(row: set, topic: str):
+        def filter_response_topic(row: str, topic: str):
             """Filter response topic"""
 
-            if row and topic in row:
+            if row and topic in row.split("/"):
                 return row
 
         # Filter response topics
@@ -131,11 +128,11 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
 
             for response_topic in response_topics:
                 if only_responses_from_categories:
-                    condition &= df_copy[categories_set_column_name].apply(
+                    condition &= df_copy[canonical_code_column_name].apply(
                         lambda x: filter_response_topic(x, response_topic)
                     )
                 else:
-                    condition |= df_copy[categories_set_column_name].apply(
+                    condition |= df_copy[canonical_code_column_name].apply(
                         lambda x: filter_response_topic(x, response_topic)
                     )
 
