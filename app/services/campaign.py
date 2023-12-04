@@ -958,7 +958,9 @@ class CampaignService:
             # Count occurrence of response topics (categories)
             category_counter = Counter()
             for canonical_code in df[parent_category_col_name]:
+                # Check if the parent category was already included to not include it twice
                 seen_codes = set()
+
                 for c in canonical_code.split("/"):
                     if c not in seen_codes:
                         category_counter[c.strip()] += 1
