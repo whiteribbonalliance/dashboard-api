@@ -188,6 +188,20 @@ def load_campaign_data(campaign_code: CampaignCode):
         campaign_code=campaign_code
     )
 
+    # Create categories_set col
+    for q_code in campaign_q_codes:
+        categories_set = set()
+        categories_this_group = [None] * len(df_responses)
+        for idx, categories in enumerate(
+            list(df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)])
+        ):
+            categories_this_group[idx] = categories.split("/")
+            for category in categories_this_group[idx]:
+                categories_set.add(category)
+        df_responses[
+            q_col_names.get_categories_set_col_name(q_code=q_code)
+        ] = categories_this_group
+
     # Add parent_category column
     for q_code in campaign_q_codes:
         df_responses[
