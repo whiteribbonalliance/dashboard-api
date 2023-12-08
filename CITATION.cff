@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Wood"
+  given-names: "Thomas"
+  orcid: "https://orcid.org/0000-0001-8962-8571"
+- family-names: "Jacobs"
+  given-names: "Zairon"
+title: "Dashboard"
+version: 0.5.0
+date-released: 2023-12-08
+url: "https://explore.whiteribbonalliance.org/en/healthwellbeing"
