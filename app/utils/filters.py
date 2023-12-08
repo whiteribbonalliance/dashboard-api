@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 White Ribbon Alliance. Maintainers: Thomas Wood, https://fastdatascience.com, Zairon Jacobs, https://zaironjacobs.com.
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-'''
+"""
 
 import copy
 import re
@@ -134,11 +134,25 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
             q_code=q_code
         )
 
-        def filter_response_topic(row: str, topic: str):
-            """Filter response topic"""
+        def filter_by_response_topics(row_topics_str: str, topics: list[str]):
+            """Filter by response topics"""
 
-            if row and topic in row.split("/"):
-                return row
+            if row_topics_str:
+                for row_topic in row_topics_str.split("/"):
+                    for topic in topics:
+                        if row_topic.strip() == topic.strip():
+                            return True
+
+            return False
+
+        def filter_by_response_topic(row_topics_str: str, topic: str):
+            """Filter by response topic"""
+
+            if row_topics_str:
+                if topic.strip() in [x.strip() for x in row_topics_str.split("/")]:
+                    return True
+
+            return False
 
         # Filter response topics
         if len(response_topics) > 0:
@@ -147,18 +161,22 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
                     {"xxxx"}
                 )  # dummy series always True
             else:
-                condition = df_copy[canonical_code_column_name].isin(
-                    response_topics
-                ) | df_copy[parent_category_col_name].isin(response_topics)
+                condition = df_copy[canonical_code_column_name].apply(
+                        lambda x: filter_by_response_topics(x, response_topics)
+                    ) | df_copy[parent_category_col_name].apply(
+                    lambda x: filter_by_response_topics(
+                        row_topics_str=x, topics=response_topics
+                    )
+                )
 
             for response_topic in response_topics:
                 if only_responses_from_categories:
                     condition &= df_copy[canonical_code_column_name].apply(
-                        lambda x: filter_response_topic(x, response_topic)
+                        lambda x: filter_by_response_topic(x, response_topic)
                     )
                 else:
                     condition |= df_copy[canonical_code_column_name].apply(
-                        lambda x: filter_response_topic(x, response_topic)
+                        lambda x: filter_by_response_topic(x, response_topic)
                     )
 
             df_copy = df_copy[condition]
