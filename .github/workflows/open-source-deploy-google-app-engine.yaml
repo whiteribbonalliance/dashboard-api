@@ -14,7 +14,6 @@ on:
 
 env:
   IMAGE_NAME: wwwdashboardapi-open-source
-  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
 jobs:
 
@@ -29,7 +28,7 @@ jobs:
       - name: Include credentials
         run: |
           touch credentials.json
-          echo ${{ env.GOOGLE_CREDENTIALS }} > credentials.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
 
       - id: 'auth'
         uses: google-github-actions/auth@v1
