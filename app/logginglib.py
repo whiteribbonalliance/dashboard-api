@@ -25,12 +25,14 @@ SOFTWARE.
 
 """This module handles advanced logging. Logging both to a stdout and a centralized 3-rd party DB are supported."""
 
-import os
 import gzip
 import json
-import requests
 import logging
+import os
 from logging import Handler, Formatter
+
+import requests
+
 from app import env
 
 # ----------------------------------------------------------------------------------------------------------------------------

@@ -25,8 +25,8 @@ SOFTWARE.
 
 from pydantic import BaseSettings
 
-from app.enums.api_prefix import ApiPrefix
 from app import env
+from app.enums.api_prefix import ApiPrefix
 
 
 class Settings(BaseSettings):

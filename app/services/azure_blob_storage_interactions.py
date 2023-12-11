@@ -37,9 +37,9 @@ from azure.storage.blob import (
     generate_blob_sas,
 )
 
+from app import env
 from app.enums.campaign_code import CampaignCode
 from app.types import AzureBlobStorageContainerName
-from app import env
 
 EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 

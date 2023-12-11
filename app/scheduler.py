@@ -34,10 +34,10 @@ from rocketry import Rocketry
 from rocketry.args import Session
 from rocketry.conds import cron
 
+from app import env
 from app import helpers
 from app.logginglib import init_custom_logger
 from app.utils import data_loader
-from app import env
 
 app = Rocketry(executation="async")
 

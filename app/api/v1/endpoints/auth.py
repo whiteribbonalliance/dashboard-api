@@ -24,15 +24,16 @@ SOFTWARE.
 """
 
 import json
+
 from fastapi import Depends, APIRouter, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app import auth_handler, constants
 from app import databases
+from app import env
 from app import http_exceptions
 from app.schemas.token import Token
 from app.schemas.user import UserBase
-from app import env
 
 router = APIRouter(prefix="/auth")
 

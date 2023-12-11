@@ -28,12 +28,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 
+from app import global_variables
 from app.api import dependencies
 from app.logginglib import init_custom_logger
 from app.schemas.data_is_loading import DataIsLoading
 from app.schemas.parameters_user import ParametersUser
 from app.utils import data_loader
-from app import global_variables
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

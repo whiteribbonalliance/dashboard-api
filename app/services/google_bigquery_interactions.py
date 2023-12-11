@@ -27,14 +27,15 @@ SOFTWARE.
 
 import logging
 
+import pandas as pd
 from google.cloud import bigquery
 from google.cloud import bigquery_storage
 from google.oauth2 import service_account
 from pandas import DataFrame
-import pandas as pd
+
+from app import env
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
-from app import env
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

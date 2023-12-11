@@ -34,11 +34,11 @@ from google.cloud import translate_v2
 from google.oauth2 import service_account
 
 from app import constants, helpers
+from app import env
 from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.types import CloudService
-from app import env
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

@@ -26,7 +26,7 @@ SOFTWARE.
 """Google Cloud Storage interactions"""
 
 import logging
-from datetime import datetime, date
+from datetime import datetime
 from datetime import timedelta
 from typing import Iterator
 

@@ -29,6 +29,7 @@ from datetime import datetime
 
 from fastapi import Request, Depends
 
+from app import databases
 from app import helpers, auth_handler, http_exceptions
 from app.crud.campaign import CampaignCRUD
 from app.enums.campaign_code import CampaignCode
@@ -41,11 +42,10 @@ from app.schemas.common_parameters_campaigns_merged import (
     CommonParametersCampaignsMerged,
 )
 from app.schemas.date_filter import DateFilter
-from app.schemas.parameters_user import ParametersUser
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
-from app import databases
+from app.schemas.parameters_user import ParametersUser
 from app.types import CloudService
 
 logger = logging.getLogger(__name__)

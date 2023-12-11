@@ -51,8 +51,8 @@ from app.schemas.option_bool import OptionBool
 from app.schemas.option_str import OptionStr
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
-from app.services import google_cloud_storage_interactions
 from app.services import azure_blob_storage_interactions
+from app.services import google_cloud_storage_interactions
 from app.services import google_maps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator

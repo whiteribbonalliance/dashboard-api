@@ -30,8 +30,8 @@ from functools import wraps
 from cachetools import LRUCache
 from fastapi.encoders import jsonable_encoder
 
-from app.utils.singleton_meta import SingletonMeta
 from app import helpers
+from app.utils.singleton_meta import SingletonMeta
 
 
 class ApiCache(metaclass=SingletonMeta):

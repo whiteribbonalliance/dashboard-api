@@ -32,8 +32,8 @@ import requests
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 
-from app import helpers
 from app import databases, auth_handler
+from app import helpers
 from app import http_exceptions
 from app.api import dependencies
 from app.crud.campaign import CampaignCRUD
@@ -49,10 +49,10 @@ from app.schemas.filter_options import FilterOptions
 from app.schemas.parameters_campaign_data import (
     ParametersCampaignData,
 )
+from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app.services import azure_blob_storage_interactions
 from app.types import CloudService
 
 logger = logging.getLogger(__name__)
