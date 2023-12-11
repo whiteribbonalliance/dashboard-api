@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 White Ribbon Alliance. Maintainers: Thomas Wood, https://fastdatascience.com, Zairon Jacobs, https://zaironjacobs.com.
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-'''
+"""
 
 """
 Requests the dataframe of a campaign from BigQuery and stores the data into the database
@@ -64,7 +64,7 @@ def load_campaign_data(campaign_code: CampaignCode):
     :param campaign_code: The campaign code
     """
 
-    # Create a tmp copy of the db to write campaign data to
+    # Will create a tmp copy of the db to write campaign data to
     # If writing of the data succeeds, then the current db will be replaced with the tmp db at the end of this function
     # This is to make sure new data loads correctly into the db
     # If an error occurs while loading new data, then the current db stays as is and the error is logged

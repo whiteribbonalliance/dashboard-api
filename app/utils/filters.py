@@ -162,8 +162,8 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
                 )  # dummy series always True
             else:
                 condition = df_copy[canonical_code_column_name].apply(
-                        lambda x: filter_by_response_topics(x, response_topics)
-                    ) | df_copy[parent_category_col_name].apply(
+                    lambda x: filter_by_response_topics(x, response_topics)
+                ) | df_copy[parent_category_col_name].apply(
                     lambda x: filter_by_response_topics(
                         row_topics_str=x, topics=response_topics
                     )

@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 White Ribbon Alliance. Maintainers: Thomas Wood, https://fastdatascience.com, Zairon Jacobs, https://zaironjacobs.com.
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-'''
+"""
 
 import asyncio
 
@@ -35,9 +35,11 @@ from app.api.v1.api import api_router
 from app.core.settings import settings
 from app.scheduler import app as app_rocketry
 
-description = """
-What Women Want Dashboard API.
-"""
+if env.ONLY_PMNCH:
+    description = "What Young People Want Dashboard API."
+else:
+    description = "What Women Want Dashboard API."
+
 
 # Create dirs required in local development.
 # In production these dirs are already present.
