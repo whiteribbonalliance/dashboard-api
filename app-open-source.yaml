@@ -3,8 +3,6 @@ runtime: custom
 env: flex
 
 env_variables:
-  PROJECT_NAME: WWW
-  SERVICE_NAME: DASHBOARD_API
   STAGE: prod
   NEWRELIC_API_KEY: ${{ secrets.NEWRELIC_API_KEY }}
   GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
