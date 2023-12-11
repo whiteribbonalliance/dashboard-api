@@ -3,11 +3,11 @@ name: "Google App Engine: Build and deploy dashboard API to development"
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "open-source" ]
     paths-ignore:
       - '**/README.md'
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "open-source" ]
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
