@@ -40,7 +40,6 @@ import pandas as pd
 from app import constants, helpers
 from app import global_variables
 from app.crud.campaign import CampaignCRUD
-from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -68,7 +67,7 @@ init_custom_logger(logger)
 class CampaignService:
     def __init__(
         self,
-        campaign_code: CampaignCode,
+        campaign_code: str,
         language: str = "en",
         response_year: str = None,
         filter_1: Filter = None,
@@ -112,10 +111,7 @@ class CampaignService:
         df = self.__crud.get_dataframe()
 
         # For 'wwwpakistan' filter the response year
-        if (
-            self.__campaign_code == CampaignCode.what_women_want_pakistan
-            and self.__response_year
-        ):
+        if self.__campaign_code == "wwwpakistan" and self.__response_year:
             df = df[df["response_year"] == self.__response_year]
 
         # Apply filter 1
@@ -232,8 +228,8 @@ class CampaignService:
 
         # Genders breakdown
         if (
-            self.__campaign_code == CampaignCode.what_young_people_want
-            or self.__campaign_code == CampaignCode.healthwellbeing
+            self.__campaign_code == "pmn01a"
+            or self.__campaign_code == "healthwellbeing"
         ):
             genders_breakdown = self.__get_genders_breakdown()
         else:
@@ -348,7 +344,7 @@ class CampaignService:
             )
 
         return Campaign(
-            campaign_code=self.__campaign_code.value,
+            campaign_code=self.__campaign_code,
             q_code=q_code.value,
             all_q_codes=all_q_codes,
             included_response_years=included_response_years,
@@ -468,7 +464,7 @@ class CampaignService:
             label = setting
 
             # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
-            if self.__campaign_code == CampaignCode.healthwellbeing:
+            if self.__campaign_code == "healthwellbeing":
                 if label and label.lower() == "prefer not to say":
                     label = "Blank/Prefer Not To Say"
 
@@ -593,32 +589,32 @@ class CampaignService:
 
         options: list[dict] = []
 
-        if self.__campaign_code == CampaignCode.what_women_want:
+        if self.__campaign_code == "wra03a":
             options = [
                 breakdown_age_bucket_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == CampaignCode.what_young_people_want:
+        elif self.__campaign_code == "pmn01a":
             options = [
                 breakdown_age_option.dict(),
                 breakdown_gender_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == CampaignCode.midwives_voices:
+        elif self.__campaign_code == "midwife":
             options = [
                 breakdown_age_bucket_option.dict(),
                 breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == CampaignCode.healthwellbeing:
+        elif self.__campaign_code == "healthwellbeing":
             options = [
                 breakdown_age_option.dict(),
                 breakdown_age_bucket_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == CampaignCode.economic_empowerment_mexico:
+        elif self.__campaign_code == "giz":
             options = [breakdown_age_bucket_option.dict()]
-        elif self.__campaign_code == CampaignCode.what_women_want_pakistan:
+        elif self.__campaign_code == "wwwpakistan":
             options = [breakdown_age_bucket_option.dict()]
 
         # Translate
@@ -726,10 +722,7 @@ class CampaignService:
         responses_sample_columns = self.__crud.get_responses_sample_columns()
 
         # For 'healthwellbeing' remove 'description' column if q2
-        if (
-            self.__campaign_code == CampaignCode.healthwellbeing
-            and q_code == QuestionCode.q2
-        ):
+        if self.__campaign_code == "healthwellbeing" and q_code == QuestionCode.q2:
             responses_sample_columns = [
                 x for x in responses_sample_columns if x.id != "description"
             ]
@@ -820,14 +813,14 @@ class CampaignService:
         # Limit the sample for languages that are not English
         if self.__language == "en":
             if self.__filter_2:
-                n_sample = constants.n_responses_sample // 2  # 500
+                n_sample = constants.N_RESPONSES_SAMPLE // 2  # 500
             else:
-                n_sample = constants.n_responses_sample  # 1000
+                n_sample = constants.N_RESPONSES_SAMPLE  # 1000
         else:
             if self.__filter_2:
-                n_sample = constants.n_responses_sample // 2 // 10  # 50
+                n_sample = constants.N_RESPONSES_SAMPLE // 2 // 10  # 50
             else:
-                n_sample = constants.n_responses_sample // 10  # 100
+                n_sample = constants.N_RESPONSES_SAMPLE // 10  # 100
 
         if len(df.index) > 0:
             if len(df.index) < n_sample:
@@ -960,7 +953,7 @@ class CampaignService:
                 df = df.dropna()
 
                 # what_young_people_want: Sort the rows by count value (DESC) and keep the first n rows only
-                if self.__campaign_code == CampaignCode.what_young_people_want:
+                if self.__campaign_code == "pmn01a":
                     n_rows_keep = 5
                     df = df.sort_values(by=count_col_name, ascending=False)
                     df = df.head(n_rows_keep)
@@ -1042,7 +1035,7 @@ class CampaignService:
             return responses_breakdown_data
 
         # Responses breakdown (parent categories & sub-categories)
-        if self.__campaign_code == CampaignCode.healthwellbeing:
+        if self.__campaign_code == "healthwellbeing":
             responses_breakdown_parent_1 = get_df_responses_breakdown_parent_categories(
                 df=self.__get_df_1_copy()
             )
@@ -1070,7 +1063,7 @@ class CampaignService:
         # Responses breakdown (parent categories or sub-categories)
         responses_breakdown_parent_or_sub_1 = []
         responses_breakdown_parent_or_sub_2 = []
-        if self.__campaign_code == CampaignCode.what_women_want_pakistan:
+        if self.__campaign_code == "wwwpakistan":
             # If there is one unique parent category, then get its sub-categories breakdown
             if only_parent_category:
                 responses_breakdown_parent_or_sub_1 = (
@@ -1194,7 +1187,7 @@ class CampaignService:
             label = name
 
             # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
-            if self.__campaign_code == CampaignCode.healthwellbeing:
+            if self.__campaign_code == "healthwellbeing":
                 if label and label.lower() == "prefer not to say":
                     label = "Blank/Prefer Not To Say"
 
@@ -1248,7 +1241,7 @@ class CampaignService:
             return []
 
         # Keep n
-        n_words_to_keep = constants.n_wordcloud_words
+        n_words_to_keep = constants.N_WORDCLOUD_WORDS
         wordcloud_words_len = len(wordcloud_words)
         if wordcloud_words_len < n_words_to_keep:
             n_words_to_keep = wordcloud_words_len
@@ -1285,7 +1278,7 @@ class CampaignService:
             return []
 
         # Keep n
-        n_words_to_keep = constants.n_top_words
+        n_words_to_keep = constants.N_TOP_WORDS
         top_words_len = len(top_words)
         if top_words_len < n_words_to_keep:
             n_words_to_keep = top_words_len
@@ -1311,7 +1304,7 @@ class CampaignService:
             return []
 
         # Keep n
-        n_words_to_keep = constants.n_top_words
+        n_words_to_keep = constants.N_TOP_WORDS
         top_words_len = len(top_words)
         if top_words_len < n_words_to_keep:
             n_words_to_keep = top_words_len
@@ -1337,7 +1330,7 @@ class CampaignService:
             return []
 
         # Keep n
-        n_words_to_keep = constants.n_top_words
+        n_words_to_keep = constants.N_TOP_WORDS
         top_words_len = len(top_words)
         if top_words_len < n_words_to_keep:
             n_words_to_keep = top_words_len
@@ -1362,7 +1355,7 @@ class CampaignService:
             max1 = unigram_count_dict_1[-1][1]
 
         # n words
-        n_words = max([constants.n_wordcloud_words, constants.n_top_words])
+        n_words = max([constants.N_WORDCLOUD_WORDS, constants.N_TOP_WORDS])
 
         if len(unigram_count_dict_1) > n_words:
             unigram_count_dict_1 = unigram_count_dict_1[-n_words:]
@@ -1867,10 +1860,7 @@ class CampaignService:
         df_2_copy = self.__get_df_2_copy()
 
         # For these campaigns, use region as location
-        if (
-            self.__campaign_code == CampaignCode.economic_empowerment_mexico
-            or self.__campaign_code == CampaignCode.what_women_want_pakistan
-        ):
+        if self.__campaign_code == "giz" or self.__campaign_code == "wwwpakistan":
             # Get count of each region per country
             region_counts_1 = (
                 df_1_copy[["alpha2country", "canonical_country", "region"]]
@@ -2112,7 +2102,7 @@ class CampaignService:
         # CSV filename
         if unique_filename_code:
             unique_filename_code = f"_{unique_filename_code}"
-        csv_filename = f"wra_{self.__campaign_code.value}{unique_filename_code}.csv"
+        csv_filename = f"wra_{self.__campaign_code}{unique_filename_code}.csv"
 
         # Filter by date
         if from_date and to_date:

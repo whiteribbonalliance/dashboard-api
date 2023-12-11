@@ -25,10 +25,7 @@ SOFTWARE.
 
 import json
 
-from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
-
-CAMPAIGN_CODES = [campaign.value for campaign in CampaignCode]
 
 QUESTION_CODES = [q.value for q in QuestionCode]
 
@@ -322,10 +319,7 @@ LANGUAGES_AZURE = {
 }
 
 TRANSLATIONS_JSON = "translations.json"
-
 ACCESS_TOKEN_EXPIRE_DAYS = 30
-
-n_wordcloud_words = 100
-n_top_words = 20
-
-n_responses_sample = 1000
+N_WORDCLOUD_WORDS = 100
+N_TOP_WORDS = 20
+N_RESPONSES_SAMPLE = 1000

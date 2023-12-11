@@ -35,7 +35,6 @@ from google.oauth2 import service_account
 
 from app import constants, helpers
 from app import env
-from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.types import CloudService
@@ -396,7 +395,7 @@ class Translator:
     def apply_t_function_campaign(
         self,
         t: Callable,
-        campaign_code: CampaignCode,
+        campaign_code: str,
         language: str,
         responses_sample: dict,
         responses_breakdown: dict,
@@ -423,7 +422,7 @@ class Translator:
         # Responses sample
         # economic_empowerment_mexico: Do not translate 'raw_response' if the language is 'es'
         # economic_empowerment_mexico: For other languages, only translate text between parenthesis
-        if campaign_code == CampaignCode.economic_empowerment_mexico:
+        if campaign_code == "giz":
             if language != "es":
                 responses_sample = deep_replacer.replace(
                     data=responses_sample,

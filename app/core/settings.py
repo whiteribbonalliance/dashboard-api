@@ -32,7 +32,7 @@ from app.enums.api_prefix import ApiPrefix
 class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     APP_TITLE: str = "What Women Want API"
-    API_V1: str = ApiPrefix.v1.value
+    API_PREFIX: str = ApiPrefix.v1.value
 
 
 class DevSettings(Settings):

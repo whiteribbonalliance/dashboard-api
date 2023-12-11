@@ -23,8 +23,6 @@ SOFTWARE.
 
 """
 
-"""Azure Blob Storage interactions"""
-
 import os
 from datetime import datetime, timedelta
 from io import StringIO
@@ -38,7 +36,6 @@ from azure.storage.blob import (
 )
 
 from app import env
-from app.enums.campaign_code import CampaignCode
 from app.types import AzureBlobStorageContainerName
 
 EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
@@ -151,7 +148,7 @@ def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) 
 def upload_pmnch_pkl():
     """Upload PMNCH Pickle file"""
 
-    filename = f"{CampaignCode.what_young_people_want.value}.pkl"
+    filename = "pmn01a.pkl"
 
     # Get blob client
     blob_client = BlobClient.from_connection_string(

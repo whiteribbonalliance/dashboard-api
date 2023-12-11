@@ -23,14 +23,9 @@ SOFTWARE.
 
 """
 
-"""
-Handles processing of data and business logic for campaigns merged
-"""
-
 import pandas as pd
 
 from app import helpers, constants
-from app.enums.campaign_code import CampaignCode
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
@@ -280,7 +275,7 @@ class CampaignsMergedService:
         top_words = [
             {"label": x["text"], "count_1": x["count_1"], "count_2": x["count_2"]}
             for x in wordcloud_words
-        ][: constants.n_top_words]
+        ][: constants.N_TOP_WORDS]
 
         # Two word phrases
         two_word_phrases = helpers.get_merged_flattened_list_of_dictionaries(
@@ -348,10 +343,10 @@ class CampaignsMergedService:
             top_words_and_phrases["three_word_phrases"] = top_words_and_phrases[
                 "three_word_phrases"
             ][:n_top_words]
-        if len(top_words_and_phrases["wordcloud_words"]) > constants.n_wordcloud_words:
+        if len(top_words_and_phrases["wordcloud_words"]) > constants.N_WORDCLOUD_WORDS:
             top_words_and_phrases["wordcloud_words"] = top_words_and_phrases[
                 "wordcloud_words"
-            ][: constants.n_wordcloud_words]
+            ][: constants.N_WORDCLOUD_WORDS]
 
         return top_words_and_phrases
 
@@ -419,10 +414,7 @@ class CampaignsMergedService:
 
         # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
-            if (
-                campaign_data.campaign_code
-                == CampaignCode.what_women_want_pakistan.value
-            ):
+            if campaign_data.campaign_code == "wwwpakistan":
                 coordinate_pk = constants.COUNTRY_COORDINATE["PK"]
                 for coordinate in (
                     campaign_data.world_bubble_maps_coordinates["coordinates_1"]
@@ -435,10 +427,7 @@ class CampaignsMergedService:
 
         # For campaign economic_empowerment_mexico, change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
-            if (
-                campaign_data.campaign_code
-                == CampaignCode.economic_empowerment_mexico.value
-            ):
+            if campaign_data.campaign_code == "giz":
                 coordinate_mx = constants.COUNTRY_COORDINATE["MX"]
                 for coordinate in (
                     campaign_data.world_bubble_maps_coordinates["coordinates_1"]
@@ -555,7 +544,7 @@ class CampaignsMergedService:
         """
 
         for campaign in self.__campaigns_data_q1:
-            if campaign.campaign_code == CampaignCode.what_young_people_want.value:
+            if campaign.campaign_code == "pmn01a":
                 if filter_seq == "1":
                     return campaign.filter_1_description
                 if filter_seq == "2":

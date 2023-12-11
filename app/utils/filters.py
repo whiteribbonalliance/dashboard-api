@@ -31,7 +31,6 @@ from pandas import DataFrame
 
 from app import constants
 from app.crud.campaign import CampaignCRUD
-from app.enums.campaign_code import CampaignCode
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
 from app.utils import q_col_names
@@ -201,7 +200,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> Da
 
 
 def generate_description_of_filter(
-    campaign_code: CampaignCode,
+    campaign_code: str,
     _filter: Filter,
     num_results: int,
     respondent_noun_singular: str,

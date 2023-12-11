@@ -24,10 +24,9 @@ SOFTWARE.
 """
 
 from app.crud.campaign import CampaignCRUD
-from app.enums.campaign_code import CampaignCode
 
 
-def get_mapping_code_to_code(campaign_code: CampaignCode) -> dict:
+def get_mapping_code_to_code(campaign_code: str) -> dict:
     """Get mapping 'code to code'"""
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
@@ -42,7 +41,7 @@ def get_mapping_code_to_code(campaign_code: CampaignCode) -> dict:
     return mapping_code_to_code
 
 
-def get_mapping_code_to_description(campaign_code: CampaignCode) -> dict:
+def get_mapping_code_to_description(campaign_code: str) -> dict:
     """Get mapping 'code to description'"""
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)
@@ -60,7 +59,7 @@ def get_mapping_code_to_description(campaign_code: CampaignCode) -> dict:
     return mapping_code_to_description
 
 
-def get_mapping_code_to_parent_category(campaign_code: CampaignCode) -> dict:
+def get_mapping_code_to_parent_category(campaign_code: str) -> dict:
     """Get mapping 'code to parent category'"""
 
     campaign_crud = CampaignCRUD(campaign_code=campaign_code)

@@ -26,6 +26,9 @@ SOFTWARE.
 import inspect
 import json
 from functools import wraps
+from typing import Any
+
+from fastapi import Request
 
 from cachetools import LRUCache
 from fastapi.encoders import jsonable_encoder
@@ -81,19 +84,17 @@ class ApiCache(metaclass=SingletonMeta):
         """Get hash value"""
 
         # Get path from request
-        if kwargs.get("parameters").request:
-            path = kwargs.get("parameters").request.url.path
+        request: Request | Any = kwargs.get("_request")
+        if kwargs.get("_request"):
+            path = request.url.path
         else:
             path = ""
 
-        # Set request as None as it is not needed anymore
-        kwargs.get("parameters").request = None
+        # Remove request
+        kwargs.pop("_request")
 
         # Create a jsonable dict from kwargs
         kwargs_jsonable = jsonable_encoder(kwargs)
-
-        # Remove request
-        kwargs_jsonable.get("parameters").pop("request")
 
         # Add path to jsonable kwargs
         kwargs_jsonable["path"] = path

@@ -33,7 +33,6 @@ import re
 from hashlib import sha256
 
 from app import constants
-from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.types import CloudService, AzureBlobStorageContainerMountPath
 
@@ -83,21 +82,12 @@ def divide_list_into_chunks_by_char_count(
     return result_list
 
 
-def check_campaign(campaign: str) -> CampaignCode:
-    """Check if campaign exists"""
-
-    if campaign.lower() in [c.lower() for c in constants.CAMPAIGN_CODES]:
-        for campaign_code in CampaignCode:
-            if campaign_code.value == campaign:
-                return campaign_code
-
-
 def get_cloud_service_by_campaign(
-    campaign_code: CampaignCode,
+    campaign_code: str,
 ) -> CloudService:
     """Get translation api code"""
 
-    if campaign_code == CampaignCode.what_young_people_want:
+    if campaign_code == "pmn01a":
         cloud_service: CloudService = "azure"
     else:
         cloud_service: CloudService = "google"
@@ -327,16 +317,5 @@ def create_pmnch_main_dir_if_not_exists():
     """
 
     container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
-    if not os.path.isdir(container_mount_path):
-        os.mkdir(container_mount_path)
-
-
-def create_pmnch_csv_dir_if_not_exists():
-    """
-    Create '/pmnch_csv' dir.
-    Is a path mapping to an Azure Blob storage container.
-    """
-
-    container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_csv"
     if not os.path.isdir(container_mount_path):
         os.mkdir(container_mount_path)

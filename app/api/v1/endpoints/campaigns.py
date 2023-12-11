@@ -24,31 +24,25 @@ SOFTWARE.
 """
 
 import logging
+from datetime import date, datetime
 from io import StringIO
-from typing import Annotated
 
 import pandas as pd
 import requests
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import StreamingResponse
 
-from app import databases, auth_handler
+from app import databases
 from app import helpers
 from app import http_exceptions
 from app.api import dependencies
 from app.crud.campaign import CampaignCRUD
-from app.enums.campaign_code import CampaignCode
+from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters_campaign import CommonParametersCampaign
-from app.schemas.common_parameters_campaign_public_data import (
-    CommonParametersCampaignPublicData,
-)
+from app.schemas.date_filter import DateFilter
 from app.schemas.filter_options import FilterOptions
-from app.schemas.parameters_campaign_data import (
-    ParametersCampaignData,
-)
 from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services.api_cache import ApiCache
@@ -64,23 +58,20 @@ api_cache = ApiCache()
 
 
 @router.post(
-    path="/{campaign}",
+    path="/{campaign_code}",
     response_model=Campaign,
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
 def read_campaign(
-    parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
-    ],
     campaign_req: CampaignRequest,
+    _request: Request,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    language: str = Depends(dependencies.language_check),
+    q_code: QuestionCode = Depends(dependencies.q_code_check),
+    response_year: str = "",
 ):
     """Read campaign"""
-
-    campaign_code = parameters.campaign_code
-    language = parameters.language
-    q_code = parameters.q_code
-    response_year = parameters.response_year
 
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
@@ -101,20 +92,17 @@ def read_campaign(
 
 
 @router.get(
-    path="/{campaign}/filter-options",
+    path="/{campaign_code}/filter-options",
     response_model=FilterOptions,
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
 def read_filter_options(
-    parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
-    ]
+    _request: Request,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    language: str = Depends(dependencies.language_check),
 ):
     """Read filter options for campaign"""
-
-    campaign_code = parameters.campaign_code
-    language = parameters.language
 
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -126,20 +114,17 @@ def read_filter_options(
 
 
 @router.get(
-    path="/{campaign}/histogram-options",
+    path="/{campaign_code}/histogram-options",
     response_model=list[dict],
     status_code=status.HTTP_200_OK,
 )
 @api_cache.cache_response
 def read_histogram_options(
-    parameters: Annotated[
-        CommonParametersCampaign, Depends(dependencies.dep_common_parameters_campaign)
-    ]
+    _request: Request,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    language: str = Depends(dependencies.language_check),
 ):
     """Read histogram options for campaign"""
-
-    campaign_code = parameters.campaign_code
-    language = parameters.language
 
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -151,22 +136,17 @@ def read_histogram_options(
 
 
 @router.post(
-    path="/{campaign}/data",
+    path="/{campaign_code}/data",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
 def campaign_data(
-    parameters: Annotated[
-        ParametersCampaignData,
-        Depends(dependencies.dep_parameters_campaign_data),
-    ]
+    _request: Request,
+    date_filter: DateFilter | None = None,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    username: str = Depends(dependencies.verify_user),
 ):
     """Read campaign data"""
-
-    campaign_code = parameters.campaign_code
-    username = parameters.username
-    from_date = parameters.from_date
-    to_date = parameters.to_date
 
     # Get user
     users = databases.get_users()
@@ -183,8 +163,26 @@ def campaign_data(
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code)
 
+    # Parse date
+    date_format = "%Y-%m-%d"
+    from_date: date | None = None
+    to_date: date | None = None
+    try:
+        from_date = (
+            datetime.strptime(date_filter.from_date, date_format).date()
+            if date_filter and date_filter.from_date
+            else None
+        )
+        to_date = (
+            datetime.strptime(date_filter.to_date, date_format).date()
+            if date_filter and date_filter.to_date
+            else None
+        )
+    except ValueError as e:
+        logger.warning(f"Could not parse date from date_filter: {str(e)}")
+
     # Azure
-    if campaign_code == CampaignCode.what_young_people_want:
+    if campaign_code == "pmn01a":
         cloud_service: CloudService = "azure"
 
         # Cleanup
@@ -229,27 +227,23 @@ def campaign_data(
 
 
 @router.post(
-    path="/{campaign}/data/public",
+    path="/{campaign_code}/data/public",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
 def campaign_public_data(
-    parameters: Annotated[
-        CommonParametersCampaignPublicData,
-        Depends(dependencies.dep_common_parameters_campaign_public_data),
-    ],
     campaign_req: CampaignRequest,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    response_year: str = "",
 ):
     """Read campaign public data"""
 
-    campaign_code = parameters.campaign_code
-    response_year = parameters.response_year
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
     # Only allow campaign healthwellbeing
     # Note: If campaign what_young_people_want should use this endpoint, make sure the data comes from Azure
-    if campaign_code != CampaignCode.healthwellbeing:
+    if campaign_code != "healthwellbeing":
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."
         )
@@ -274,7 +268,9 @@ def campaign_public_data(
             filter_2.dict()
         )
     if filter_1 or filter_2:
-        unique_filename_code = f"{helpers.get_string_hash_value(campaign_code.value)}{unique_filename_code}"
+        unique_filename_code = (
+            f"{helpers.get_string_hash_value(campaign_code)}{unique_filename_code}"
+        )
 
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
@@ -300,13 +296,13 @@ def campaign_public_data(
 
 
 @router.get(
-    path="/{campaign}/data/countries-breakdown",
+    path="/{campaign_code}/data/countries-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
 async def campaign_countries_breakdown(
-    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)],
-    _: str = Depends(auth_handler.auth_wrapper_access_token),
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    _username: str = Depends(dependencies.verify_user),
 ):
     """Read campaign countries breakdown"""
 
@@ -334,20 +330,20 @@ async def campaign_countries_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_countries_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=wra_{campaign_code}_countries_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
 
 
 @router.get(
-    path="/{campaign}/data/source-files-breakdown",
+    path="/{campaign_code}/data/source-files-breakdown",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
 async def campaign_source_files_breakdown(
-    campaign_code: Annotated[CampaignCode, Depends(dependencies.dep_campaign_code)],
-    _: str = Depends(auth_handler.auth_wrapper_access_token),
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    _username: str = Depends(dependencies.verify_user),
 ):
     """Read campaign source files breakdown"""
 
@@ -372,7 +368,7 @@ async def campaign_source_files_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename=wra_{campaign_code.value}_source_files_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=wra_{campaign_code}_source_files_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )

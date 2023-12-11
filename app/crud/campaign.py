@@ -23,10 +23,6 @@ SOFTWARE.
 
 """
 
-"""
-Reads/writes data from/to a campaign's database
-"""
-
 import copy
 
 import inflect
@@ -34,7 +30,6 @@ from pandas import DataFrame
 
 from app import databases
 from app.databases import Database
-from app.enums.campaign_code import CampaignCode
 from app.enums.question_code import QuestionCode
 from app.schemas.country import Country
 from app.schemas.region import Region
@@ -44,7 +39,7 @@ inflect_engine = inflect.engine()
 
 
 class CampaignCRUD:
-    def __init__(self, campaign_code: CampaignCode, db: Database = None):
+    def __init__(self, campaign_code: str, db: Database = None):
         # If db is supplied, CRUD will read/write data to the db supplied instead
         if db:
             self.__db = db

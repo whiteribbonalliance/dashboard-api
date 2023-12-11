@@ -32,6 +32,7 @@ from app import auth_handler, constants
 from app import databases
 from app import env
 from app import http_exceptions
+from app.api import dependencies
 from app.schemas.token import Token
 from app.schemas.user import UserBase
 
@@ -80,22 +81,9 @@ async def login(
     return Token(access_token=access_token, max_age=max_age)
 
 
-# @router.post("/logout", status_code=status.HTTP_200_OK)
-# async def logout(response: Response):
-#     """Logout: Remove access token cookie"""
-#
-#     response.delete_cookie(
-#         key="token",
-#         httponly=True,
-#         secure=settings.COOKIE_SECURE,
-#         domain=settings.COOKIE_DOMAIN,
-#         samesite=settings.COOKIE_SAMESITE
-#     )
-
-
 @router.post("/check", status_code=status.HTTP_200_OK)
 async def check(
-    username: str = Depends(auth_handler.auth_wrapper_access_token),
+    username: str = Depends(dependencies.verify_user),
 ):
     """Check: Verify user"""
 

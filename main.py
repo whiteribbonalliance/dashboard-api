@@ -47,7 +47,6 @@ if env.STAGE == "dev" and not env.ONLY_PMNCH:
     helpers.create_tmp_dir_if_not_exists()
 if env.STAGE == "dev" and env.ONLY_PMNCH:
     helpers.create_pmnch_main_dir_if_not_exists()
-    helpers.create_pmnch_csv_dir_if_not_exists()
 
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,
@@ -68,7 +67,7 @@ app_fastapi.add_middleware(
     allow_headers=settings.CORS["allow_headers"],
 )
 
-app_fastapi.include_router(api_router, prefix=settings.API_V1)
+app_fastapi.include_router(api_router, prefix=settings.API_PREFIX)
 
 
 @app_fastapi.get(path="/", status_code=status.HTTP_200_OK)

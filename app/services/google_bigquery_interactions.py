@@ -23,8 +23,6 @@ SOFTWARE.
 
 """
 
-"""Google BigQuery interactions"""
-
 import logging
 
 import pandas as pd
@@ -34,7 +32,6 @@ from google.oauth2 import service_account
 from pandas import DataFrame
 
 from app import env
-from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 
 logger = logging.getLogger(__name__)
@@ -68,13 +65,13 @@ def get_bigquery_storage_client() -> bigquery_storage.BigQueryReadClient:
     return bigquery_storage.BigQueryReadClient(credentials=credentials)
 
 
-def get_query(campaign_code: CampaignCode):
+def get_query(campaign_code: str):
     """Get query"""
 
     # Set minimum age
-    if campaign_code == CampaignCode.what_young_people_want:
+    if campaign_code == "pmn01a":
         min_age = "10"
-    elif campaign_code == CampaignCode.healthwellbeing:
+    elif campaign_code == "healthwellbeing":
         min_age = "0"
     else:
         min_age = "15"
@@ -95,7 +92,7 @@ def get_query(campaign_code: CampaignCode):
         JSON_QUERY(respondent_additional_fields, '$.year') as response_year,
         respondent_additional_fields as additional_fields,
         FROM deft-stratum-290216.{table_name}
-        WHERE campaign = '{campaign_code.value}'
+        WHERE campaign = '{campaign_code}'
         AND response_original_text is not null
         AND (respondent_age >= {min_age} OR respondent_age is null)
         AND respondent_country_code is not null
@@ -105,7 +102,7 @@ def get_query(campaign_code: CampaignCode):
        """
 
 
-def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
+def get_campaign_df(campaign_code: str) -> DataFrame:
     """
     Get the dataframe of a campaign from BigQuery
 
@@ -114,7 +111,7 @@ def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
 
     # Load from .pkl file
     if env.LOAD_FROM_LOCAL_PKL_FILE:
-        df_responses = pd.read_pickle(f"{campaign_code.value}.pkl")
+        df_responses = pd.read_pickle(f"{campaign_code}.pkl")
 
         return df_responses
 
@@ -138,7 +135,7 @@ def get_campaign_df(campaign_code: CampaignCode) -> DataFrame:
 
     # Save to .pkl file
     if env.SAVE_TO_PKL_FILE:
-        df_responses.to_pickle(f"{campaign_code.value}.pkl")
+        df_responses.to_pickle(f"{campaign_code}.pkl")
 
     return df_responses
 
@@ -153,7 +150,7 @@ def export_pmn01a_data_to_pkl():
     bigquery_storage_client = get_bigquery_storage_client()
 
     # Query
-    query = get_query(campaign_code=CampaignCode.what_young_people_want)
+    query = get_query(campaign_code="pmn01a")
 
     # Query job
     query_job = bigquery_client.query(query)
@@ -165,4 +162,4 @@ def export_pmn01a_data_to_pkl():
     df_responses = results.to_dataframe(bqstorage_client=bigquery_storage_client)
 
     # Save to CSV
-    df_responses.to_pickle(f"{CampaignCode.what_young_people_want.value}.pkl")
+    df_responses.to_pickle("pmn01a.pkl")

@@ -24,24 +24,20 @@ SOFTWARE.
 """
 
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 
 from app.api import dependencies
 from app.crud.campaign import CampaignCRUD
-from app.enums.campaign_code import CampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
-from app.schemas.common_parameters_campaigns_merged import (
-    CommonParametersCampaignsMerged,
-)
 from app.schemas.filter_options import FilterOptions
 from app.schemas.option_str import OptionStr
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 from app.services.campaigns_merged import CampaignsMergedService
+from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -58,24 +54,19 @@ api_cache = ApiCache()
 )
 @api_cache.cache_response
 def read_campaigns_merged(
-    parameters: Annotated[
-        CommonParametersCampaignsMerged,
-        Depends(dependencies.dep_common_parameters_all_campaigns),
-    ],
     campaign_req: CampaignRequest,
+    _request: Request,
+    language: str = Depends(dependencies.language_check),
 ):
     """Read campaigns merged"""
 
-    language = parameters.language
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
     # Get all campaigns data
     campaigns: dict[str, list[Campaign]] = {}
-    for campaign_code in CampaignCode:
-        # TODO: Temporarily skip campaign 'wee'
-        if campaign_code == CampaignCode.womens_economic_empowerment:
-            continue
+    for campaign_config in CAMPAIGNS_CONFIG:
+        campaign_code = campaign_config["code"]
 
         # CRUD
         crud = CampaignCRUD(campaign_code=campaign_code)
@@ -93,9 +84,9 @@ def read_campaigns_merged(
                 filter_2=filter_2,
             )
 
-            if not campaigns.get(campaign_code.value):
-                campaigns[campaign_code.value] = []
-            campaigns[campaign_code.value].append(
+            if not campaigns.get(campaign_code):
+                campaigns[campaign_code] = []
+            campaigns[campaign_code].append(
                 campaign_service.get_campaign(
                     q_code=campaign_q_code,
                     include_list_of_ages=False,
@@ -124,25 +115,16 @@ def read_campaigns_merged(
 )
 @api_cache.cache_response
 def read_filter_options(
-    parameters: Annotated[
-        CommonParametersCampaignsMerged,
-        Depends(dependencies.dep_common_parameters_all_campaigns),
-    ]
+    _request: Request, language: str = Depends(dependencies.language_check)
 ):
     """Read filter options for campaigns merged"""
 
-    language = parameters.language
-
     # Get all campaigns filter options
     campaigns_filter_options: list[dict] = []
-    for campaign_code in CampaignCode:
-        # TODO: Temporarily skip campaign 'wee'
-        if campaign_code == CampaignCode.womens_economic_empowerment:
-            continue
-
+    for campaign_config in CAMPAIGNS_CONFIG:
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_code, language=language
+            campaign_code=campaign_config["code"], language=language
         )
 
         # Filter options
@@ -167,25 +149,16 @@ def read_filter_options(
 )
 @api_cache.cache_response
 def histogram_options(
-    parameters: Annotated[
-        CommonParametersCampaignsMerged,
-        Depends(dependencies.dep_common_parameters_all_campaigns),
-    ]
+    _request: Request, language: str = Depends(dependencies.language_check)
 ):
     """Read histogram options for campaign"""
 
-    language = parameters.language
-
     # Get all campaigns histogram options
     campaigns_histogram_options: list[list[dict]] = []
-    for campaign_code in CampaignCode:
-        # TODO: Temporarily skip campaign 'wee'
-        if campaign_code == CampaignCode.womens_economic_empowerment:
-            continue
-
+    for campaign_config in CAMPAIGNS_CONFIG:
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_code, language=language
+            campaign_code=campaign_config["code"], language=language
         )
 
         # Histogram options

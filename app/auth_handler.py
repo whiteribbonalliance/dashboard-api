@@ -29,7 +29,6 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-# from app.oauth2_password_bearer_with_cookie import OAuth2PasswordBearerWithCookie
 from app import env
 from app import http_exceptions, constants
 
