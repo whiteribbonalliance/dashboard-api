@@ -1,4 +1,4 @@
-name: "Google App Engine: Build and deploy dashboard API to development"
+name: "Dev: Google App Engine, Build and deploy dashboard API"
 
 
 on:
@@ -20,10 +20,16 @@ jobs:
   build:
     name: Build container image
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        # Setup gcloud CLI
+
+      - name: Include credentials
+        run: |
+          touch credentials.json
+          echo ${{ secrets.GOOGLE_CREDENTIALS }} > credentials.json
+
       - id: 'auth'
         uses: google-github-actions/auth@v1
         with:
