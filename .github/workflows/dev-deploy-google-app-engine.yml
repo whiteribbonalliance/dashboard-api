@@ -1,19 +1,19 @@
-name: "Google App Engine: Build and deploy dashboard API (FastAPI)"
+name: "Google App Engine: Build and deploy dashboard API to development"
 
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
     paths-ignore:
       - '**/README.md'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev" ]
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: wwwdashboardapi
+  IMAGE_NAME: wwwdashboardapi-dev
 
 jobs:
 
@@ -49,7 +49,7 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: gcr.io/deft-stratum-290216/wwwdashboardapi:${{ github.sha }}
+          tags: gcr.io/deft-stratum-290216/wwwdashboardapi-dev:${{ github.sha }}
 
       - name: Deploy
-        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/wwwdashboardapi:${{ github.sha }}
+        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/wwwdashboardapi-dev:${{ github.sha }}
