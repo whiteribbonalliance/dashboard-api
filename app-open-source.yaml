@@ -1,0 +1,27 @@
+service: www-dashboard-api-open-source
+runtime: custom
+env: flex
+
+env_variables:
+  PROJECT_NAME: WWW
+  SERVICE_NAME: DASHBOARD_API
+  STAGE: prod
+  NEWRELIC_API_KEY: ${{ secrets.NEWRELIC_API_KEY }}
+  GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+  ACCESS_TOKEN_SECRET_KEY: ${{ secrets.ACCESS_TOKEN_SECRET_KEY }}
+
+manual_scaling:
+  instances: 1
+
+resources:
+  cpu: 4
+  memory_gb: 7.5
+  disk_size_gb: 10
+
+# Force https and redirect http to https
+handlers:
+  - url: /.*
+    secure: always
+    redirect_http_response_code: 301
+    script: auto
+

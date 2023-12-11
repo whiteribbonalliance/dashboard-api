@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: wwwdashboardapi-dev
+  IMAGE_NAME: wwwdashboardapi-open-source
 
 jobs:
 
@@ -55,7 +55,7 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: gcr.io/deft-stratum-290216/wwwdashboardapi-dev:${{ github.sha }}
+          tags: gcr.io/deft-stratum-290216/wwwdashboardapi-open-source:${{ github.sha }}
 
       - name: Deploy
-        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/wwwdashboardapi-dev:${{ github.sha }}
+        run: gcloud app deploy app-open-source.yaml --image-url=gcr.io/deft-stratum-290216/wwwdashboardapi-open-source:${{ github.sha }}
