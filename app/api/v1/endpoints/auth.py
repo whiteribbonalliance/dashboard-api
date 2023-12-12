@@ -54,7 +54,7 @@ async def login(
             raise http_exceptions.UnauthorizedHTTPException("Login failed")
 
     # Check if user exists
-    users = databases.get_users()
+    users = databases.get_users_from_databases()
     db_user = users.get(form_username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Login failed")
@@ -87,7 +87,7 @@ async def check(
 ):
     """Check: Verify user"""
 
-    users = databases.get_users()
+    users = databases.get_users_from_databases()
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unauthorized")

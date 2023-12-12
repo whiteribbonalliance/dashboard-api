@@ -23,13 +23,13 @@ SOFTWARE.
 
 """
 
-from app.crud.campaign import CampaignCRUD
+from app import crud
 
 
 def get_mapping_code_to_code(campaign_code: str) -> dict:
     """Get mapping 'code to code'"""
 
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
 
     hierarchy = campaign_crud.get_category_hierarchy()
     mapping_code_to_code = {}
@@ -44,7 +44,7 @@ def get_mapping_code_to_code(campaign_code: str) -> dict:
 def get_mapping_code_to_description(campaign_code: str) -> dict:
     """Get mapping 'code to description'"""
 
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
     parent_categories_descriptions = campaign_crud.get_parent_categories_descriptions()
 
     category_hierarchy = campaign_crud.get_category_hierarchy()
@@ -62,7 +62,7 @@ def get_mapping_code_to_description(campaign_code: str) -> dict:
 def get_mapping_code_to_parent_category(campaign_code: str) -> dict:
     """Get mapping 'code to parent category'"""
 
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
 
     category_hierarchy = campaign_crud.get_category_hierarchy()
     mapping_code_to_parent_category = {}

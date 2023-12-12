@@ -28,9 +28,8 @@ import json
 from functools import wraps
 from typing import Any
 
-from fastapi import Request
-
 from cachetools import LRUCache
+from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 
 from app import helpers

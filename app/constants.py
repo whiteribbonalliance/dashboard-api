@@ -25,9 +25,14 @@ SOFTWARE.
 
 import json
 
-from app.enums.question_code import QuestionCode
-
-QUESTION_CODES = [q.value for q in QuestionCode]
+LEGACY_CAMPAIGN_CODES = [
+    "wra03a",
+    "pmn01a",
+    "midwife",
+    "wwwpakistan",
+    "healthwellbeing",
+    "giz",
+]
 
 # Load stopwords from file
 with open("stopwords.json", "r", encoding="utf8") as file:

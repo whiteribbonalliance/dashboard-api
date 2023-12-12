@@ -153,3 +153,6 @@ data/*
 
 # Config
 campaigns-config.json
+
+# Test
+test.py

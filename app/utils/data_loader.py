@@ -26,26 +26,24 @@ SOFTWARE.
 import copy
 import json
 import logging
+import os
 
-import numpy as np
 import pandas as pd
 
-from app import constants, databases
+from app import constants, databases, q_codes_finder
+from app import crud
 from app import env
 from app import global_variables
-from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.schemas.region import Region
 from app.services import azure_blob_storage_interactions
-from app.services import google_bigquery_interactions
 from app.services import google_cloud_storage_interactions
 from app.services import google_maps_interactions
 from app.services.api_cache import ApiCache
-from app.services.campaign import CampaignCRUD, CampaignService
+from app.services.campaign import CampaignService
 from app.services.translations_cache import TranslationsCache
 from app.types import AzureBlobStorageContainerMountPath
-from app.utils import code_hierarchy
 from app.utils import q_col_names
 from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
 
@@ -55,9 +53,9 @@ init_custom_logger(logger)
 
 def load_campaign_data(campaign_code: str):
     """
-    Load campaign data
+    Load campaign data.
 
-    :param campaign_code: The campaign code
+    :param campaign_code: The campaign code.
     """
 
     # Will create a tmp copy of the db to write campaign data to
@@ -67,68 +65,49 @@ def load_campaign_data(campaign_code: str):
     db_tmp = copy.deepcopy(databases.get_campaign_db(campaign_code=campaign_code))
 
     # CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code, db=db_tmp)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code, db=db_tmp)
 
-    # Q codes available in a campaign
-    campaign_q_codes = campaign_crud.get_q_codes()
+    # Get df
+    df_responses = get_campaign_df(campaign_code=campaign_code)
+    if df_responses is None:
+        raise Exception(f"Could not load df for {campaign_code}.")
 
-    # Get data
-    if env.ONLY_PMNCH:
-        # Get data from Azure Blob Storage
-        mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
-        df_responses = pd.read_pickle(
-            filepath_or_buffer=f"{mount_path}/what_young_people_want.pkl",
-        )
-    else:
-        # Get data from BigQuery
-        df_responses = google_bigquery_interactions.get_campaign_df(
-            campaign_code=campaign_code
-        )
+    # Q codes
+    campaign_q_codes = q_codes_finder.find_in_df(df=df_responses)
 
-    # Create additional q columns (q1_, q2_, etc.)
-    df_responses = create_additional_q_columns(
-        df=df_responses, campaign_code=campaign_code, crud=campaign_crud
-    )
+    # Set q codes
+    campaign_crud.set_q_codes(q_codes=campaign_q_codes)
 
-    # Drop 'additional_fields'
-    df_responses = df_responses.drop("additional_fields", axis=1)
-
-    # Add tokenized column
-    for q_code in campaign_q_codes:
-        df_responses[q_col_names.get_tokenized_col_name(q_code=q_code)] = df_responses[
-            q_col_names.get_lemmatized_col_name(q_code=q_code)
-        ].apply(lambda x: str(x).split(" ") if x else x)
-
-    # Make sure the value 'prefer not to say' always starts with a capital letter
+    # Value 'prefer not to say' should always start with a capital letter
     df_responses["setting"] = df_responses["setting"].apply(
-        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
     )
     df_responses["gender"] = df_responses["gender"].apply(
-        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
     )
     df_responses["age"] = df_responses["age"].apply(
-        lambda x: x.capitalize() if x and x.lower() == "prefer not to say" else x
+        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
     )
 
-    # Apply title() to setting
+    # Apply title
     df_responses["setting"] = df_responses["setting"].apply(
         lambda x: x.title() if x else x
     )
 
-    # Apply strip function on alpha2 country codes and make sure the value is uppercase
+    # Apply strip and uppercase
     df_responses["alpha2country"] = df_responses["alpha2country"].apply(
         lambda x: x.strip().upper() if x else x
+    )
+
+    # Apply strip
+    df_responses["setting"] = df_responses["setting"].apply(
+        lambda x: x.strip() if x else x
     )
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
         lambda x: constants.COUNTRIES_DATA[x]["name"]
     )
-
-    # Only keep ages 10-24 for what_young_people_want
-    if campaign_code == "pmn01a":
-        df_responses["age"] = df_responses["age"].apply(filter_ages_10_to_24)
-        df_responses = df_responses[df_responses["age"].notna()]
 
     # Set ages
     ages = df_responses["age"].unique().tolist()
@@ -158,23 +137,17 @@ def load_campaign_data(campaign_code: str):
 
     # Set age buckets default
     age_buckets_default = df_responses["age_bucket_default"].unique().tolist()
-    age_buckets_default = [
-        age_bucket_default
-        for age_bucket_default in age_buckets_default
-        if age_bucket_default is not None
-    ]
+    age_buckets_default = [x for x in age_buckets_default if x is not None]
     campaign_crud.set_age_buckets_default(age_buckets_default=age_buckets_default)
 
-    # Response years
-    if campaign_code == "wwwpakistan":
-        response_years = df_responses["response_year"].unique().tolist()
-    else:
-        response_years = []
-
     # Set response years
-    campaign_crud.set_response_years(response_years=response_years)
+    if "response_year" in df_responses.columns:
+        response_years = df_responses["response_year"].unique().tolist()
+        campaign_crud.set_response_years(response_years=response_years)
+    else:
+        df_responses["response_year"] = ""
 
-    # Remove the UNCODABLE responses
+    # Remove UNCODABLE responses
     for q_code in campaign_q_codes:
         df_responses = df_responses[
             ~df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)].isin(
@@ -182,49 +155,12 @@ def load_campaign_data(campaign_code: str):
             )
         ]
 
-    # What Young People Want has a hard coded rewrite of ENVIRONMENT merged with SAFETY.
-    if campaign_code == "pmn01a":
-        _map = {"ENVIRONMENT": "SAFETY"}
-        df_responses[
-            q_col_names.get_canonical_code_col_name(q_code=QuestionCode.q1)
-        ] = df_responses[
-            q_col_names.get_canonical_code_col_name(q_code=QuestionCode.q1)
-        ].apply(
-            lambda x: _map.get(x, x)
-        )
-
-    # Rename canonical_code OTHERQUESTIONABLE to NOTRELATED
-    for q_code in campaign_q_codes:
-        df_responses[
-            q_col_names.get_canonical_code_col_name(q_code=q_code)
-        ] = df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)].apply(
-            lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x
-        )
-
-    # Get mapping to parent category
-    mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
-        campaign_code=campaign_code
-    )
-
-    # Add parent_category column
-    for q_code in campaign_q_codes:
-        df_responses[
-            q_col_names.get_parent_category_col_name(q_code=q_code)
-        ] = df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)].apply(
-            lambda x: get_parent_category(
-                sub_categories=x, mapping_to_parent_category=mapping_to_parent_category
-            )
-        )
-
     # Create countries
     countries = {}
     countries_alpha2_codes = df_responses[["alpha2country"]].drop_duplicates()
     for idx in range(len(countries_alpha2_codes)):
         alpha2_code = countries_alpha2_codes["alpha2country"].iloc[idx]
         country = constants.COUNTRIES_DATA.get(alpha2_code)
-        if not country:
-            logger.warning("Could not find country in countries_data.json")
-            continue
         countries[alpha2_code] = Country(
             alpha2_code=alpha2_code,
             name=country.get("name"),
@@ -248,14 +184,6 @@ def load_campaign_data(campaign_code: str):
             else:
                 countries[alpha2_code].regions.append(Region(code=region, name=region))
 
-    # Create province column
-    if campaign_code == "wwwpakistan":
-        df_responses["province"] = df_responses["region"].apply(
-            lambda x: extract_province_from_region(x)
-        )
-    else:
-        df_responses["province"] = ""
-
     # Set countries
     campaign_crud.set_countries(countries=countries)
 
@@ -265,27 +193,19 @@ def load_campaign_data(campaign_code: str):
         lambda x: x.strip() if x else x
     )
     for gender in df_responses["gender"].value_counts().index:
-        if not gender:
-            continue
-        genders.append(gender)
+        if gender:
+            genders.append(gender)
     campaign_crud.set_genders(genders=genders)
 
     # Set living settings
     living_settings = []
-    df_responses["setting"] = df_responses["setting"].apply(
-        lambda x: x.strip() if x else x
-    )
     for living_setting in df_responses["setting"].value_counts().index:
-        if not living_setting:
-            continue
-        living_settings.append(living_setting)
+        if living_setting:
+            living_settings.append(living_setting)
     campaign_crud.set_living_settings(living_settings=living_settings)
 
     # Set professions
     professions = []
-    df_responses["profession"] = df_responses["profession"].apply(
-        lambda x: x.strip().capitalize() if x else x
-    )
     for profession in df_responses["profession"].value_counts().index:
         professions.append(profession)
     campaign_crud.set_professions(professions=professions)
@@ -297,14 +217,30 @@ def load_campaign_data(campaign_code: str):
     databases.set_campaign_db(campaign_code=campaign_code, db=db_tmp)
 
 
-def get_parent_category(sub_categories: str, mapping_to_parent_category: dict) -> str:
-    """Get parent category"""
+def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
+    """
+    Get campaign dataframe.
+    """
 
-    categories = [x.strip() for x in sub_categories.split("/") if x]
-    parent_categories = [mapping_to_parent_category.get(x, "") for x in categories]
-    parent_categories = [x for x in parent_categories if x]
+    # if env.ONLY_PMNCH and campaign_code == "pmn01a":
+    #     # Get data from Azure Blob Storage
+    #     mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
+    #     return pd.read_pickle(
+    #         filepath_or_buffer=f"{mount_path}/what_young_people_want.pkl",
+    #     )
 
-    return "/".join(parent_categories)
+    for campaign_config in CAMPAIGNS_CONFIG:
+        if campaign_config["code"] == campaign_code:
+            df = pd.read_csv(
+                filepath_or_buffer=os.path.join("data", campaign_config["file"]),
+                keep_default_na=False,
+                dtype={"age": str},
+            )
+
+            if "ingestion_time" in df.columns.tolist():
+                df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
+
+            return df
 
 
 def get_age_bucket(age: str | int | None, campaign_code: str = None) -> str | None:
@@ -359,133 +295,10 @@ def get_age_bucket(age: str | int | None, campaign_code: str = None) -> str | No
     return "N/A"
 
 
-def filter_ages_10_to_24(age: str) -> str | float:
-    """Return age if between 10 and 24, else nan"""
-
-    if isinstance(age, str):
-        if age.isnumeric():
-            age_int = int(age)
-            if 10 <= age_int <= 24:
-                return age
-
-    return np.nan
-
-
-def create_additional_q_columns(
-    df: pd.DataFrame,
-    campaign_code: str,
-    crud: CampaignCRUD,
-) -> pd.DataFrame:
-    """Create additional columns (q1_, q2_ etc.) from 'additional_fields'"""
-
-    # Q codes available in a campaign
-    campaign_q_codes = crud.get_q_codes()
-
-    for q_code in [x for x in campaign_q_codes if x != QuestionCode.q1]:
-        # Create additional columns per question
-        df[q_col_names.get_raw_response_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_lemmatized_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_canonical_code_col_name(q_code=q_code)] = ""
-        df[q_col_names.get_original_language_col_name(q_code=q_code)] = ""
-
-        # Fill additional columns per question
-        df = df.apply(
-            lambda x: fill_additional_q_columns(
-                row=x, campaign_code=campaign_code, q_code=q_code
-            ),
-            axis=1,
-        )
-
-    return df
-
-
-def fill_additional_q_columns(row: pd.Series, campaign_code: str, q_code: QuestionCode):
-    """Fill additional columns (q1_, q2_ etc.) from 'additional_fields'"""
-
-    # 'additional_fields' can contain the response fields for q2, q3 etc.
-    additional_fields = json.loads(row.get("additional_fields", "{}"))
-
-    # If 'healthwellbeing' use the field 'issue' as the text at q2, other columns will use q1 by default
-    if campaign_code == "healthwellbeing" and q_code == QuestionCode.q2:
-        # Get issue
-        issue = (
-            str(additional_fields.get("issue")).capitalize()
-            if additional_fields.get("issue")
-            else ""
-        )
-
-        response_original_text = issue
-        response_english_text = issue
-        response_lemmatized_text = issue
-        response_nlu_category = row.get("q1_canonical_code", "")
-        response_original_lang = row.get("q1_original_language", "")
-    else:
-        response_original_text = additional_fields.get(
-            f"{q_code.value}_response_original_text"
-        )
-        response_english_text = additional_fields.get(
-            f"{q_code.value}_response_english_text"
-        )
-        response_lemmatized_text = additional_fields.get(
-            f"{q_code.value}_response_lemmatized_text"
-        )
-        response_nlu_category = additional_fields.get(
-            f"{q_code.value}_response_nlu_category"
-        )
-        response_original_lang = additional_fields.get(
-            f"{q_code.value}_response_original_lang"
-        )
-
-    # For 'economic_empowerment_mexico' append 'original_text' and 'english_text'
-    if campaign_code == "giz":
-        if response_original_text and response_english_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=q_code)
-            ] = f"{response_original_text} ({response_english_text})"
-        elif response_original_text:
-            row[
-                q_col_names.get_raw_response_col_name(q_code=q_code)
-            ] = response_original_text
-    else:
-        row[
-            q_col_names.get_raw_response_col_name(q_code=q_code)
-        ] = response_original_text
-
-    if response_lemmatized_text:
-        row[
-            q_col_names.get_lemmatized_col_name(q_code=q_code)
-        ] = response_lemmatized_text
-    if response_nlu_category:
-        row[
-            q_col_names.get_canonical_code_col_name(q_code=q_code)
-        ] = response_nlu_category
-    if response_original_lang:
-        row[
-            q_col_names.get_original_language_col_name(q_code=q_code)
-        ] = response_original_lang
-
-    return row
-
-
-def extract_province_from_region(region: str) -> str:
-    """Extract province from region"""
-
-    if not region:
-        return ""
-
-    region_name_split = region.split(",")
-    if len(region_name_split) == 2:
-        province = region_name_split[-1].strip()
-
-        return province
-    else:
-        return ""
-
-
 def load_campaign_ngrams_unfiltered(campaign_code: str):
     """Load campaign ngrams unfiltered"""
 
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
     campaign_service = CampaignService(campaign_code=campaign_code)
 
     df = campaign_crud.get_dataframe()
@@ -565,21 +378,23 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_code = campaign_config["code"]
+        campaign_config_code = campaign_config["code"]
 
         # Only load data for what_young_people_want
         if env.ONLY_PMNCH:
-            if campaign_code != "pmn01a":
+            if campaign_config_code != "pmn01a":
                 continue
 
-        print(f"INFO:\t  Loading data for campaign {campaign_code}...")
+        print(f"INFO:\t  Loading data for campaign {campaign_config_code}...")
 
         try:
-            load_campaign_data(campaign_code=campaign_code)
-            load_campaign_ngrams_unfiltered(campaign_code=campaign_code)
+            load_campaign_data(campaign_code=campaign_config_code)
+            load_campaign_ngrams_unfiltered(campaign_code=campaign_config_code)
             ApiCache().clear_cache()
         except (Exception,):
-            logger.exception(f"""Error loading data for campaign {campaign_code}""")
+            logger.exception(
+                f"""Error loading data for campaign {campaign_config_code}"""
+            )
 
     print(f"INFO:\t  Loading campaigns data completed.")
 
@@ -609,16 +424,16 @@ def load_region_coordinates():
             coordinates: dict = json.loads(file.read())
 
     # Get new region coordinates (if coordinate is not in region_coordinates.json)
-    # TODO: ...
-    focused_on_country_campaigns_codes = [
-        "giz",
-        "wwwpakistan",
-    ]
+    focused_on_country_campaigns_codes = []
+    for campaign_code in [x["code"] for x in CAMPAIGNS_CONFIG]:
+        if campaign_code == "giz" or campaign_code == "wwwpakistan":
+            focused_on_country_campaigns_codes.append(campaign_code)
+
     for campaign_code in focused_on_country_campaigns_codes:
-        campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+        campaign_crud = crud.Campaign(campaign_code=campaign_code)
         countries = campaign_crud.get_countries_list()
 
-        if len(countries) < 1:
+        if not countries:
             continue
 
         country_alpha2_code = countries[0].alpha2_code
@@ -664,3 +479,18 @@ def load_region_coordinates():
     global_variables.region_coordinates = coordinates
 
     print(f"INFO:\t  Loading region coordinates completed.")
+
+
+def extract_province_from_region(region: str) -> str:
+    """Extract province from region"""
+
+    if not region:
+        return ""
+
+    region_name_split = region.split(",")
+    if len(region_name_split) == 2:
+        province = region_name_split[-1].strip()
+
+        return province
+    else:
+        return ""

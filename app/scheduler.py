@@ -51,10 +51,7 @@ async def do_once_load_initial_data(session=Session()):
     Load initial data.
     """
 
-    try:
-        await concurrency.run_in_threadpool(data_loader.load_initial_data)
-    except (Exception,) as e:
-        logger.error(f"Error while trying to load data: {str(e)}")
+    await concurrency.run_in_threadpool(data_loader.load_initial_data)
 
     # Get task
     task = session["do_once_load_initial_data"]
@@ -70,10 +67,7 @@ async def do_every_12th_hour_reload_data():
     Runs at minute 0 past every 12th hour.
     """
 
-    try:
-        await concurrency.run_in_threadpool(data_loader.reload_data, True, True, True)
-    except (Exception,) as e:
-        logger.error(f"An error occurred while reloading data: {str(e)}")
+    await concurrency.run_in_threadpool(data_loader.reload_data, True, True, True)
 
 
 @app.task(cron("0 * * * *"))
@@ -94,7 +88,4 @@ async def do_every_hour_clear_tmp_dir(session=Session()):
 
         return
 
-    try:
-        await concurrency.run_in_threadpool(helpers.clear_tmp_dir)
-    except (Exception,) as e:
-        logger.error(f"Error while clearing tmp dir: {str(e)}")
+    await concurrency.run_in_threadpool(helpers.clear_tmp_dir)

@@ -33,7 +33,6 @@ import re
 from hashlib import sha256
 
 from app import constants
-from app.enums.question_code import QuestionCode
 from app.types import CloudService, AzureBlobStorageContainerMountPath
 
 
@@ -93,14 +92,6 @@ def get_cloud_service_by_campaign(
         cloud_service: CloudService = "google"
 
     return cloud_service
-
-
-def check_q_code(q_code: str) -> QuestionCode:
-    """Check if q code str exists"""
-
-    for q in QuestionCode:
-        if q.value == q_code:
-            return q
 
 
 def clear_tmp_dir():

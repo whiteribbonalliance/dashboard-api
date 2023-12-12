@@ -26,8 +26,6 @@ Environment variables:
 - `NEWRELIC_API_KEY=` The New Relic API key.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
-- `LOAD_FROM_LOCAL_PKL_FILE=` Whether to load data from local `.pkl` file or not. Accepts `True` or `False`.
-- `SAVE_TO_PKL_FILE=` Whether to save data to `.pkl` file after loading from BigQuery. Accepts `True` or `False`.
 - `ONLY_PMNCH=` `PMNCH` exclusive. Accepts `True` or `False`.
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.

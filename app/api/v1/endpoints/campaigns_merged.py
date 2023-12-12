@@ -27,8 +27,8 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, status
 
+from app import crud
 from app.api import dependencies
-from app.crud.campaign import CampaignCRUD
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -66,27 +66,27 @@ def read_campaigns_merged(
     # Get all campaigns data
     campaigns: dict[str, list[Campaign]] = {}
     for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_code = campaign_config["code"]
+        campaign_config_code = campaign_config["code"]
 
         # CRUD
-        crud = CampaignCRUD(campaign_code=campaign_code)
+        campaign_crud = crud.Campaign(campaign_code=campaign_config_code)
 
         # Campaign q codes
-        campaign_q_codes = crud.get_q_codes()
+        campaign_q_codes = campaign_crud.get_q_codes()
 
         # Campaign data
         for campaign_q_code in campaign_q_codes:
             # Campaign service
             campaign_service = CampaignService(
-                campaign_code=campaign_code,
+                campaign_code=campaign_config_code,
                 language=language,
                 filter_1=filter_1,
                 filter_2=filter_2,
             )
 
-            if not campaigns.get(campaign_code):
-                campaigns[campaign_code] = []
-            campaigns[campaign_code].append(
+            if not campaigns.get(campaign_config_code):
+                campaigns[campaign_config_code] = []
+            campaigns[campaign_config_code].append(
                 campaign_service.get_campaign(
                     q_code=campaign_q_code,
                     include_list_of_ages=False,

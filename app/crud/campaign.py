@@ -30,7 +30,6 @@ from pandas import DataFrame
 
 from app import databases
 from app.databases import Database
-from app.enums.question_code import QuestionCode
 from app.schemas.country import Country
 from app.schemas.region import Region
 from app.schemas.response_column import ResponseColumn
@@ -38,12 +37,15 @@ from app.schemas.response_column import ResponseColumn
 inflect_engine = inflect.engine()
 
 
-class CampaignCRUD:
+class Campaign:
     def __init__(self, campaign_code: str, db: Database = None):
-        # If db is supplied, CRUD will read/write data to the db supplied instead
         if db:
             self.__db = db
         else:
+            db = databases.get_campaign_db(campaign_code=campaign_code)
+            if not db:
+                raise Exception(f"Could not find db for {campaign_code}.")
+
             self.__db = databases.get_campaign_db(campaign_code=campaign_code)
 
     def get_countries_list(self) -> list[Country]:
@@ -74,7 +76,7 @@ class CampaignCRUD:
 
         return []
 
-    def get_q_codes(self) -> list[QuestionCode]:
+    def get_q_codes(self) -> list[str]:
         """Get q codes"""
 
         q_codes = copy.copy(self.__db.q_codes)
@@ -171,15 +173,6 @@ class CampaignCRUD:
 
         return ""
 
-    def get_extra_stopwords(self) -> set[str]:
-        """Get extra stopwords"""
-
-        extra_stopwords = self.__db.extra_stopwords
-        if extra_stopwords:
-            return extra_stopwords.copy()
-
-        return set()
-
     def get_category_hierarchy(self) -> dict[str, dict]:
         """Get category hierarchy"""
 
@@ -205,10 +198,10 @@ class CampaignCRUD:
 
         return {}
 
-    def get_ngrams_unfiltered(self, q_code: QuestionCode) -> tuple:
+    def get_ngrams_unfiltered(self, q_code: str) -> tuple:
         """Get ngrams unfiltered"""
 
-        ngrams_unfiltered = self.__db.ngrams_unfiltered.get(q_code.value)
+        ngrams_unfiltered = self.__db.ngrams_unfiltered.get(q_code)
 
         if not ngrams_unfiltered:
             return ()
@@ -224,11 +217,11 @@ class CampaignCRUD:
         )
 
     def set_ngrams_unfiltered(
-        self, ngrams_unfiltered: dict[str, dict[str, int]], q_code: QuestionCode
+        self, ngrams_unfiltered: dict[str, dict[str, int]], q_code: str
     ):
         """Set ngrams unfiltered"""
 
-        self.__db.ngrams_unfiltered[q_code.value] = ngrams_unfiltered
+        self.__db.ngrams_unfiltered[q_code] = ngrams_unfiltered
 
     def set_response_years(self, response_years: list[str]):
         """Set response years"""
@@ -274,3 +267,8 @@ class CampaignCRUD:
         """Set dataframe"""
 
         self.__db.dataframe = df
+
+    def set_q_codes(self, q_codes: list[str]):
+        """Set q codes"""
+
+        self.__db.q_codes = q_codes

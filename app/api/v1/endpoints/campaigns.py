@@ -32,12 +32,11 @@ import requests
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import StreamingResponse
 
+from app import crud
 from app import databases
 from app import helpers
 from app import http_exceptions
 from app.api import dependencies
-from app.crud.campaign import CampaignCRUD
-from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -68,7 +67,7 @@ def read_campaign(
     _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     language: str = Depends(dependencies.language_check),
-    q_code: QuestionCode = Depends(dependencies.q_code_check),
+    q_code: str = Depends(dependencies.q_code_check),
     response_year: str = "",
 ):
     """Read campaign"""
@@ -149,7 +148,7 @@ def campaign_data(
     """Read campaign data"""
 
     # Get user
-    users = databases.get_users()
+    users = databases.get_users_from_databases()
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unknown user")
@@ -307,7 +306,7 @@ async def campaign_countries_breakdown(
     """Read campaign countries breakdown"""
 
     # CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
 
     # Get dataframe
     df = campaign_crud.get_dataframe()
@@ -348,7 +347,7 @@ async def campaign_source_files_breakdown(
     """Read campaign source files breakdown"""
 
     # CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
 
     # Get dataframe
     df = campaign_crud.get_dataframe()

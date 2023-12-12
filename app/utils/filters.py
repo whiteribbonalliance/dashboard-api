@@ -30,7 +30,7 @@ import inflect
 from pandas import DataFrame
 
 from app import constants
-from app.crud.campaign import CampaignCRUD
+from app.crud.campaign import Campaign
 from app.schemas.filter import Filter
 from app.utils import code_hierarchy
 from app.utils import q_col_names
@@ -58,7 +58,7 @@ def get_default_filter() -> Filter:
     )
 
 
-def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: CampaignCRUD) -> DataFrame:
+def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = _filter.countries

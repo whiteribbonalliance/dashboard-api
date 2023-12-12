@@ -27,10 +27,9 @@ import logging
 
 from fastapi import Depends
 
+from app import crud
 from app import databases
 from app import helpers, auth_handler, http_exceptions
-from app.crud.campaign import CampaignCRUD
-from app.enums.question_code import QuestionCode
 from app.logginglib import init_custom_logger
 from app.types import CloudService
 from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
@@ -56,11 +55,10 @@ def campaign_code_exists_check(
     Check if campaign code exists.
     """
 
-    if campaign_code.lower() in [x["code"].lower() for x in CAMPAIGNS_CONFIG]:
-        for campaign_config in CAMPAIGNS_CONFIG:
-            campaign_code = campaign_config["code"]
-            if campaign_code == campaign_code:
-                return campaign_code
+    for campaign_config in CAMPAIGNS_CONFIG:
+        campaign_config_code = campaign_config["code"]
+        if campaign_code == campaign_config_code:
+            return campaign_code
 
     raise http_exceptions.ResourceNotFoundHTTPException("Campaign not found.")
 
@@ -68,27 +66,22 @@ def campaign_code_exists_check(
 def q_code_check(
     campaign_code=Depends(campaign_code_exists_check),
     q_code: str = "q1",
-) -> QuestionCode:
+) -> str:
     """
     Check qcode.
     """
 
     # CRUD
-    campaign_crud = CampaignCRUD(campaign_code=campaign_code)
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
 
     # Verify q_code
-    q_code_verified = None
     for q in campaign_crud.get_q_codes():
-        if q.value == q_code:
-            q_code_verified = q
-            break
+        if q == q_code:
+            return q_code
 
-    if not q_code_verified:
-        raise http_exceptions.ResourceNotFoundHTTPException(
-            "Campaign does not have the provided q_code"
-        )
-
-    return q_code_verified
+    raise http_exceptions.ResourceNotFoundHTTPException(
+        "Campaign does not have the provided q_code"
+    )
 
 
 def language_check(
@@ -112,7 +105,7 @@ def user_is_admin_check(
     Check if user is admin.
     """
 
-    users = databases.get_users()
+    users = databases.get_users_from_databases()
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unknown user")
@@ -131,7 +124,7 @@ def user_exists_check(
     Check if user exists.
     """
 
-    users = databases.get_users()
+    users = databases.get_users_from_databases()
     db_user = users.get(username)
     if not db_user:
         raise http_exceptions.UnauthorizedHTTPException("Unknown user")
