@@ -132,10 +132,10 @@ dmypy.json
 .idea/
 
 # Credentials
-# credentials.json
+credentials.json
 
 # Front translations
-/front_translations/*
+front_translations/*
 !front_translations/.gitkeep
 !front_translations/to_translate.json
 
@@ -147,8 +147,9 @@ pmn01a.pkl
 wra03a.pkl
 wwwpakistan.pkl
 
-# CSV files
-pmn01a.csv
+# Data
+data/*
+!data/.gitkeep
 
 # Config
 campaigns-config.json

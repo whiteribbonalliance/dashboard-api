@@ -27,3 +27,14 @@ import json
 
 with open("campaigns-config.json", "r") as file:
     CAMPAIGNS_CONFIG = json.loads(file.read())
+
+    # Check for campaign codes that appear more than once
+    found_campaign_codes: list[str] = []
+    for campaign_config in CAMPAIGNS_CONFIG:
+        campaign_path = campaign_config["code"]
+        if campaign_path not in found_campaign_codes:
+            found_campaign_codes.append(campaign_path)
+        else:
+            raise Exception(
+                f"Campaign code {campaign_path} was found twice in campaigns-config.json."
+            )
