@@ -35,13 +35,123 @@ from google.oauth2 import service_account
 from pandas import DataFrame
 
 from app import databases
-from app.helpers import q_col_names, code_hierarchy
+from app.helpers import q_col_names
 from app.logginglib import init_custom_logger
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
 table_name = "wra_prod.responses"
+
+healthwellbeing_and_wwwpakistan_parent_categories_description = {
+    "DISEASE": "Physical Health and Nutrition",
+    "ENVIRO": "Environment and Infrastructure",
+    "HARM": "Freedom from Harm",
+    "HEALTHSYSTEM": "Health System",
+    "OPPORTUNITY": "Education & Economic Opportunity",
+    "POWER": "Power & Rights",
+    "SRMNCH": "Sexual, Reproductive, Maternal, Newborn & Child Health",
+    "WELLBEING": "Mental, Emotional & Social Wellbeing",
+    "OTHER": "Other",
+}
+
+healthwellbeing_and_wwwpakistan_category_hierarchy = {
+    "DISEASE": {
+        "Cancer": "Cancer",
+        "Food and Adequate Nutrition": "Food and Adequate Nutrition",
+        "Communicable Diseases": "Communicable Diseases",
+        "Non-Communicable Diseases": "Non-Communicable Diseases",
+        "Physical Activity and Rest": "Physical Activity and Rest",
+    },
+    "SRMNCH": {
+        "Sexual and Reproductive Health": "Sexual and Reproductive Health",
+        "Maternal, Newborn, Child Health": "Maternal, Newborn, Child Health",
+        "Menstrual & Menopausal Cycles": "Menstrual & Menopausal Cycles",
+    },
+    "ENVIRO": {
+        "Sustainable Energy & Agriculture": "Sustainable Energy & Agriculture",
+        "Water, Sanitation & Hygiene": "Water, Sanitation & Hygiene",
+        "Transportation and Road Safety": "Transportation and Road Safety",
+    },
+    "HEALTHSYSTEM": {
+        "Fully-functional and well-equipped Health Facilities": "Fully-functional and well-equipped Health Facilities",
+        "High Quality, Inclusive and Respectful Health Services": "High Quality, Inclusive and Respectful Health Services",
+        "Free, Affordable or Insured Healthcare": "Free, Affordable or Insured Healthcare",
+        "Health Workers": "Health Workers",
+    },
+    "HARM": {
+        "Safety": "Safety",
+        "No Harmful Practices and GBV": "No Harmful Practices and GBV",
+    },
+    "POWER": {
+        "Policy and Social Welfare": "Policy and Social Welfare",
+        "Autonomy, Equality, and Empowerment": "Autonomy, Equality, and Empowerment",
+    },
+    "OPPORTUNITY": {
+        "Education and Vocational Skills": "Education and Vocational Skills",
+        "Work & Financial Support": "Work & Financial Support",
+    },
+    "WELLBEING": {
+        "Mental Health": "Mental Health",
+        "Interpersonal Relationships and Social Support": "Interpersonal Relationships and Social Support",
+    },
+    "OTHER": {"All other demands": "All other demands"},
+}
+
+wra03a_category_hierarchy = {
+    "NA": {
+        "BETTERFACILITIES": "Increased, fully functional and closer health facilities",
+        "FREE": "Free and affordable care",
+        "HEALTH": "General health and health services",
+        "HEALTHPROFESSIONALS": "Increased, competent, and better supported health workers",
+        "INFORMATION": "Counseling, information and awareness",
+        "OTHERNONDETERMINABLE": "All other requests",
+        "POWER": "Power, rights, economic and gender equality",
+        "RESPECTFULCARE": "Respectful, dignified, non-discriminatory care",
+        "SEXUALREPRODUCTIVEHEALTH": "Sexual, reproductive, maternal, labor, postnatal and newborn health services",
+        "SUPPLIES": "Medicines and supplies",
+    }
+}
+
+pmn01a_category_hierarchy = {
+    "NA": {
+        "EDUCATION": "Learning, competence, education, skills and employability",
+        "ENVIRONMENT": "Environment",
+        "HEALTH": "Good health and optimum nutrition",
+        "MENTALHEALTH": "Connectedness, positive values and contribution to society",
+        "POWER": "Agency and resilience",
+        "SAFETY": "Safety and a supportive environment",
+        "OTHER": "All other requests",
+    }
+}
+
+midwife_category_hierarchy = (
+    {
+        "NA": {
+            "BETTERFACILITIESANDSUPPLIES": "Supplies and functional facilities",
+            "DIGNITY": "Respect, dignity, and non-discrimination",
+            "POLICY": "Power, autonomy and improved gender norms and policies",
+            "HEALTHANDSERVICES": "General health and health services",
+            "OTHER": "All other requests",
+            "PROFDEV": "Professional development and leadership",
+            "STAFFINGANDREMUNERATION": "More and better supported personnel",
+        }
+    },
+)
+
+giz_category_hierarchy = (
+    {
+        "NA": {
+            "CONDITIONS": "Conditions",
+            "EDUCATION": "Education",
+            "HEALTH": "Health",
+            "OPPORTUNITIES": "Opportunities",
+            "PAY": "Pay",
+            "PROTECTIONS": "Protections",
+            "TRANSPORTATION": "Transportation",
+        }
+    },
+)
 
 
 def save_df_as_csv(campaign_code: str) -> DataFrame:
@@ -200,10 +310,42 @@ def __parse_df(campaign_code: str, df: pd.DataFrame) -> pd.DataFrame:
             )
         ]
 
+    # Category hierarchy
+    if campaign_code == "wra03a":
+        category_hierarchy = wra03a_category_hierarchy
+        parent_category_descriptions = {}
+    elif campaign_code == "pmn01a":
+        category_hierarchy = pmn01a_category_hierarchy
+        parent_category_descriptions = {}
+    elif campaign_code == "healthwellbeing":
+        category_hierarchy = healthwellbeing_and_wwwpakistan_category_hierarchy
+        parent_category_descriptions = (
+            healthwellbeing_and_wwwpakistan_parent_categories_description
+        )
+    elif campaign_code == "wwwpakistan":
+        category_hierarchy = healthwellbeing_and_wwwpakistan_category_hierarchy
+        parent_category_descriptions = (
+            healthwellbeing_and_wwwpakistan_parent_categories_description
+        )
+    elif campaign_code == "midwife":
+        category_hierarchy = midwife_category_hierarchy
+        parent_category_descriptions = {}
+    elif campaign_code == "giz":
+        category_hierarchy = giz_category_hierarchy
+        parent_category_descriptions = {}
+    else:
+        category_hierarchy = {}
+        parent_category_descriptions = {}
+
     # Get mapping to parent category
-    mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
-        campaign_code=campaign_code
+    mapping_to_parent_category = __get_mapping_code_to_parent_category(
+        category_hierarchy=category_hierarchy
     )
+
+    # # Get mapping to description
+    # mapping_to_description = __get_mapping_code_to_description(
+    #     category_hierarchy=category_hierarchy, parent_categories_descriptions=parent_category_descriptions
+    # )
 
     # Add parent_category column
     for q_code in campaign_q_codes:
@@ -212,6 +354,17 @@ def __parse_df(campaign_code: str, df: pd.DataFrame) -> pd.DataFrame:
         ].apply(
             lambda x: __get_parent_category(
                 sub_categories=x, mapping_to_parent_category=mapping_to_parent_category
+            )
+        )
+
+    # Add category_description column
+    for q_code in campaign_q_codes:
+        df[q_col_names.get_parent_category_description_col_name(q_code=q_code)] = df[
+            q_col_names.get_parent_category_description_col_name(q_code=q_code)
+        ].apply(
+            lambda x: __get_mapping_code_to_description(
+                category_hierarchy=category_hierarchy,
+                parent_categories_descriptions=parent_category_descriptions,
             )
         )
 
@@ -344,3 +497,43 @@ def __get_parent_category(sub_categories: str, mapping_to_parent_category: dict)
         return "/".join(parent_categories)
     else:
         return ""
+
+
+def __get_mapping_code_to_code(category_hierarchy: dict) -> dict:
+    """Get mapping 'code to code'"""
+
+    mapping_code_to_code = {}
+    for parent_category, sub_categories in category_hierarchy.items():
+        mapping_code_to_code[parent_category] = parent_category
+        for code, description in sub_categories.items():
+            mapping_code_to_code[code] = code
+
+    return mapping_code_to_code
+
+
+def __get_mapping_code_to_description(
+    category_hierarchy: dict, parent_categories_descriptions: dict
+) -> dict:
+    """Get mapping 'code to description'"""
+
+    mapping_code_to_description = {}
+    for parent_category, sub_categories in category_hierarchy.items():
+        mapping_code_to_description[
+            parent_category
+        ] = parent_categories_descriptions.get(parent_category, parent_category)
+        for code, description in sub_categories.items():
+            mapping_code_to_description[code] = description
+
+    return mapping_code_to_description
+
+
+def __get_mapping_code_to_parent_category(category_hierarchy: dict) -> dict:
+    """Get mapping 'code to parent category'"""
+
+    mapping_code_to_parent_category = {}
+    for parent_category, sub_categories in category_hierarchy.items():
+        mapping_code_to_parent_category[parent_category] = parent_category
+        for code, description in sub_categories.items():
+            mapping_code_to_parent_category[code] = parent_category
+
+    return mapping_code_to_parent_category

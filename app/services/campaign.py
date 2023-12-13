@@ -36,7 +36,7 @@ import pandas as pd
 from app import constants, utils
 from app import crud
 from app import global_variables
-from app.helpers import code_hierarchy
+from app.helpers import category_hierarchy
 from app.helpers import filters
 from app.helpers import q_col_names
 from app.logginglib import init_custom_logger
@@ -690,7 +690,7 @@ class CampaignService:
         parent_categories = set()
 
         mapping_code_to_parent_category = (
-            code_hierarchy.get_mapping_code_to_parent_category(
+            category_hierarchy.get_mapping_code_to_parent_category_code(
                 campaign_code=self.__campaign_code
             )
         )
@@ -768,7 +768,7 @@ class CampaignService:
     def __get_code_descriptions(self, code: str) -> str:
         """Get code descriptions"""
 
-        mapping_to_description = code_hierarchy.get_mapping_code_to_description(
+        mapping_to_description = category_hierarchy.get_mapping_code_to_description(
             campaign_code=self.__campaign_code
         )
 
@@ -923,14 +923,14 @@ class CampaignService:
 
                 # Set code
                 df[code_col_name] = df[label_col_name].map(
-                    code_hierarchy.get_mapping_code_to_code(
+                    category_hierarchy.get_mapping_code_to_code(
                         campaign_code=self.__campaign_code
                     )
                 )
 
                 # Set description column
                 df[description_col_name] = df[label_col_name].map(
-                    code_hierarchy.get_mapping_code_to_description(
+                    category_hierarchy.get_mapping_code_to_description(
                         campaign_code=self.__campaign_code
                     )
                 )
@@ -998,7 +998,7 @@ class CampaignService:
                 ]
 
             mapping_code_to_parent_category = (
-                code_hierarchy.get_mapping_code_to_parent_category(
+                category_hierarchy.get_mapping_code_to_parent_category_code(
                     campaign_code=self.__campaign_code
                 )
             )
@@ -1384,30 +1384,27 @@ class CampaignService:
     def __get_response_topics(self) -> list[ResponseTopic]:
         """Get response topics"""
 
-        hierarchy = self.__crud.get_category_hierarchy()
-        parent_categories_descriptions = (
-            self.__crud.get_parent_categories_descriptions()
-        )
+        parent_categories = self.__crud.get_parent_categories()
         response_topics = []
 
-        for parent_category, sub_categories in hierarchy.items():
+        for parent_category in parent_categories:
             # Add the parent category (skip if 'NA')
-            if parent_category != "NA":
+            if parent_category.code != "NA":
                 # Parent category has no description
                 response_topics.append(
                     ResponseTopic(
-                        code=parent_category,
-                        name=parent_categories_descriptions.get(
-                            parent_category, parent_category
-                        ),
+                        code=parent_category.code,
+                        name=parent_category.description,
                         is_parent=True,
                     )
                 )
 
             # Add the sub-category
-            for code, description in sub_categories.items():
+            for sub_category in parent_category.sub_categories:
                 # Sub-category has description
-                response_topics.append(ResponseTopic(code=code, name=description))
+                response_topics.append(
+                    ResponseTopic(code=sub_category.code, name=sub_category.description)
+                )
 
         return response_topics
 
@@ -1806,8 +1803,7 @@ class CampaignService:
                 canonical_country,
                 region,
             ), value in region_counts.items():
-                # TODO: Check empty region
-                if not region:
+                if region:
                     coordinate_country = constants.COUNTRY_COORDINATE[alpha2country]
                     region_coordinates.append(
                         {
@@ -1818,7 +1814,6 @@ class CampaignService:
                             "lon": coordinate_country[1],
                         }
                     )
-                    continue
 
                 country_regions_coordinates = global_variables.region_coordinates.get(
                     alpha2country

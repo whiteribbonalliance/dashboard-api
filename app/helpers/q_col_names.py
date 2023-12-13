@@ -36,6 +36,12 @@ def get_canonical_code_col_name(q_code: str) -> str:
     return f"{q_code}_canonical_code"
 
 
+def get_parent_category_description_col_name(q_code: str) -> str:
+    """Get parent category description column name"""
+
+    return f"{q_code}_parent_category_description"
+
+
 def get_parent_category_col_name(q_code: str) -> str:
     """Get parent category column name"""
 

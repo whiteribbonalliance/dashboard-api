@@ -52,7 +52,7 @@ if settings.STAGE == "dev" and settings.ONLY_PMNCH:
     utils.create_pmnch_main_dir_if_not_exists()
 
 # Create in-memory Database objects
-databases.create_databases(campaign_codes=[x["code"] for x in CAMPAIGNS_CONFIG])
+databases.create_databases(campaign_codes=[x.code for x in CAMPAIGNS_CONFIG.values()])
 
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,

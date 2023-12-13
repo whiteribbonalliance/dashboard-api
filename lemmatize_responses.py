@@ -18,20 +18,16 @@ def lemmatize_all_data():
     Lemmatize all data.
     """
 
-    for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_config_code = campaign_config["code"]
-        campaign_config_file = campaign_config["file"]
-
-        if campaign_config_code in constants.LEGACY_CAMPAIGN_CODES:
+    for campaign_config in CAMPAIGNS_CONFIG.values():
+        if campaign_config.code in constants.LEGACY_CAMPAIGN_CODES:
             continue
 
-        print(f"Lemmatizing responses in {campaign_config_file}...")
-
-        # File path
-        filepath = os.path.join("data", campaign_config_file)
+        print(f"Lemmatizing responses in {campaign_config.filename}...")
 
         # Load dataframe
-        df = pd.read_csv(filepath_or_buffer=filepath, keep_default_na=False)
+        df = pd.read_csv(
+            filepath_or_buffer=campaign_config.filepath, keep_default_na=False
+        )
 
         # Get all raw response columns
         raw_response_columns = []
@@ -54,7 +50,7 @@ def lemmatize_all_data():
             # Lemmatize
             df[lemmatized_column_name] = df[column].apply(lemmatize_text)
 
-            df.to_csv(path_or_buf=filepath, index=False, header=True)
+            df.to_csv(path_or_buf=campaign_config.filepath, index=False, header=True)
 
 
 def lemmatize_text(text: str) -> str:

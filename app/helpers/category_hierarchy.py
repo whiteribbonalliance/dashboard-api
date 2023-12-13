@@ -27,48 +27,42 @@ from app import crud
 
 
 def get_mapping_code_to_code(campaign_code: str) -> dict:
-    """Get mapping 'code to code'"""
+    """Get mapping code to code"""
 
     campaign_crud = crud.Campaign(campaign_code=campaign_code)
-
-    hierarchy = campaign_crud.get_category_hierarchy()
+    parent_categories = campaign_crud.get_parent_categories()
     mapping_code_to_code = {}
-    for parent_category, sub_categories in hierarchy.items():
-        mapping_code_to_code[parent_category] = parent_category
-        for code, description in sub_categories.items():
-            mapping_code_to_code[code] = code
+    for parent_category in parent_categories:
+        mapping_code_to_code[parent_category.code] = parent_category.code
+        for sub_category in parent_category.sub_categories:
+            mapping_code_to_code[sub_category.code] = sub_category.code
 
     return mapping_code_to_code
 
 
 def get_mapping_code_to_description(campaign_code: str) -> dict:
-    """Get mapping 'code to description'"""
+    """Get mapping code to description"""
 
     campaign_crud = crud.Campaign(campaign_code=campaign_code)
-    parent_categories_descriptions = campaign_crud.get_parent_categories_descriptions()
-
-    category_hierarchy = campaign_crud.get_category_hierarchy()
+    parent_categories = campaign_crud.get_parent_categories()
     mapping_code_to_description = {}
-    for parent_category, sub_categories in category_hierarchy.items():
-        mapping_code_to_description[
-            parent_category
-        ] = parent_categories_descriptions.get(parent_category, parent_category)
-        for code, description in sub_categories.items():
-            mapping_code_to_description[code] = description
+    for parent_category in parent_categories:
+        mapping_code_to_description[parent_category.code] = parent_category.description
+        for sub_category in parent_category.sub_categories:
+            mapping_code_to_description[sub_category.code] = sub_category.description
 
     return mapping_code_to_description
 
 
-def get_mapping_code_to_parent_category(campaign_code: str) -> dict:
-    """Get mapping 'code to parent category'"""
+def get_mapping_code_to_parent_category_code(campaign_code: str) -> dict:
+    """Get mapping code to parent category code"""
 
     campaign_crud = crud.Campaign(campaign_code=campaign_code)
-
-    category_hierarchy = campaign_crud.get_category_hierarchy()
+    parent_categories = campaign_crud.get_parent_categories()
     mapping_code_to_parent_category = {}
-    for parent_category, sub_categories in category_hierarchy.items():
-        mapping_code_to_parent_category[parent_category] = parent_category
-        for code, description in sub_categories.items():
-            mapping_code_to_parent_category[code] = parent_category
+    for parent_category in parent_categories:
+        mapping_code_to_parent_category[parent_category.code] = parent_category.code
+        for sub_category in parent_category.sub_categories:
+            mapping_code_to_parent_category[sub_category.code] = parent_category.code
 
     return mapping_code_to_parent_category

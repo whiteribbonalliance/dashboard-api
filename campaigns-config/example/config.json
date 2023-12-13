@@ -1,0 +1,16 @@
+{
+  "code": "example",
+  "filename": "example.csv",
+  "parent_categories": [
+    {
+      "code": "PARENT_CATEGORY_CODE",
+      "description": "PARENT_CATEGORY_DESCRIPTION",
+      "sub_categories": [
+        {
+          "code": "SUB_CATEGORY_CODE",
+          "description": "SUB_CATEGORY_DESCRIPTION"
+        }
+      ]
+    }
+  ]
+}

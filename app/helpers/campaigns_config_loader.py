@@ -26,31 +26,43 @@ SOFTWARE.
 import json
 import os
 
-config_file = "campaigns-config.json"
+from pydantic import ValidationError
 
-with open(config_file, "r") as file:
-    CAMPAIGNS_CONFIG = json.loads(file.read())
+from app.schemas.campaign_config import CampaignConfig
 
-    # List to heck for campaign codes that appear more than once
-    found_campaign_codes: list[str] = []
+CAMPAIGNS_CONFIG: dict[str, CampaignConfig] = {}
 
-    for campaign_config in CAMPAIGNS_CONFIG:
-        # Check if values are not empty
-        campaign_code = campaign_config.get("code")
-        campaign_file = campaign_config.get("file")
-        if not campaign_code:
-            raise Exception(f"A campaign code was not specified in {config_file}.")
-        if not campaign_file:
-            raise Exception(f"A campaign file was not specified in {config_file}.")
+campaigns_config_folder = "campaigns-config"
 
-        # Check if file exists
-        if not os.path.isfile(os.path.join("data", campaign_file)):
-            raise Exception(f"File {campaign_file} was not found in data folder.")
+for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
+    # Check if it is a folder
+    if not os.path.isdir(os.path.join(campaigns_config_folder, config_folder)):
+        continue
 
-        # Check for duplicates
-        if campaign_code not in found_campaign_codes:
-            found_campaign_codes.append(campaign_code)
-        else:
-            raise Exception(
-                f"Campaign code {campaign_code} was specified twice in {config_file}."
-            )
+    if config_folder == "example":
+        continue
+
+    # Load config
+    config_json = os.path.join(campaigns_config_folder, config_folder, "config.json")
+    if os.path.isfile(config_json):
+        with open(config_json, "r") as file:
+            try:
+                config = CampaignConfig.parse_obj(json.loads(file.read()))
+            except ValidationError:
+                raise Exception(
+                    f"Invalid configuration found at config folder {config_folder}."
+                )
+
+    # Check if CSV file exists
+    csv_file = os.path.join(campaigns_config_folder, config_folder, config.filename)
+    if not os.path.isfile(csv_file):
+        raise Exception(
+            f"File {config.filename} was not found in config folder {config_folder}."
+        )
+    config.filepath = os.path.join(csv_file)
+
+    # Check for duplicate campaign code
+    if config.code not in CAMPAIGNS_CONFIG:
+        CAMPAIGNS_CONFIG[config.code] = config
+    else:
+        raise Exception(f"Duplicate campaign code found {config.code}.")

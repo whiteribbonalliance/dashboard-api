@@ -30,6 +30,7 @@ from pandas import DataFrame
 
 from app import databases
 from app.databases import Database
+from app.schemas.category import ParentCategory
 from app.schemas.country import Country
 from app.schemas.region import Region
 from app.schemas.response_column import ResponseColumn
@@ -173,14 +174,14 @@ class Campaign:
 
         return ""
 
-    def get_category_hierarchy(self) -> dict[str, dict]:
-        """Get category hierarchy"""
-
-        category_hierarchy = self.__db.category_hierarchy
-        if category_hierarchy:
-            return copy.deepcopy(category_hierarchy)
-
-        return {}
+    # def get_category_hierarchy(self) -> dict[str, dict]:
+    #     """Get category hierarchy"""
+    #
+    #     category_hierarchy = self.__db.category_hierarchy
+    #     if category_hierarchy:
+    #         return copy.deepcopy(category_hierarchy)
+    #
+    #     return {}
 
     def get_dataframe(self) -> DataFrame:
         """Get dataframe"""
@@ -189,14 +190,14 @@ class Campaign:
 
         return dataframe.copy()
 
-    def get_parent_categories_descriptions(self) -> dict[str, str]:
-        """Get parent categories descriptions"""
+    def get_parent_categories(self) -> list[ParentCategory]:
+        """Get parent categories"""
 
-        parent_categories_descriptions = self.__db.parent_categories_descriptions
+        parent_categories_descriptions = self.__db.parent_categories
         if parent_categories_descriptions:
             return parent_categories_descriptions.copy()
 
-        return {}
+        return []
 
     def get_ngrams_unfiltered(self, q_code: str) -> tuple:
         """Get ngrams unfiltered"""

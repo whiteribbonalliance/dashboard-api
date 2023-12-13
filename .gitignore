@@ -147,12 +147,12 @@ pmn01a.pkl
 wra03a.pkl
 wwwpakistan.pkl
 
-# Data
-data/*
-!data/.gitkeep
+# Campaigns config
+campaigns-config/*
+!campaigns-config/example
 
 # Config
-campaigns-config.json
+
 
 # Test
 test.py

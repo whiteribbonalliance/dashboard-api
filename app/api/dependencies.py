@@ -55,9 +55,8 @@ def campaign_code_exists_check(
     Check if campaign code exists.
     """
 
-    for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_config_code = campaign_config["code"]
-        if campaign_code == campaign_config_code:
+    if campaign_config := CAMPAIGNS_CONFIG.get(campaign_code):
+        if campaign_code == campaign_config.code:
             return campaign_code
 
     raise http_exceptions.ResourceNotFoundHTTPException("Campaign not found.")

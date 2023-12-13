@@ -26,7 +26,6 @@ SOFTWARE.
 import copy
 import json
 import logging
-import os
 
 import pandas as pd
 
@@ -130,11 +129,6 @@ def load_campaign_data(campaign_code: str):
         lambda x: constants.COUNTRIES_DATA[x]["name"]
     )
 
-    # Set ages
-    ages = df_responses["age"].unique().tolist()
-    ages = [age for age in ages if age]
-    campaign_crud.set_ages(ages=ages)
-
     # Age bucket
     # Note: Campaigns wra03a and midwife already contain age as an age bucket
     if campaign_code == "wra03a" or campaign_code == "midwife":
@@ -151,6 +145,11 @@ def load_campaign_data(campaign_code: str):
         df_responses["age_bucket_default"] = df_responses["age"].apply(
             lambda x: get_age_bucket(age=x)
         )
+
+    # Set ages
+    ages = df_responses["age"].unique().tolist()
+    ages = [age for age in ages if age]
+    campaign_crud.set_ages(ages=ages)
 
     # Set age buckets
     age_buckets = df_responses["age_bucket"].unique().tolist()
@@ -233,7 +232,7 @@ def load_campaign_data(campaign_code: str):
 
 def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     """
-    Get campaign dataframe.
+    Load campaign dataframe from CSV file.
     """
 
     # if settings.ONLY_PMNCH and campaign_code == "pmn01a":
@@ -243,14 +242,15 @@ def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     #         filepath_or_buffer=f"{mount_path}/what_young_people_want.pkl",
     #     )
 
-    for campaign_config in CAMPAIGNS_CONFIG:
-        if campaign_config["code"] == campaign_code:
+    for campaign_config in CAMPAIGNS_CONFIG.values():
+        if campaign_config.code == campaign_code:
             df = pd.read_csv(
-                filepath_or_buffer=os.path.join("data", campaign_config["file"]),
+                filepath_or_buffer=campaign_config.filepath,
                 keep_default_na=False,
                 dtype={"age": str, "response_year": str},
             )
 
+            # To datetime
             if "ingestion_time" in df.columns.tolist():
                 df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
 
@@ -391,8 +391,8 @@ def reload_data(
 def load_campaigns_data():
     """Load campaigns data"""
 
-    for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_config_code = campaign_config["code"]
+    for campaign_config in CAMPAIGNS_CONFIG.values():
+        campaign_config_code = campaign_config.code
 
         # Only load data for what_young_people_want
         if settings.ONLY_PMNCH:
@@ -439,7 +439,7 @@ def load_region_coordinates():
 
     # Get new region coordinates (if coordinate is not in region_coordinates.json)
     focused_on_country_campaigns_codes = []
-    for campaign_code in [x["code"] for x in CAMPAIGNS_CONFIG]:
+    for campaign_code in [x.code for x in CAMPAIGNS_CONFIG.values()]:
         if campaign_code == "giz" or campaign_code == "wwwpakistan":
             focused_on_country_campaigns_codes.append(campaign_code)
 

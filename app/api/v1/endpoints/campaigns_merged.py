@@ -65,11 +65,9 @@ def read_campaigns_merged(
 
     # Get all campaigns data
     campaigns: dict[str, list[Campaign]] = {}
-    for campaign_config in CAMPAIGNS_CONFIG:
-        campaign_config_code = campaign_config["code"]
-
+    for campaign_config in CAMPAIGNS_CONFIG.values():
         # CRUD
-        campaign_crud = crud.Campaign(campaign_code=campaign_config_code)
+        campaign_crud = crud.Campaign(campaign_code=campaign_config.code)
 
         # Campaign q codes
         campaign_q_codes = campaign_crud.get_q_codes()
@@ -78,15 +76,15 @@ def read_campaigns_merged(
         for campaign_q_code in campaign_q_codes:
             # Campaign service
             campaign_service = CampaignService(
-                campaign_code=campaign_config_code,
+                campaign_code=campaign_config.code,
                 language=language,
                 filter_1=filter_1,
                 filter_2=filter_2,
             )
 
-            if not campaigns.get(campaign_config_code):
-                campaigns[campaign_config_code] = []
-            campaigns[campaign_config_code].append(
+            if not campaigns.get(campaign_config.code):
+                campaigns[campaign_config.code] = []
+            campaigns[campaign_config.code].append(
                 campaign_service.get_campaign(
                     q_code=campaign_q_code,
                     include_list_of_ages=False,
@@ -121,10 +119,10 @@ def read_filter_options(
 
     # Get all campaigns filter options
     campaigns_filter_options: list[dict] = []
-    for campaign_config in CAMPAIGNS_CONFIG:
+    for campaign_config in CAMPAIGNS_CONFIG.values():
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_config["code"], language=language
+            campaign_code=campaign_config.code, language=language
         )
 
         # Filter options
@@ -155,10 +153,10 @@ def histogram_options(
 
     # Get all campaigns histogram options
     campaigns_histogram_options: list[list[dict]] = []
-    for campaign_config in CAMPAIGNS_CONFIG:
+    for campaign_config in CAMPAIGNS_CONFIG.values():
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_config["code"], language=language
+            campaign_code=campaign_config.code, language=language
         )
 
         # Histogram options

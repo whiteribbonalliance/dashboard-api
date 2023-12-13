@@ -31,7 +31,7 @@ from pandas import DataFrame
 
 from app import constants
 from app.crud.campaign import Campaign
-from app.helpers import code_hierarchy
+from app.helpers import category_hierarchy
 from app.helpers import q_col_names
 from app.schemas.filter import Filter
 
@@ -271,7 +271,7 @@ def generate_description_of_filter(
         description += generate_age_description(ages=ages)
 
     # Response topics
-    mapping_to_description = code_hierarchy.get_mapping_code_to_description(
+    mapping_to_description = category_hierarchy.get_mapping_code_to_description(
         campaign_code=campaign_code
     )
     response_topics_mentioned = list(
