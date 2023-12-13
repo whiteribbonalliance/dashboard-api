@@ -139,20 +139,9 @@ front_translations/*
 !front_translations/.gitkeep
 !front_translations/to_translate.json
 
-# Pickle files
-giz.pkl
-healthwellbeing.pkl
-midwife.pkl
-pmn01a.pkl
-wra03a.pkl
-wwwpakistan.pkl
-
 # Campaigns config
 campaigns-config/*
 !campaigns-config/example
-
-# Config
-
 
 # Test
 test.py

@@ -77,10 +77,13 @@ Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
 ## How to add a new campaign
 
-1. Add campaign code to `app/enums/campaign_code.py`.
-2. Create new database for campaign at `app/databases.py` and add the new database to `databases` dictionary.
-3. In `app/services/campaign.py` modify any of the functions if needed for the campaign.
-4. In `app/databases.py` include the new `q_cdoe` for the campaign.
+1. Create a new config folder at `campaigns-config/[FOLDER_NAME]`.
+2. Inside the new folder create the file `config.json` (copy `config.json`
+   from `campaigns-config/example/config.json`).
+3. Include the CSV file in the new folder.
+4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `filename`.
+5. At `parent_categories` use the example data structure to build a new list of categories. This is a list of
+   parent-categories and each parent-category can include a list of sub-categories.
 
 ## PMNCH - Azure deployment
 
