@@ -341,10 +341,13 @@ class CampaignService:
             )
 
         # All questions
-        all_questions = [
-            Question(code=k, question=v)
-            for k, v in self.__campaign_config.questions.items()
-        ]
+        campaign_q_codes = [x for x in self.__crud.get_q_codes()]
+        all_questions = []
+        for campaign_q_code in campaign_q_codes:
+            if question := self.__campaign_config.questions.get(campaign_q_code):
+                all_questions.append(Question(code=campaign_q_code, question=question))
+            else:
+                all_questions.append(Question(code=campaign_q_code, question=""))
         if not all_questions:
             all_questions.append(Question(code=q_code, question=""))
 

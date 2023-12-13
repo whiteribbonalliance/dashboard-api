@@ -41,3 +41,13 @@ class CampaignConfig(BaseModel):
             return None
 
         return v
+
+    @validator("questions", pre=True)
+    def question_check(cls, v):
+        for key, value in v.items():
+            if not key.startswith("q"):
+                return None
+            if not key.replace("q", "", 1).isnumeric():
+                return None
+
+        return v
