@@ -31,6 +31,7 @@ from app.helpers import filters
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
+from app.schemas.q_code import Question
 from app.services.translator import Translator
 from app.types import FilterSequence
 
@@ -122,7 +123,7 @@ class CampaignsMergedService:
 
         return Campaign(
             campaign_code="",
-            q_code="",
+            question=Question(code="", question=""),
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
             living_settings_breakdown=[],
@@ -139,7 +140,7 @@ class CampaignsMergedService:
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
-            all_q_codes=[],
+            all_questions=[],
             included_response_years=[],
             all_response_years=[],
         )

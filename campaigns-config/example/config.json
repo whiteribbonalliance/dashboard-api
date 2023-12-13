@@ -1,6 +1,9 @@
 {
   "code": "example",
   "filename": "example.csv",
+  "questions": {
+    "q1": ""
+  },
   "parent_categories": [
     {
       "code": "PARENT_CATEGORY_CODE",

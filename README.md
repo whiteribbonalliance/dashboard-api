@@ -101,7 +101,9 @@ columns `q2_response` and `q2_canonical_code`.
    from `campaigns-config/example/config.json`).
 3. Include the CSV file in the new folder.
 4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `filename`.
-5. At `parent_categories` use the example data structure to build a new list of categories. This is a list of
+5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
+   at `questions`.
+6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
    parent-categories and each parent-category can include a list of sub-categories.
 
 ## PMNCH - Azure deployment

@@ -31,6 +31,7 @@ from app.schemas.category import ParentCategory
 class CampaignConfig(BaseModel):
     code: str = Field(min_length=1)
     filename: str = Field(min_length=1)
+    questions: dict[str, str]
     filepath: str = ""
     parent_categories: list[ParentCategory]
 

@@ -50,7 +50,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
                 config = CampaignConfig.parse_obj(json.loads(file.read()))
             except ValidationError:
                 raise Exception(
-                    f"Invalid configuration found at config folder {config_folder}."
+                    f"Could not validate configuration found in config folder {config_folder}."
                 )
 
     # Check if CSV file exists

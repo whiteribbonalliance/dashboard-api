@@ -37,8 +37,8 @@
       "lon": -99.2267067
     },
     "Tlalpan, Ciudad de M\u00e9xico": {
-      "lat": 19.2777349,
-      "lon": -99.1644701
+      "lat": 19.2790911,
+      "lon": -99.2114234
     },
     "Benito Ju\u00e1rez, Ciudad de M\u00e9xico": {
       "lat": 19.3794059,
@@ -53,16 +53,16 @@
       "lon": -99.09768079999999
     },
     "Tl\u00e1huac, Ciudad de M\u00e9xico": {
-      "lat": 19.2990233,
-      "lon": -99.0436467
+      "lat": 19.2907374,
+      "lon": -99.04052490000001
     },
     "Coyoac\u00e1n, Ciudad de M\u00e9xico": {
       "lat": 19.3437444,
       "lon": -99.1561883
     },
     "Iztapalapa, Ciudad de M\u00e9xico": {
-      "lat": 19.3467093,
-      "lon": -99.0798926
+      "lat": 19.342083,
+      "lon": -99.05321590000001
     }
   },
   "PK": {
@@ -70,13 +70,13 @@
       "lat": 29.35435,
       "lon": 71.69106599999999
     },
-    "Kamber Shahdad Kot, Sindh": {
-      "lat": 27.5859189,
-      "lon": 68.0060183
-    },
     "Nowshera, KP": {
       "lat": 34.0104643,
       "lon": 71.9875531
+    },
+    "Qambar Shahdadkot, Sindh": {
+      "lat": 27.5859189,
+      "lon": 68.0060183
     },
     "Shikarpur, Sindh": {
       "lat": 27.9570397,
@@ -105,10 +105,6 @@
     "Mardan, KP": {
       "lat": 34.1986394,
       "lon": 72.0404293
-    },
-    "Qambar Shahdadkot, Sindh": {
-      "lat": 27.5859189,
-      "lon": 68.0060183
     },
     "Rahim Yar Khan, Punjab": {
       "lat": 28.4211565,

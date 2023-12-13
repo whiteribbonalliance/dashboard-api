@@ -40,6 +40,7 @@ from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import category_hierarchy
 from app.helpers import filters
 from app.helpers import q_col_names
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.country import Country
@@ -47,6 +48,7 @@ from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.option_bool import OptionBool
 from app.schemas.option_str import OptionStr
+from app.schemas.q_code import Question
 from app.schemas.response_column import ResponseColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import azure_blob_storage_interactions
@@ -71,6 +73,8 @@ class CampaignService:
     ):
         # Campaign code
         self.__campaign_code = campaign_code
+
+        self.__campaign_config = CAMPAIGNS_CONFIG.get(self.__campaign_code)
 
         # CRUD
         self.__crud = crud.Campaign(campaign_code=self.__campaign_code)
@@ -275,9 +279,6 @@ class CampaignService:
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
 
-        # Question codes
-        all_q_codes = [x for x in self.__crud.get_q_codes()]
-
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
@@ -339,10 +340,21 @@ class CampaignService:
                 f"An error occurred during translation of 'campaign': {str(e)}"
             )
 
+        # All questions
+        all_questions = [
+            Question(code=k, question=v)
+            for k, v in self.__campaign_config.questions.items()
+        ]
+        if not all_questions:
+            all_questions.append(Question(code=q_code, question=""))
+
         return Campaign(
             campaign_code=self.__campaign_code,
-            q_code=q_code,
-            all_q_codes=all_q_codes,
+            question=Question(
+                code=q_code,
+                question=self.__campaign_config.questions.get(q_code, ""),
+            ),
+            all_questions=all_questions,
             included_response_years=included_response_years,
             all_response_years=self.__all_response_years,
             responses_sample=responses_sample,

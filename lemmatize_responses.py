@@ -37,9 +37,9 @@ nltk.download("wordnet")
 nltk.download("punkt")
 
 
-def lemmatize_all_data():
+def lemmatize_all_responses():
     """
-    Lemmatize all data.
+    Lemmatize all responses.
     """
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
@@ -56,13 +56,11 @@ def lemmatize_all_data():
         # Get q codes
         q_codes = q_codes_finder.find_in_df(df=df)
 
-        for q_code_number in q_codes:
-            response_column = f"q{q_code_number}_response"
+        for q_code in q_codes:
+            response_column = f"{q_code}_response"
 
             # Lemmatize
-            lemmatized_column_name = q_col_names.get_lemmatized_col_name(
-                q_code=q_code_number
-            )
+            lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
             df[lemmatized_column_name] = df[response_column].apply(lemmatize_text)
 
             df.to_csv(path_or_buf=campaign_config.filepath, index=False, header=True)
@@ -79,4 +77,4 @@ def lemmatize_text(text: str) -> str:
         return " ".join(lemmatize_sentence(sentence=text))
 
 
-lemmatize_all_data()
+lemmatize_all_responses()

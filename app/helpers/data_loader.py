@@ -396,22 +396,20 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
-        campaign_config_code = campaign_config.code
-
         # Only load data for what_young_people_want
         if settings.ONLY_PMNCH:
-            if campaign_config_code != LegacyCampaignCode.pmn01a.value:
+            if campaign_config.code != LegacyCampaignCode.pmn01a.value:
                 continue
 
-        print(f"INFO:\t  Loading data for campaign {campaign_config_code}...")
+        print(f"INFO:\t  Loading data for campaign {campaign_config.code}...")
 
         try:
-            load_campaign_data(campaign_code=campaign_config_code)
-            load_campaign_ngrams_unfiltered(campaign_code=campaign_config_code)
+            load_campaign_data(campaign_code=campaign_config.code)
+            load_campaign_ngrams_unfiltered(campaign_code=campaign_config.code)
             ApiCache().clear_cache()
         except (Exception,):
             logger.exception(
-                f"""Error loading data for campaign {campaign_config_code}"""
+                f"""Error loading data for campaign {campaign_config.code}"""
             )
 
     print(f"INFO:\t  Loading campaigns data completed.")
