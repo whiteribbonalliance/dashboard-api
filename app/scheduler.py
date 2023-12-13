@@ -35,9 +35,9 @@ from rocketry.args import Session
 from rocketry.conds import cron
 
 from app import env
-from app import helpers
+from app import utils
+from app.helpers import data_loader
 from app.logginglib import init_custom_logger
-from app.utils import data_loader
 
 app = Rocketry(executation="async")
 
@@ -88,4 +88,4 @@ async def do_every_hour_clear_tmp_dir(session=Session()):
 
         return
 
-    await concurrency.run_in_threadpool(helpers.clear_tmp_dir)
+    await concurrency.run_in_threadpool(utils.clear_tmp_dir)

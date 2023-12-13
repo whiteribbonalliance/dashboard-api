@@ -29,6 +29,7 @@ from fastapi import APIRouter, Depends, Request, status
 
 from app import crud
 from app.api import dependencies
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -37,7 +38,6 @@ from app.schemas.option_str import OptionStr
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 from app.services.campaigns_merged import CampaignsMergedService
-from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)

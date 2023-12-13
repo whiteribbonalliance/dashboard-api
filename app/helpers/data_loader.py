@@ -34,6 +34,7 @@ from app import constants, databases, q_codes_finder
 from app import crud
 from app import env
 from app import global_variables
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
 from app.schemas.region import Region
@@ -43,9 +44,6 @@ from app.services import google_maps_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
 from app.services.translations_cache import TranslationsCache
-from app.types import AzureBlobStorageContainerMountPath
-from app.utils import q_col_names
-from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -70,39 +68,60 @@ def load_campaign_data(campaign_code: str):
     # Get df
     df_responses = get_campaign_df(campaign_code=campaign_code)
     if df_responses is None:
-        raise Exception(f"Could not load df for {campaign_code}.")
+        raise Exception(f"Could not load dataframe for campaign {campaign_code}.")
 
-    # Q codes
-    campaign_q_codes = q_codes_finder.find_in_df(df=df_responses)
+    # Columns
+    columns = df_responses.columns.tolist()
 
     # Set q codes
+    campaign_q_codes = q_codes_finder.find_in_df(df=df_responses)
     campaign_crud.set_q_codes(q_codes=campaign_q_codes)
 
     # Value 'prefer not to say' should always start with a capital letter
-    df_responses["setting"] = df_responses["setting"].apply(
-        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-    )
-    df_responses["gender"] = df_responses["gender"].apply(
-        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-    )
-    df_responses["age"] = df_responses["age"].apply(
-        lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-    )
+    if "setting" in columns:
+        df_responses["setting"] = df_responses["setting"].apply(
+            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
+        )
+    if "gender" in columns:
+        df_responses["gender"] = df_responses["gender"].apply(
+            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
+        )
+    if "age" in columns:
+        df_responses["age"] = df_responses["age"].apply(
+            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
+        )
 
     # Apply title
-    df_responses["setting"] = df_responses["setting"].apply(
-        lambda x: x.title() if x else x
-    )
+    if "setting" in columns:
+        df_responses["setting"] = df_responses["setting"].apply(
+            lambda x: x.title() if x else x
+        )
 
-    # Apply strip and uppercase
-    df_responses["alpha2country"] = df_responses["alpha2country"].apply(
-        lambda x: x.strip().upper() if x else x
-    )
+    # Apply strip and upper
+    if "alpha2country" in columns:
+        df_responses["alpha2country"] = df_responses["alpha2country"].apply(
+            lambda x: x.strip().upper() if x else x
+        )
 
     # Apply strip
-    df_responses["setting"] = df_responses["setting"].apply(
-        lambda x: x.strip() if x else x
-    )
+    if "setting" in columns:
+        df_responses["setting"] = df_responses["setting"].apply(
+            lambda x: x.strip() if x else x
+        )
+    if "region" in columns:
+        df_responses["region"] = df_responses["region"].apply(
+            lambda x: x.strip() if x else x
+        )
+    if "province" in columns:
+        df_responses["province"] = df_responses["province"].apply(
+            lambda x: x.strip() if x else x
+        )
+    if "age" in columns:
+        df_responses["age"] = df_responses["age"].apply(lambda x: x.strip() if x else x)
+    if "response_year" in columns:
+        df_responses["response_year"] = df_responses["response_year"].apply(
+            lambda x: x.strip() if x else x
+        )
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
@@ -115,17 +134,18 @@ def load_campaign_data(campaign_code: str):
     campaign_crud.set_ages(ages=ages)
 
     # Age bucket
-    # Note: Campaigns 'what_women_want' and 'midwives_voices' already contain 'age' as an age bucket
+    # Note: Campaigns wra03a and midwife already contain age as an age bucket
     if campaign_code == "wra03a" or campaign_code == "midwife":
         df_responses["age_bucket"] = df_responses["age"]
         df_responses["age_bucket_default"] = df_responses["age"]
+        df_responses["age"] = ""
     else:
         # Range for age bucket might differ from campaign to campaign
         df_responses["age_bucket"] = df_responses["age"].apply(
             lambda x: get_age_bucket(age=x, campaign_code=campaign_code)
         )
 
-        # Default age bucket, all campaigns will have the same range for age bucket
+        # Default age bucket, all campaigns will have the same range
         df_responses["age_bucket_default"] = df_responses["age"].apply(
             lambda x: get_age_bucket(age=x)
         )
@@ -141,22 +161,14 @@ def load_campaign_data(campaign_code: str):
     campaign_crud.set_age_buckets_default(age_buckets_default=age_buckets_default)
 
     # Set response years
-    if "response_year" in df_responses.columns:
+    if "response_year" in columns:
         response_years = df_responses["response_year"].unique().tolist()
         campaign_crud.set_response_years(response_years=response_years)
     else:
         df_responses["response_year"] = ""
 
-    # Remove UNCODABLE responses
-    for q_code in campaign_q_codes:
-        df_responses = df_responses[
-            ~df_responses[q_col_names.get_canonical_code_col_name(q_code=q_code)].isin(
-                ["UNCODABLE"]
-            )
-        ]
-
     # Create countries
-    countries = {}
+    countries: dict[str, Country] = {}
     countries_alpha2_codes = df_responses[["alpha2country"]].drop_duplicates()
     for idx in range(len(countries_alpha2_codes)):
         alpha2_code = countries_alpha2_codes["alpha2country"].iloc[idx]
@@ -167,22 +179,22 @@ def load_campaign_data(campaign_code: str):
             demonym=country.get("demonym"),
         )
 
-    # Add regions to countries
-    unique_canonical_country_region = df_responses[
-        ["alpha2country", "region"]
+    # Add regions and provinces to countries
+    unique_canonical_country_region_province = df_responses[
+        ["alpha2country", "region", "province"]
     ].drop_duplicates()
-    for idx in range(len(unique_canonical_country_region)):
-        alpha2_code = unique_canonical_country_region["alpha2country"].iloc[idx]
-        region = unique_canonical_country_region["region"].iloc[idx]
+    for idx in range(len(unique_canonical_country_region_province)):
+        alpha2_code = unique_canonical_country_region_province["alpha2country"].iloc[
+            idx
+        ]
+        region = unique_canonical_country_region_province["region"].iloc[idx]
+        province = unique_canonical_country_region_province["province"].iloc[idx]
         if region:
-            # For wwwpakistan, extract the province name from the region
-            if campaign_code == "wwwpakistan":
-                province = extract_province_from_region(region=region)
-                countries[alpha2_code].regions.append(
+            country = countries.get(alpha2_code)
+            if country and (region not in country.regions):
+                country.regions.append(
                     Region(code=region, name=region, province=province)
                 )
-            else:
-                countries[alpha2_code].regions.append(Region(code=region, name=region))
 
     # Set countries
     campaign_crud.set_countries(countries=countries)
@@ -234,7 +246,7 @@ def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
             df = pd.read_csv(
                 filepath_or_buffer=os.path.join("data", campaign_config["file"]),
                 keep_default_na=False,
-                dtype={"age": str},
+                dtype={"age": str, "response_year": str},
             )
 
             if "ingestion_time" in df.columns.tolist():
@@ -479,18 +491,3 @@ def load_region_coordinates():
     global_variables.region_coordinates = coordinates
 
     print(f"INFO:\t  Loading region coordinates completed.")
-
-
-def extract_province_from_region(region: str) -> str:
-    """Extract province from region"""
-
-    if not region:
-        return ""
-
-    region_name_split = region.split(",")
-    if len(region_name_split) == 2:
-        province = region_name_split[-1].strip()
-
-        return province
-    else:
-        return ""

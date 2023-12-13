@@ -33,7 +33,7 @@ from deep_replacer import DeepReplacer, key_depth_rules
 from google.cloud import translate_v2
 from google.oauth2 import service_account
 
-from app import constants, helpers
+from app import constants, utils
 from app import env
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
@@ -148,7 +148,7 @@ class Translator:
             return text
         if not isinstance(text, str):
             return text
-        if not helpers.contains_letters(text):
+        if not utils.contains_letters(text):
             return text
 
         translated_text = ""
@@ -177,7 +177,7 @@ class Translator:
             return text
         if not isinstance(text, str):
             return text
-        if not helpers.contains_letters(text):
+        if not utils.contains_letters(text):
             return text
 
         key = f"{self.__target_language}.{text}"
@@ -215,7 +215,7 @@ class Translator:
             return text
         if not isinstance(text, str):
             return text
-        if not helpers.contains_letters(text):
+        if not utils.contains_letters(text):
             return text
 
         if delimiter:
@@ -267,7 +267,7 @@ class Translator:
             return text
         if not isinstance(text, str):
             return text
-        if not helpers.contains_letters(text):
+        if not utils.contains_letters(text):
             return text
 
         extracted_texts = set()
@@ -321,17 +321,17 @@ class Translator:
 
         # Divide extracted_texts into chunks
         if self.__cloud_service == "azure":
-            extracted_texts_chunks = helpers.divide_list_into_chunks_by_char_count(
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_char_count(
                 my_list=list(self.__extracted_texts),
                 n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
             )
         elif self.__cloud_service == "google":
-            extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
                 my_list=list(self.__extracted_texts),
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
             )
         else:
-            extracted_texts_chunks = helpers.divide_list_into_chunks_by_text_count(
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
                 my_list=list(self.__extracted_texts),
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
             )

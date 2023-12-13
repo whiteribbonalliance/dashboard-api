@@ -28,7 +28,7 @@ import os
 from typing import Any
 
 from app import constants
-from app.utils.singleton_meta import SingletonMeta
+from app.helpers.singleton_meta import SingletonMeta
 
 
 class TranslationsCache(metaclass=SingletonMeta):

@@ -29,10 +29,10 @@ from fastapi import Depends
 
 from app import crud
 from app import databases
-from app import helpers, auth_handler, http_exceptions
+from app import utils, auth_handler, http_exceptions
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.types import CloudService
-from app.utils.campaigns_config_loader import CAMPAIGNS_CONFIG
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -92,7 +92,7 @@ def language_check(
     """
 
     cloud_service: CloudService = "google"
-    if lang not in helpers.get_translation_languages(cloud_service=cloud_service):
+    if lang not in utils.get_translation_languages(cloud_service=cloud_service):
         lang = "en"
 
     return lang

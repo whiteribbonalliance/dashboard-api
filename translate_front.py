@@ -27,7 +27,7 @@ import json
 import os
 import shutil
 
-from app import helpers
+from app import utils
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import CloudService
@@ -53,9 +53,7 @@ def translate_front(cloud_service: CloudService):
 
     # Translate text for every language
     translator = Translator(cloud_service=cloud_service)
-    for language in helpers.get_translation_languages(
-        cloud_service=cloud_service
-    ).keys():
+    for language in utils.get_translation_languages(cloud_service=cloud_service).keys():
         print(f"{name} - Translating texts to {language}...")
 
         translator.change_target_language(target_language=language)

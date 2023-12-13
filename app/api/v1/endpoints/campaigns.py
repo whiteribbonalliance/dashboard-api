@@ -34,8 +34,8 @@ from fastapi.responses import StreamingResponse
 
 from app import crud
 from app import databases
-from app import helpers
 from app import http_exceptions
+from app import utils
 from app.api import dependencies
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -241,7 +241,7 @@ def campaign_public_data(
     filter_2 = campaign_req.filter_2
 
     # Only allow campaign healthwellbeing
-    # Note: If campaign what_young_people_want should use this endpoint, make sure the data comes from Azure
+    # Note: If campaign pmn01a should use this endpoint, make sure the data comes from Azure
     if campaign_code != "healthwellbeing":
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."
@@ -259,16 +259,16 @@ def campaign_public_data(
     # Create unique filename code from campaign_code and filters by hashing
     unique_filename_code = ""
     if filter_1:
-        unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
+        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
             filter_1.dict()
         )
     if filter_2:
-        unique_filename_code = unique_filename_code + helpers.get_dict_hash_value(
+        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
             filter_2.dict()
         )
     if filter_1 or filter_2:
         unique_filename_code = (
-            f"{helpers.get_string_hash_value(campaign_code)}{unique_filename_code}"
+            f"{utils.get_string_hash_value(campaign_code)}{unique_filename_code}"
         )
 
     # Get url and filename

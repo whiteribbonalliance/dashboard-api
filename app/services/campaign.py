@@ -33,9 +33,12 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from app import constants, helpers
+from app import constants, utils
 from app import crud
 from app import global_variables
+from app.helpers import code_hierarchy
+from app.helpers import filters
+from app.helpers import q_col_names
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.country import Country
@@ -51,9 +54,6 @@ from app.services import google_maps_interactions
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import FilterSequence, CloudService, AzureBlobStorageContainerName
-from app.utils import code_hierarchy
-from app.utils import filters
-from app.utils import q_col_names
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -91,7 +91,7 @@ class CampaignService:
         self.__filter_2 = filter_2
 
         # Translation API code
-        self.__cloud_service: CloudService = helpers.get_cloud_service_by_campaign(
+        self.__cloud_service: CloudService = utils.get_cloud_service_by_campaign(
             campaign_code=self.__campaign_code
         )
 
@@ -1505,7 +1505,7 @@ class CampaignService:
             average_age_bucket = " ".join(df_copy["age_bucket"].mode())
             average_age_bucket = (
                 average_age_bucket
-                if helpers.contains_letters(average_age_bucket)
+                if utils.contains_letters(average_age_bucket)
                 else average_age_bucket
             )
 
@@ -1698,7 +1698,7 @@ class CampaignService:
             ) and len(names) > 0:
                 names = sorted(
                     names,
-                    key=lambda x: helpers.extract_first_occurring_numbers(
+                    key=lambda x: utils.extract_first_occurring_numbers(
                         value=x, first_less_than_symbol_to_0=True
                     ),
                 )
@@ -1716,8 +1716,8 @@ class CampaignService:
 
                 histogram[column_name].append(
                     {
-                        "value": name if helpers.contains_letters(name) else name,
-                        "label": name if helpers.contains_letters(name) else name,
+                        "value": name if utils.contains_letters(name) else name,
+                        "label": name if utils.contains_letters(name) else name,
                         "count_1": count_1,
                         "count_2": count_2,
                     }
@@ -1940,7 +1940,7 @@ class CampaignService:
         # Sort
         ages = sorted(
             ages,
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x, first_less_than_symbol_to_0=True
             ),
         )
@@ -1958,7 +1958,7 @@ class CampaignService:
         # Sort
         age_buckets = sorted(
             age_buckets,
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x, first_less_than_symbol_to_0=True
             ),
         )
@@ -1976,7 +1976,7 @@ class CampaignService:
         # Sort
         age_buckets_default = sorted(
             age_buckets_default,
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x, first_less_than_symbol_to_0=True
             ),
         )

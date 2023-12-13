@@ -31,9 +31,9 @@ from pandas import DataFrame
 
 from app import constants
 from app.crud.campaign import Campaign
+from app.helpers import code_hierarchy
+from app.helpers import q_col_names
 from app.schemas.filter import Filter
-from app.utils import code_hierarchy
-from app.utils import q_col_names
 
 inflect_engine = inflect.engine()
 

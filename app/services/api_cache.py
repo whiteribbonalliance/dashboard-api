@@ -32,8 +32,8 @@ from cachetools import LRUCache
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 
-from app import helpers
-from app.utils.singleton_meta import SingletonMeta
+from app import utils
+from app.helpers.singleton_meta import SingletonMeta
 
 
 class ApiCache(metaclass=SingletonMeta):
@@ -100,7 +100,7 @@ class ApiCache(metaclass=SingletonMeta):
 
         # Create hash value
         kwargs_json = json.dumps(kwargs_jsonable, sort_keys=True)
-        hash_value = helpers.get_string_hash_value(kwargs_json)
+        hash_value = utils.get_string_hash_value(kwargs_json)
 
         return hash_value
 

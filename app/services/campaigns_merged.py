@@ -25,13 +25,13 @@ SOFTWARE.
 
 import pandas as pd
 
-from app import helpers, constants
+from app import utils, constants
+from app.helpers import filters
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.services.translator import Translator
 from app.types import FilterSequence
-from app.utils import filters
 
 
 class CampaignsMergedService:
@@ -186,7 +186,7 @@ class CampaignsMergedService:
     def get_histogram_options(self) -> list[dict]:
         """Get histogram options"""
 
-        histogram_options = helpers.get_unique_flattened_list_of_dictionaries(
+        histogram_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=self.__campaigns_histogram_options
         )
 
@@ -204,14 +204,14 @@ class CampaignsMergedService:
         """Get responses sample"""
 
         responses_sample = {
-            "columns": helpers.get_unique_flattened_list_of_dictionaries(
+            "columns": utils.get_unique_flattened_list_of_dictionaries(
                 data_lists=[
                     x.responses_sample.get("columns")
                     for x in self.__campaigns_data_all_q
                     if x.responses_sample
                 ],
             ),
-            "data": helpers.get_distributed_list_of_dictionaries(
+            "data": utils.get_distributed_list_of_dictionaries(
                 data_lists=[
                     x.responses_sample.get("data")
                     for x in self.__campaigns_data_all_q
@@ -236,7 +236,7 @@ class CampaignsMergedService:
         # Response breakdown
         responses_breakdown = {
             "parent_categories": [],  # Ignore, not all campaigns contain parent_categories
-            "sub_categories": helpers.get_merged_flattened_list_of_dictionaries(
+            "sub_categories": utils.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.responses_breakdown["sub_categories"]
                     for x in self.__campaigns_data_all_q
@@ -261,7 +261,7 @@ class CampaignsMergedService:
         """Get top words and phrases"""
 
         # Get wordcloud words
-        wordcloud_words = helpers.get_merged_flattened_list_of_dictionaries(
+        wordcloud_words = utils.get_merged_flattened_list_of_dictionaries(
             data_lists=[
                 x.top_words_and_phrases.get("wordcloud_words")
                 for x in self.__campaigns_data_all_q
@@ -278,7 +278,7 @@ class CampaignsMergedService:
         ][: constants.N_TOP_WORDS]
 
         # Two word phrases
-        two_word_phrases = helpers.get_merged_flattened_list_of_dictionaries(
+        two_word_phrases = utils.get_merged_flattened_list_of_dictionaries(
             data_lists=[
                 x.top_words_and_phrases.get("two_word_phrases")
                 for x in self.__campaigns_data_all_q
@@ -289,7 +289,7 @@ class CampaignsMergedService:
         )
 
         # Three word phrases
-        three_word_phrases = helpers.get_merged_flattened_list_of_dictionaries(
+        three_word_phrases = utils.get_merged_flattened_list_of_dictionaries(
             data_lists=[
                 x.top_words_and_phrases.get("three_word_phrases")
                 for x in self.__campaigns_data_all_q
@@ -361,7 +361,7 @@ class CampaignsMergedService:
         histogram = {
             "ages": [],
             "age_buckets": [],
-            "age_buckets_default": helpers.get_merged_flattened_list_of_dictionaries(
+            "age_buckets_default": utils.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.histogram.get("age_buckets_default")
                     for x in self.__campaigns_data_q1
@@ -372,7 +372,7 @@ class CampaignsMergedService:
             ),
             "genders": [],
             "professions": [],
-            "canonical_countries": helpers.get_merged_flattened_list_of_dictionaries(
+            "canonical_countries": utils.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.histogram.get("canonical_countries")
                     for x in self.__campaigns_data_q1
@@ -393,7 +393,7 @@ class CampaignsMergedService:
         # Sort age buckets default
         histogram["age_buckets_default"] = sorted(
             histogram["age_buckets_default"],
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x.get("label"), first_less_than_symbol_to_0=True
             ),
         )
@@ -412,7 +412,7 @@ class CampaignsMergedService:
         translator = Translator(cloud_service="google")
         translator.change_target_language(target_language=self.__language)
 
-        # For campaign what_women_want_pakistan, change the coordinate from region to the country's coordinate
+        # For campaign wwwpakistan, change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
             if campaign_data.campaign_code == "wwwpakistan":
                 coordinate_pk = constants.COUNTRY_COORDINATE["PK"]
@@ -425,7 +425,7 @@ class CampaignsMergedService:
                     coordinate["lat"] = coordinate_pk[0]
                     coordinate["lon"] = coordinate_pk[1]
 
-        # For campaign economic_empowerment_mexico, change the coordinate from region to the country's coordinate
+        # For campaign giz, change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
             if campaign_data.campaign_code == "giz":
                 coordinate_mx = constants.COUNTRY_COORDINATE["MX"]
@@ -438,8 +438,9 @@ class CampaignsMergedService:
                     coordinate["lat"] = coordinate_mx[0]
                     coordinate["lon"] = coordinate_mx[1]
 
+        # Coordinates
         world_bubble_maps_coordinates = {
-            "coordinates_1": helpers.get_merged_flattened_list_of_dictionaries(
+            "coordinates_1": utils.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.world_bubble_maps_coordinates.get("coordinates_1")
                     for x in self.__campaigns_data_q1
@@ -448,7 +449,7 @@ class CampaignsMergedService:
                 unique_key="location_code",
                 keys_to_merge=["n"],
             ),
-            "coordinates_2": helpers.get_merged_flattened_list_of_dictionaries(
+            "coordinates_2": utils.get_merged_flattened_list_of_dictionaries(
                 data_lists=[
                     x.world_bubble_maps_coordinates.get("coordinates_2")
                     for x in self.__campaigns_data_q1
@@ -555,7 +556,7 @@ class CampaignsMergedService:
     def __get_country_options(self) -> list[dict]:
         """Get country options"""
 
-        country_options = helpers.get_unique_flattened_list_of_dictionaries(
+        country_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("countries") or []]
                 for x in self.__campaigns_filter_options
@@ -570,7 +571,7 @@ class CampaignsMergedService:
     def __get_country_regions_options(self) -> list[dict]:
         """Get country regions options"""
 
-        country_regions_options = helpers.get_unique_flattened_list_of_dictionaries(
+        country_regions_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("country_regions") or []]
                 for x in self.__campaigns_filter_options
@@ -587,7 +588,7 @@ class CampaignsMergedService:
     def __get_response_topics_options(self) -> list[dict]:
         """Get response topic options"""
 
-        response_topics_options = helpers.get_unique_flattened_list_of_dictionaries(
+        response_topics_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("response_topics") or []]
                 for x in self.__campaigns_filter_options
@@ -604,7 +605,7 @@ class CampaignsMergedService:
     def __get_age_options(self) -> list[dict]:
         """Get age options"""
 
-        age_options = helpers.get_unique_flattened_list_of_dictionaries(
+        age_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("age") or []] for x in self.__campaigns_filter_options
             ]
@@ -613,7 +614,7 @@ class CampaignsMergedService:
         # Sort age options
         age_options = sorted(
             age_options,
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x.get("label"), first_less_than_symbol_to_0=True
             ),
         )
@@ -623,7 +624,7 @@ class CampaignsMergedService:
     def __get_age_bucket_options(self) -> list[dict]:
         """Get age bucket options"""
 
-        age_bucket_options = helpers.get_unique_flattened_list_of_dictionaries(
+        age_bucket_options = utils.get_unique_flattened_list_of_dictionaries(
             data_lists=[
                 [y for y in x.get("age_buckets_default") or []]
                 for x in self.__campaigns_filter_options
@@ -633,7 +634,7 @@ class CampaignsMergedService:
         # Sort age bucket options
         age_bucket_options = sorted(
             age_bucket_options,
-            key=lambda x: helpers.extract_first_occurring_numbers(
+            key=lambda x: utils.extract_first_occurring_numbers(
                 value=x.get("label"), first_less_than_symbol_to_0=True
             ),
         )

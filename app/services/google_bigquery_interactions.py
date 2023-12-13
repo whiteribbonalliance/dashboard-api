@@ -35,8 +35,8 @@ from google.oauth2 import service_account
 from pandas import DataFrame
 
 from app import databases
+from app.helpers import q_col_names, code_hierarchy
 from app.logginglib import init_custom_logger
-from app.utils import q_col_names, code_hierarchy
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -165,7 +165,7 @@ def __parse_df(campaign_code: str, df: pd.DataFrame) -> pd.DataFrame:
         df=df, campaign_code=campaign_code, q_codes=campaign_q_codes
     )
 
-    # Drop 'additional_fields'
+    # Drop additional_fields
     df = df.drop("additional_fields", axis=1, errors="ignore")
 
     # Create province column
@@ -191,6 +191,14 @@ def __parse_df(campaign_code: str, df: pd.DataFrame) -> pd.DataFrame:
         df[q_col_names.get_canonical_code_col_name(q_code=q_code)] = df[
             q_col_names.get_canonical_code_col_name(q_code=q_code)
         ].apply(lambda x: "NOTRELATED" if x == "OTHERQUESTIONABLE" else x)
+
+    # Remove UNCODABLE responses
+    for q_code in campaign_q_codes:
+        df = df[
+            ~df[q_col_names.get_canonical_code_col_name(q_code=q_code)].isin(
+                ["UNCODABLE"]
+            )
+        ]
 
     # Get mapping to parent category
     mapping_to_parent_category = code_hierarchy.get_mapping_code_to_parent_category(
@@ -330,7 +338,9 @@ def __get_parent_category(sub_categories: str, mapping_to_parent_category: dict)
     """Get parent category"""
 
     categories = [x.strip() for x in sub_categories.split("/") if x]
-    parent_categories = [mapping_to_parent_category.get(x, "") for x in categories]
-    parent_categories = [x for x in parent_categories if x]
+    parent_categories = [mapping_to_parent_category.get(x) for x in categories]
 
-    return "/".join(parent_categories)
+    if parent_categories:
+        return "/".join(parent_categories)
+    else:
+        return ""
