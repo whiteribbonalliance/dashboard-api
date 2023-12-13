@@ -35,8 +35,10 @@ from azure.storage.blob import (
     generate_blob_sas,
 )
 
-from app import env
+from app.core.settings import get_settings
 from app.types import AzureBlobStorageContainerName
+
+settings = get_settings()
 
 EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
@@ -48,12 +50,12 @@ def get_container_client(
 
     if container_name == "csv":
         return ContainerClient.from_connection_string(
-            conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+            conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
             container_name=container_name,
         )
     elif container_name == "main":
         return ContainerClient.from_connection_string(
-            conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+            conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
             container_name=container_name,
         )
 
@@ -103,7 +105,7 @@ def upload_df_as_csv(
 
     # Get blob client
     blob_client = BlobClient.from_connection_string(
-        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
         container_name=container_name,
         blob_name=csv_filename,
         max_block_size=4 * 1024 * 1024,  # 4mb
@@ -122,7 +124,7 @@ def blob_exists(container_name: AzureBlobStorageContainerName, blob_name: str) -
 
     # Get blob
     blob = BlobClient.from_connection_string(
-        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
         container_name=container_name,
         blob_name=blob_name,
     )
@@ -134,15 +136,15 @@ def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) 
     """Get blob url"""
 
     sas_blob = generate_blob_sas(
-        account_name=env.AZURE_STORAGE_ACCOUNT_NAME,
+        account_name=settings.AZURE_STORAGE_ACCOUNT_NAME,
         container_name=container_name,
         blob_name=blob_name,
-        account_key=env.AZURE_STORAGE_ACCOUNT_KEY,
+        account_key=settings.AZURE_STORAGE_ACCOUNT_KEY,
         permission=BlobSasPermissions(read=True),
         expiry=EXPIRE_IN,
     )
 
-    return f"https://{env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"
+    return f"https://{settings.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"
 
 
 def upload_pmnch_pkl():
@@ -152,7 +154,7 @@ def upload_pmnch_pkl():
 
     # Get blob client
     blob_client = BlobClient.from_connection_string(
-        conn_str=env.AZURE_STORAGE_CONNECTION_STRING,
+        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
         container_name="main",
         blob_name=filename,
         max_block_size=4 * 1024 * 1024,  # 4mb

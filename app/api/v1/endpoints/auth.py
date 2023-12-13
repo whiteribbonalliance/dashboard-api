@@ -30,11 +30,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app import auth_handler, constants
 from app import databases
-from app import env
 from app import http_exceptions
 from app.api import dependencies
+from app.core.settings import get_settings
 from app.schemas.token import Token
 from app.schemas.user import UserBase
+
+settings = get_settings()
 
 router = APIRouter(prefix="/auth")
 
@@ -49,7 +51,7 @@ async def login(
     form_password = form_data.password
 
     # If ONLY_PMNCH only allow admin and whatyoungpeoplewant
-    if env.ONLY_PMNCH:
+    if settings.ONLY_PMNCH:
         if not (form_username == "admin" or form_username == "whatyoungpeoplewant"):
             raise http_exceptions.UnauthorizedHTTPException("Login failed")
 

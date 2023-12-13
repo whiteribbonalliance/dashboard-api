@@ -23,10 +23,6 @@ SOFTWARE.
 
 """
 
-"""
-Schedule tasks
-"""
-
 import logging
 
 from fastapi import concurrency
@@ -34,10 +30,12 @@ from rocketry import Rocketry
 from rocketry.args import Session
 from rocketry.conds import cron
 
-from app import env
 from app import utils
+from app.core.settings import get_settings
 from app.helpers import data_loader
 from app.logginglib import init_custom_logger
+
+settings = get_settings()
 
 app = Rocketry(executation="async")
 
@@ -79,7 +77,7 @@ async def do_every_hour_clear_tmp_dir(session=Session()):
 
     # This task is not needed if ONLY_PMNCH as this means deployment is done on Azure Web Apps
     # The tmp dir is only used when deployment is done at Google App Engine
-    if env.ONLY_PMNCH:
+    if settings.ONLY_PMNCH:
         # Get task
         task = session["do_every_hour_clear_tmp_dir"]
 

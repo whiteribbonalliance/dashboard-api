@@ -25,7 +25,9 @@ SOFTWARE.
 
 from fastapi import APIRouter, status
 
-from app.core.settings import settings
+from app.core.settings import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/info")
 

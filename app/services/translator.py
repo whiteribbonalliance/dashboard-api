@@ -34,10 +34,12 @@ from google.cloud import translate_v2
 from google.oauth2 import service_account
 
 from app import constants, utils
-from app import env
+from app.core.settings import get_settings
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.types import CloudService
+
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -108,7 +110,7 @@ class Translator:
         url = "https://api.cognitive.microsofttranslator.com/translate"
         params = {"api-version": "3.0", "from": source_language, "to": target_language}
         headers = {
-            "Ocp-Apim-Subscription-Key": env.AZURE_TRANSLATOR_KEY,
+            "Ocp-Apim-Subscription-Key": settings.AZURE_TRANSLATOR_KEY,
             "Ocp-Apim-Subscription-Region": "eastus",
             "Content-type": "application/json",
         }

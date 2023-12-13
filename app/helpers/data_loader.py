@@ -32,8 +32,8 @@ import pandas as pd
 
 from app import constants, databases, q_codes_finder
 from app import crud
-from app import env
 from app import global_variables
+from app.core.settings import get_settings
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
@@ -47,6 +47,8 @@ from app.services.translations_cache import TranslationsCache
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
+
+settings = get_settings()
 
 
 def load_campaign_data(campaign_code: str):
@@ -234,7 +236,7 @@ def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     Get campaign dataframe.
     """
 
-    # if env.ONLY_PMNCH and campaign_code == "pmn01a":
+    # if settings.ONLY_PMNCH and campaign_code == "pmn01a":
     #     # Get data from Azure Blob Storage
     #     mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
     #     return pd.read_pickle(
@@ -374,11 +376,11 @@ def reload_data(
             ApiCache().clear_cache()
 
         # Clear bucket
-        if clear_google_cloud_storage_bucket and not env.ONLY_PMNCH:
+        if clear_google_cloud_storage_bucket and not settings.ONLY_PMNCH:
             google_cloud_storage_interactions.clear_bucket()
 
         # Clear container
-        if clear_azure_blob_storage_container and env.ONLY_PMNCH:
+        if clear_azure_blob_storage_container and settings.ONLY_PMNCH:
             azure_blob_storage_interactions.clear_container(container_name="csv")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
@@ -393,7 +395,7 @@ def load_campaigns_data():
         campaign_config_code = campaign_config["code"]
 
         # Only load data for what_young_people_want
-        if env.ONLY_PMNCH:
+        if settings.ONLY_PMNCH:
             if campaign_config_code != "pmn01a":
                 continue
 
@@ -484,7 +486,7 @@ def load_region_coordinates():
                 new_coordinates_added = True
 
     # Save region coordinates (Only in development environment)
-    if env.STAGE == "dev" and new_coordinates_added:
+    if settings.STAGE == "dev" and new_coordinates_added:
         with open(region_coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))
 

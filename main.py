@@ -29,24 +29,26 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import env
 from app import utils
 from app.api.v1.api import api_router
-from app.core.settings import settings
+from app.core.settings import get_settings
 from app import databases
 from app.scheduler import app as app_rocketry
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 
-if env.ONLY_PMNCH:
+
+settings = get_settings()
+
+if settings.ONLY_PMNCH:
     description = "What Young People Want Dashboard API."
 else:
     description = "What Women Want Dashboard API."
 
 # Create dirs required in local development.
 # In production these dirs are already present.
-if env.STAGE == "dev" and not env.ONLY_PMNCH:
+if settings.STAGE == "dev" and not settings.ONLY_PMNCH:
     utils.create_tmp_dir_if_not_exists()
-if env.STAGE == "dev" and env.ONLY_PMNCH:
+if settings.STAGE == "dev" and settings.ONLY_PMNCH:
     utils.create_pmnch_main_dir_if_not_exists()
 
 # Create in-memory Database objects

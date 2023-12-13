@@ -23,22 +23,37 @@ SOFTWARE.
 
 """
 
+import os
+from functools import lru_cache
+
 from pydantic import BaseSettings
 
-from app import env
 from app.enums.api_prefix import ApiPrefix
+
+STAGE = os.getenv("STAGE", "")
+ONLY_PMNCH = os.getenv("ONLY_PMNCH", "").lower() == "true"
+
+if ONLY_PMNCH:
+    APP_TITLE = "What Young People Want API"
+else:
+    APP_TITLE = "What Women Want API"
 
 
 class Settings(BaseSettings):
     VERSION: str = "1.0.0"
-    APP_TITLE: str = "What Women Want API"
+    APP_TITLE: str = APP_TITLE
     API_PREFIX: str = ApiPrefix.v1.value
+    ONLY_PMNCH: bool = ONLY_PMNCH
+    GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
+    ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
+    AZURE_TRANSLATOR_KEY: str = os.getenv("AZURE_TRANSLATOR_KEY")
+    AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
+    AZURE_STORAGE_ACCOUNT_NAME: str = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+    STAGE: str = STAGE
 
 
 class DevSettings(Settings):
-    # COOKIE_DOMAIN: str = "localhost"
-    # COOKIE_SECURE: bool = False
-    # COOKIE_SAMESITE: str = "Strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = True
     PORT: int = 8000
@@ -57,18 +72,12 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    # COOKIE_DOMAIN: str = ".whiteribbonalliance.org"
-    # COOKIE_SECURE: bool = True
-    # COOKIE_SAMESITE: str = "strict"
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
     PORT: int = 8080
     RELOAD: bool = False
     CORS: dict = {
         "allow_origins": [
-            "http://localhost",
-            "http://localhost:3000",
-            "http://explore.whiteribbonalliance.local:3000",
             "https://explore.whiteribbonalliance.org",
             "https://whatwomenwant.whiteribbonalliance.org",
             "https://whatyoungpeoplewant.whiteribbonalliance.org",
@@ -92,7 +101,9 @@ class ProdSettings(Settings):
     }
 
 
-if env.STAGE == "dev":
-    settings = DevSettings()
-else:
-    settings = ProdSettings()
+@lru_cache()
+def get_settings():
+    if STAGE == "dev":
+        return DevSettings()
+    else:
+        return ProdSettings()

@@ -29,8 +29,10 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-from app import env
 from app import http_exceptions, constants
+from app.core.settings import get_settings
+
+settings = get_settings()
 
 ALGORITHM = "HS256"
 
@@ -52,7 +54,7 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"iat": issued_at})
 
     encoded_jwt = jwt.encode(
-        claims=to_encode, key=env.ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM
+        claims=to_encode, key=settings.ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM
     )
 
     return encoded_jwt
@@ -68,7 +70,7 @@ def decode_access_token(token: str) -> dict:
 
     try:
         payload = jwt.decode(
-            token=token, key=env.ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM]
+            token=token, key=settings.ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM]
         )
         username: str = payload.get("sub")
         exp: int = payload.get("exp")

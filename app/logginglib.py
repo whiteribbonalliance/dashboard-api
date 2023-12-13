@@ -33,11 +33,9 @@ from logging import Handler, Formatter
 
 import requests
 
-from app import env
+from app.core.settings import get_settings
 
-# ----------------------------------------------------------------------------------------------------------------------------
-# Inits
-# ----------------------------------------------------------------------------------------------------------------------------
+settings = get_settings()
 
 NEW_RELIC_HEADERS = {
     "Api-Key": os.environ.get("NEWRELIC_API_KEY"),
@@ -58,7 +56,7 @@ class NewRelicHandler(Handler):
     def emit(self, record):
         log_payload = self.format(record)
 
-        if env.STAGE == "prod":
+        if settings.STAGE == "prod":
             requests.post(NEW_RELIC_URL, data=log_payload, headers=NEW_RELIC_HEADERS)
 
 
