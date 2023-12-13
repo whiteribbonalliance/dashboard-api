@@ -25,14 +25,9 @@ SOFTWARE.
 
 import json
 
-LEGACY_CAMPAIGN_CODES = [
-    "wra03a",
-    "pmn01a",
-    "midwife",
-    "wwwpakistan",
-    "healthwellbeing",
-    "giz",
-]
+from app.enums.legacy_campaign_code import LegacyCampaignCode
+
+LEGACY_CAMPAIGN_CODES = [x.value for x in LegacyCampaignCode]
 
 # Load stopwords from file
 with open("stopwords.json", "r", encoding="utf8") as file:

@@ -35,6 +35,7 @@ from google.oauth2 import service_account
 
 from app import constants, utils
 from app.core.settings import get_settings
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
 from app.types import CloudService
@@ -422,9 +423,9 @@ class Translator:
         deep_replacer = DeepReplacer()
 
         # Responses sample
-        # economic_empowerment_mexico: Do not translate 'raw_response' if the language is 'es'
-        # economic_empowerment_mexico: For other languages, only translate text between parenthesis
-        if campaign_code == "giz":
+        # giz: Do not translate response if the language is es
+        # giz: For other languages, only translate text between parenthesis
+        if campaign_code == LegacyCampaignCode.giz.value:
             if language != "es":
                 responses_sample = deep_replacer.replace(
                     data=responses_sample,
@@ -433,7 +434,7 @@ class Translator:
                     key_depth_rules={
                         "columns:id": [key_depth_rules.IGNORE],
                         "columns:type": [key_depth_rules.IGNORE],
-                        "data:raw_response": [
+                        "data:response": [
                             key_depth_rules.APPLY_ON_TEXT_BETWEEN_PARENTHESIS
                         ],
                     },

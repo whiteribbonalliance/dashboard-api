@@ -79,7 +79,7 @@ Copy the `translations` folder to the front-end project at `src/app/i18n`.
 
 The CSV file might contain the following columns:
 
-- `q1_raw_response`: Required - The response from the respondent.
+- `q1_response`: Required - The response from the respondent.
 - `q1_canonical_code`: Required - The sub-category of the response.
 - `alpha2country`: Required - alpha-2 code of the respondent's country.
 - `age`: Required - The respondent's age.
@@ -91,10 +91,10 @@ The CSV file might contain the following columns:
 - `setting`: Optional - The respondent's living setting.
 - `response_year`: Optional - The year the response was collected.
 
-`q1` refers to the question from which the respondent gave a response. To include another question add the
-columns `q2_raw_response` and `q2_canonical_code`.
+`q1` refers to the question from which the respondent gave a response. To include another response add the
+columns `q2_response` and `q2_canonical_code`.
 
-## How to add a new campaign
+## How to add a campaign
 
 1. Create a new config folder at `campaigns-config/[FOLDER_NAME]`.
 2. Inside the new folder create the file `config.json` (copy `config.json`

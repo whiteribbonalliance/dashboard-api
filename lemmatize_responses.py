@@ -1,10 +1,34 @@
-import os
+"""
+MIT License
+
+Copyright (c) 2023 White Ribbon Alliance. Maintainers: Thomas Wood, https://fastdatascience.com, Zairon Jacobs, https://zaironjacobs.com.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
 
 import nltk
 import pandas as pd
 from pywsd.utils import lemmatize_sentence
 
 from app import constants
+from app import q_codes_finder
 from app.helpers import q_col_names
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 
@@ -29,26 +53,17 @@ def lemmatize_all_data():
             filepath_or_buffer=campaign_config.filepath, keep_default_na=False
         )
 
-        # Get all raw response columns
-        raw_response_columns = []
-        for column in df.columns.tolist():
-            if column.startswith("q") and column.endswith("_raw_response"):
-                q_code_number = column.replace("_raw_response", "", 1).replace(
-                    "q", "", 1
-                )
-                if q_code_number.isnumeric():
-                    raw_response_columns.append(column)
-                else:
-                    raise Exception(f"Invalid column name: {column}")
+        # Get q codes
+        q_codes = q_codes_finder.find_in_df(df=df)
 
-        for column in raw_response_columns:
-            q_code_number = column.replace("_raw_response", "", 1).replace("q", "", 1)
-            q_code = f"q{q_code_number}"
-
-            lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
+        for q_code_number in q_codes:
+            response_column = f"q{q_code_number}_response"
 
             # Lemmatize
-            df[lemmatized_column_name] = df[column].apply(lemmatize_text)
+            lemmatized_column_name = q_col_names.get_lemmatized_col_name(
+                q_code=q_code_number
+            )
+            df[lemmatized_column_name] = df[response_column].apply(lemmatize_text)
 
             df.to_csv(path_or_buf=campaign_config.filepath, index=False, header=True)
 

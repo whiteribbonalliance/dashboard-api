@@ -26,6 +26,7 @@ SOFTWARE.
 import pandas as pd
 
 from app import utils, constants
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import filters
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
@@ -222,8 +223,8 @@ class CampaignsMergedService:
             ),
         }
 
-        # Responses sample - (keep only columns raw_response, description, canonical_country and age)
-        columns_to_keep = {"raw_response", "description", "canonical_country", "age"}
+        # Responses sample - (keep only columns response, description, canonical_country and age)
+        columns_to_keep = {"response", "description", "canonical_country", "age"}
         responses_sample["columns"] = [
             x for x in responses_sample["columns"] if x.get("id") in columns_to_keep
         ]
@@ -412,9 +413,9 @@ class CampaignsMergedService:
         translator = Translator(cloud_service="google")
         translator.change_target_language(target_language=self.__language)
 
-        # For campaign wwwpakistan, change the coordinate from region to the country's coordinate
+        # Change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
-            if campaign_data.campaign_code == "wwwpakistan":
+            if campaign_data.campaign_code == LegacyCampaignCode.wwwpakistan.value:
                 coordinate_pk = constants.COUNTRY_COORDINATE["PK"]
                 for coordinate in (
                     campaign_data.world_bubble_maps_coordinates["coordinates_1"]
@@ -425,9 +426,9 @@ class CampaignsMergedService:
                     coordinate["lat"] = coordinate_pk[0]
                     coordinate["lon"] = coordinate_pk[1]
 
-        # For campaign giz, change the coordinate from region to the country's coordinate
+        # Change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:
-            if campaign_data.campaign_code == "giz":
+            if campaign_data.campaign_code == LegacyCampaignCode.giz.value:
                 coordinate_mx = constants.COUNTRY_COORDINATE["MX"]
                 for coordinate in (
                     campaign_data.world_bubble_maps_coordinates["coordinates_1"]
@@ -545,7 +546,7 @@ class CampaignsMergedService:
         """
 
         for campaign in self.__campaigns_data_q1:
-            if campaign.campaign_code == "pmn01a":
+            if campaign.campaign_code == LegacyCampaignCode.pmn01a.value:
                 if filter_seq == "1":
                     return campaign.filter_1_description
                 if filter_seq == "2":

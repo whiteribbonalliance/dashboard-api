@@ -37,6 +37,7 @@ from app import databases
 from app import http_exceptions
 from app import utils
 from app.api import dependencies
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
 from app.schemas.campaign_request import CampaignRequest
@@ -181,7 +182,7 @@ def campaign_data(
         logger.warning(f"Could not parse date from date_filter: {str(e)}")
 
     # Azure
-    if campaign_code == "pmn01a":
+    if campaign_code == LegacyCampaignCode.pmn01a.value:
         cloud_service: CloudService = "azure"
 
         # Cleanup
@@ -242,7 +243,7 @@ def campaign_public_data(
 
     # Only allow campaign healthwellbeing
     # Note: If campaign pmn01a should use this endpoint, make sure the data comes from Azure
-    if campaign_code != "healthwellbeing":
+    if campaign_code != LegacyCampaignCode.healthwellbeing.value:
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."
         )

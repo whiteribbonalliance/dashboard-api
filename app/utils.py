@@ -33,6 +33,7 @@ import re
 from hashlib import sha256
 
 from app import constants
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.types import CloudService, AzureBlobStorageContainerMountPath
 
 
@@ -86,7 +87,7 @@ def get_cloud_service_by_campaign(
 ) -> CloudService:
     """Get translation api code"""
 
-    if campaign_code == "pmn01a":
+    if campaign_code == LegacyCampaignCode.pmn01a.value:
         cloud_service: CloudService = "azure"
     else:
         cloud_service: CloudService = "google"

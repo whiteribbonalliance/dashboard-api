@@ -33,6 +33,7 @@ from app import constants, databases, q_codes_finder
 from app import crud
 from app import global_variables
 from app.core.settings import get_settings
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
@@ -131,7 +132,10 @@ def load_campaign_data(campaign_code: str):
 
     # Age bucket
     # Note: Campaigns wra03a and midwife already contain age as an age bucket
-    if campaign_code == "wra03a" or campaign_code == "midwife":
+    if (
+        campaign_code == LegacyCampaignCode.wra03a.value
+        or campaign_code == LegacyCampaignCode.midwife.value
+    ):
         df_responses["age_bucket"] = df_responses["age"]
         df_responses["age_bucket_default"] = df_responses["age"]
         df_responses["age"] = ""
@@ -235,7 +239,7 @@ def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     Load campaign dataframe from CSV file.
     """
 
-    # if settings.ONLY_PMNCH and campaign_code == "pmn01a":
+    # if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
     #     # Get data from Azure Blob Storage
     #     mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
     #     return pd.read_pickle(
@@ -269,7 +273,7 @@ def get_age_bucket(age: str | int | None, campaign_code: str = None) -> str | No
         else:
             return age  # Non-numeric e.g. 'Prefer not to say' or age value is already an age bucket
 
-    if campaign_code == "healthwellbeing":
+    if campaign_code == LegacyCampaignCode.healthwellbeing.value:
         if age >= 65:
             return "65+"
         if age >= 55:
@@ -396,7 +400,7 @@ def load_campaigns_data():
 
         # Only load data for what_young_people_want
         if settings.ONLY_PMNCH:
-            if campaign_config_code != "pmn01a":
+            if campaign_config_code != LegacyCampaignCode.pmn01a.value:
                 continue
 
         print(f"INFO:\t  Loading data for campaign {campaign_config_code}...")
@@ -440,7 +444,10 @@ def load_region_coordinates():
     # Get new region coordinates (if coordinate is not in region_coordinates.json)
     focused_on_country_campaigns_codes = []
     for campaign_code in [x.code for x in CAMPAIGNS_CONFIG.values()]:
-        if campaign_code == "giz" or campaign_code == "wwwpakistan":
+        if (
+            campaign_code == LegacyCampaignCode.giz.value
+            or campaign_code == LegacyCampaignCode.wwwpakistan.value
+        ):
             focused_on_country_campaigns_codes.append(campaign_code)
 
     for campaign_code in focused_on_country_campaigns_codes:

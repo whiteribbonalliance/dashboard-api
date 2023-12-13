@@ -23,50 +23,13 @@ SOFTWARE.
 
 """
 
-
-def get_response_col_name(q_code: str) -> str:
-    """Get raw response column name"""
-
-    return f"{q_code}_response"
+from enum import Enum
 
 
-def get_canonical_code_col_name(q_code: str) -> str:
-    """Get canonical code column name"""
-
-    return f"{q_code}_canonical_code"
-
-
-def get_lemmatized_col_name(q_code: str) -> str:
-    """Get lemmatized column name"""
-
-    return f"{q_code}_lemmatized"
-
-
-def get_parent_category_col_name(q_code: str) -> str:
-    """Get parent category column name"""
-
-    return f"{q_code}_parent_category"
-
-
-def get_label_col_name(q_code: str) -> str:
-    """Get label column name"""
-
-    return f"{q_code}_label"
-
-
-def get_count_col_name(q_code: str) -> str:
-    """Get count column name"""
-
-    return f"{q_code}_count"
-
-
-def get_code_col_name(q_code: str) -> str:
-    """Get code column name"""
-
-    return f"{q_code}_code"
-
-
-def get_description_col_name(q_code: str) -> str:
-    """Get description column name"""
-
-    return f"{q_code}_description"
+class LegacyCampaignCode(Enum):
+    wra03a: str = "wra03a"
+    pmn01a: str = "pmn01a"
+    midwife: str = "midwife"
+    giz: str = "giz"
+    wwwpakistan: str = "wwwpakistan"
+    healthwellbeing: str = "healthwellbeing"

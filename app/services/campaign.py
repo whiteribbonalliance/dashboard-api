@@ -36,6 +36,7 @@ import pandas as pd
 from app import constants, utils
 from app import crud
 from app import global_variables
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import category_hierarchy
 from app.helpers import filters
 from app.helpers import q_col_names
@@ -105,8 +106,8 @@ class CampaignService:
         # Get dataframe
         df = self.__crud.get_dataframe()
 
-        # For 'wwwpakistan' filter the response year
-        if self.__campaign_code == "wwwpakistan" and self.__response_year:
+        # Filter response year
+        if self.__response_year:
             df = df[df["response_year"] == self.__response_year]
 
         # Apply filter 1
@@ -223,8 +224,8 @@ class CampaignService:
 
         # Genders breakdown
         if (
-            self.__campaign_code == "pmn01a"
-            or self.__campaign_code == "healthwellbeing"
+            self.__campaign_code == LegacyCampaignCode.pmn01a.value
+            or self.__campaign_code == LegacyCampaignCode.healthwellbeing.value
         ):
             genders_breakdown = self.__get_genders_breakdown()
         else:
@@ -459,7 +460,7 @@ class CampaignService:
             label = setting
 
             # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
-            if self.__campaign_code == "healthwellbeing":
+            if self.__campaign_code == LegacyCampaignCode.healthwellbeing.value:
                 if label and label.lower() == "prefer not to say":
                     label = "Blank/Prefer Not To Say"
 
@@ -584,32 +585,32 @@ class CampaignService:
 
         options: list[dict] = []
 
-        if self.__campaign_code == "wra03a":
+        if self.__campaign_code == LegacyCampaignCode.wra03a.value:
             options = [
                 breakdown_age_bucket_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == "pmn01a":
+        elif self.__campaign_code == LegacyCampaignCode.pmn01a.value:
             options = [
                 breakdown_age_option.dict(),
                 breakdown_gender_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == "midwife":
+        elif self.__campaign_code == LegacyCampaignCode.midwife.value:
             options = [
                 breakdown_age_bucket_option.dict(),
                 breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == "healthwellbeing":
+        elif self.__campaign_code == LegacyCampaignCode.healthwellbeing.value:
             options = [
                 breakdown_age_option.dict(),
                 breakdown_age_bucket_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == "giz":
+        elif self.__campaign_code == LegacyCampaignCode.giz.value:
             options = [breakdown_age_bucket_option.dict()]
-        elif self.__campaign_code == "wwwpakistan":
+        elif self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
             options = [breakdown_age_bucket_option.dict()]
 
         # Translate
@@ -714,8 +715,11 @@ class CampaignService:
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()
 
-        # For 'healthwellbeing' remove 'description' column if q2
-        if self.__campaign_code == "healthwellbeing" and q_code == "q2":
+        # Remove description column
+        if (
+            self.__campaign_code == LegacyCampaignCode.healthwellbeing.value
+            and q_code == "q2"
+        ):
             responses_sample_columns = [
                 x for x in responses_sample_columns if x.id != "description"
             ]
@@ -756,10 +760,10 @@ class CampaignService:
         if not q_code:
             return [col.id for col in columns]
 
-        # Rename column e.g. 'raw_response' -> 'q1_raw_response'
+        # Rename column e.g. response -> q1_response
         for column in columns:
-            if column.id == "raw_response":
-                column.id = f"{q_code}_raw_response"
+            if column.id == "response":
+                column.id = f"{q_code}_response"
             if column.id == "description":
                 column.id = f"{q_code}_description"
 
@@ -794,10 +798,10 @@ class CampaignService:
         # Set column names based on question code
         description_col_name = q_col_names.get_description_col_name(q_code=q_code)
         canonical_code_col_name = q_col_names.get_canonical_code_col_name(q_code=q_code)
-        raw_response_col_name = q_col_names.get_raw_response_col_name(q_code=q_code)
+        response_col_name = q_col_names.get_response_col_name(q_code=q_code)
 
-        # Remove rows were raw_response is empty
-        df = df[df[raw_response_col_name] != ""]
+        # Remove rows where response is empty
+        df = df[df[response_col_name] != ""]
 
         # Limit the sample for languages that are not English
         if self.__language == "en":
@@ -824,7 +828,7 @@ class CampaignService:
             lambda x: self.__get_code_descriptions(x)
         )
 
-        # Rename columns e.g. 'q1_raw_response' -> 'raw_response'
+        # Rename columns e.g. q1_response -> response
         columns_to_rename = {x: x.replace(f"{q_code}_", "") for x in column_ids}
         df = df.rename(columns=columns_to_rename)
 
@@ -941,8 +945,8 @@ class CampaignService:
                 # Drop rows with nan values
                 df = df.dropna()
 
-                # what_young_people_want: Sort the rows by count value (DESC) and keep the first n rows only
-                if self.__campaign_code == "pmn01a":
+                # Sort the rows by count value (DESC) and keep the first n rows only
+                if self.__campaign_code == LegacyCampaignCode.pmn01a.value:
                     n_rows_keep = 5
                     df = df.sort_values(by=count_col_name, ascending=False)
                     df = df.head(n_rows_keep)
@@ -1024,7 +1028,7 @@ class CampaignService:
             return responses_breakdown_data
 
         # Responses breakdown (parent categories & sub-categories)
-        if self.__campaign_code == "healthwellbeing":
+        if self.__campaign_code == LegacyCampaignCode.healthwellbeing.value:
             responses_breakdown_parent_1 = get_df_responses_breakdown_parent_categories(
                 df=self.__get_df_1_copy()
             )
@@ -1052,7 +1056,7 @@ class CampaignService:
         # Responses breakdown (parent categories or sub-categories)
         responses_breakdown_parent_or_sub_1 = []
         responses_breakdown_parent_or_sub_2 = []
-        if self.__campaign_code == "wwwpakistan":
+        if self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
             # If there is one unique parent category, then get its sub-categories breakdown
             if only_parent_category:
                 responses_breakdown_parent_or_sub_1 = (
@@ -1176,7 +1180,7 @@ class CampaignService:
             label = name
 
             # Rename label 'Prefer not to say' to 'Blank/Prefer Not To Say' at 'healthwellbeing'
-            if self.__campaign_code == "healthwellbeing":
+            if self.__campaign_code == LegacyCampaignCode.healthwellbeing.value:
                 if label and label.lower() == "prefer not to say":
                     label = "Blank/Prefer Not To Say"
 
@@ -1671,12 +1675,8 @@ class CampaignService:
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
-            grouped_by_column_1 = df_1_copy.groupby(column_name)[
-                "q1_raw_response"
-            ].count()
-            grouped_by_column_2 = df_2_copy.groupby(column_name)[
-                "q1_raw_response"
-            ].count()
+            grouped_by_column_1 = df_1_copy.groupby(column_name)["q1_response"].count()
+            grouped_by_column_2 = df_2_copy.groupby(column_name)["q1_response"].count()
 
             # Add count for each unique column value
             names = list(
@@ -1865,7 +1865,10 @@ class CampaignService:
         df_2_copy = self.__get_df_2_copy()
 
         # For these campaigns, use region as location
-        if self.__campaign_code == "giz" or self.__campaign_code == "wwwpakistan":
+        if (
+            self.__campaign_code == LegacyCampaignCode.giz.value
+            or self.__campaign_code == LegacyCampaignCode.wwwpakistan.value
+        ):
             # Get count of each region per country
             region_counts_1 = (
                 df_1_copy[["alpha2country", "canonical_country", "region"]]
