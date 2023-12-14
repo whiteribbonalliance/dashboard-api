@@ -34,6 +34,9 @@ from app.types import CloudService
 
 count_chars_only = False
 
+if not os.path.isfile("credentials.json"):
+    raise Exception("credentials.json not found.")
+
 
 def translate_front(cloud_service: CloudService):
     """Apply translation on texts"""
@@ -111,4 +114,4 @@ translate_front(cloud_service="google")
 
 # Values already translated by Google will not be translated again
 # Azure has languages that Google does not
-translate_front(cloud_service="azure")
+# translate_front(cloud_service="azure")

@@ -31,6 +31,7 @@ from app.api.v1.endpoints.campaigns_merged import router as campaigns_merged_rou
 from app.api.v1.endpoints.data import router as data_router
 from app.api.v1.endpoints.health_check import router as health_check_router
 from app.api.v1.endpoints.info import router as info_router
+from app.api.v1.endpoints.settings import router as settings_router
 
 api_router = APIRouter()
 api_router.include_router(campaigns_router, tags=["Campaigns"])
@@ -39,3 +40,4 @@ api_router.include_router(auth_router, tags=["Authentication"])
 api_router.include_router(health_check_router, tags=["Health Check"])
 api_router.include_router(info_router, tags=["Info"])
 api_router.include_router(data_router, tags=["Data"])
+api_router.include_router(settings_router, tags=["Settings"])

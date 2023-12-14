@@ -72,11 +72,190 @@ class Translator:
 
         # Translation function to use
         if self.__cloud_service == "google":
+            self.__credentials_included = settings.GOOGLE_CREDENTIALS_INCLUDED
             self.__request_translation = self.__request_translation_with_google
         elif self.__cloud_service == "azure":
+            self.__credentials_included = bool(settings.AZURE_TRANSLATOR_KEY)
             self.__request_translation = self.__request_translation_with_azure
         else:
+            self.__credentials_included = settings.GOOGLE_CREDENTIALS_INCLUDED
             self.__request_translation = self.__request_translation_with_google
+
+    def translate_text(self, text: str, delimiter: str | None = None) -> str:
+        """
+        Translate text.
+
+        :param text: Text to translate.
+        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word translated separately and returned as a whole string.
+        """
+
+        if not text or self.__target_language == "en":
+            return text
+        if not isinstance(text, str):
+            return text
+        if not utils.contains_letters(text):
+            return text
+        if not self.__credentials_included:
+            return text
+
+        if delimiter:
+            return self.__translate_text_delimiter_separated(
+                text=text, delimiter=delimiter
+            )
+        else:
+            return self.__translate_text(text=text)
+
+    def quick_translate_text(
+        self, text: str, source_language: str, target_language: str
+    ) -> str:
+        """
+        Quick translate text.
+        Can translate from any other supported language to English.
+        Does not cache translations.
+        """
+
+        if not self.__credentials_included:
+            return text
+
+        try:
+            translated_texts = self.__request_translation(
+                values=[text],
+                source_language=source_language,
+                target_language=target_language,
+            )
+        except (Exception,):
+            logger.error(f"Error translating: {text} to {target_language}")
+
+            return text
+
+        return translated_texts[0]["output"]
+
+    def extract_text(
+        self,
+        text: str,
+        delimiter: str | None = None,
+        add_key_to_latest_generated_keys: bool = False,
+    ) -> str:
+        """
+        Extract text.
+        Temporarily store the text in memory to translate later.
+
+        :param text: Text to extract.
+        :param delimiter: Separate text by delimiter.
+        :param add_key_to_latest_generated_keys: Add key to latest generated keys.
+        """
+
+        if not text or self.__target_language == "en":
+            return text
+        if not isinstance(text, str):
+            return text
+        if not utils.contains_letters(text):
+            return text
+        if not self.__credentials_included:
+            return text
+
+        extracted_texts = set()
+
+        # Split by delimiter
+        if delimiter:
+            split_text = text.split(delimiter)
+            for index, word in enumerate(split_text):
+                word = word.strip()
+                extracted_texts.add(word)
+        else:
+            extracted_texts.add(text)
+
+        for extracted_text in extracted_texts:
+            key = f"{self.__target_language}.{extracted_text}"
+
+            # If text is not in cache, add it to extracted texts set
+            if not self.__translations_cache.has(key):
+                self.__extracted_texts.add(extracted_text)
+
+            # Text has already been translated
+            else:
+                if add_key_to_latest_generated_keys:
+                    self.__add_latest_generated_key(key)
+
+        return text
+
+    def translate_extracted_texts(
+        self,
+        count_chars_only: bool = False,
+        skip_saving_to_json: bool = False,
+        add_key_to_latest_generated_keys: bool = False,
+    ):
+        """
+        Translate extracted texts and save them to translations.json.
+        """
+
+        if self.__target_language == "en":
+            self.__clear_extracted_texts()
+            return
+        if not self.__credentials_included:
+            self.__clear_extracted_texts()
+            return
+
+        if len(self.__extracted_texts) < 1:
+            return
+
+        # Divide extracted_texts into chunks
+        if self.__cloud_service == "azure":
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_char_count(
+                my_list=list(self.__extracted_texts),
+                n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
+            )
+        elif self.__cloud_service == "google":
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
+                my_list=list(self.__extracted_texts),
+                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
+            )
+        else:
+            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
+                my_list=list(self.__extracted_texts),
+                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
+            )
+
+        # Skip translation, only count characters instead.
+        # 1. Add the key to the TranslationsCache with the value as the text not translated.
+        # 2. Increase count of translations_char_count.
+        #    This is to be able to count the total amount of chars from texts that can be translated.
+        if count_chars_only:
+            for extracted_texts_chunk in extracted_texts_chunks:
+                for text in extracted_texts_chunk:
+                    key = f"{self.__target_language}.{text}"
+                    self.__translations_cache.set(key=key, value=text)
+                    self.__translations_char_count += len(text)
+
+        # Apply translation
+        else:
+            for extracted_texts_chunk in extracted_texts_chunks:
+                try:
+                    translated_texts = self.__request_translation(
+                        values=extracted_texts_chunk,
+                        source_language="en",
+                        target_language=self.__target_language,
+                    )
+                except (Exception,):
+                    logger.error(
+                        f"Error translating: texts from extracted_texts_chunk to {self.__target_language}"
+                    )
+                    continue
+
+                for translated_text in translated_texts:
+                    input_text = translated_text["input"]
+                    translated_text = translated_text["output"]
+                    key = f"{self.__target_language}.{input_text}"
+                    self.__translations_cache.set(key=key, value=translated_text)
+                    self.__translations_char_count += len(input_text)
+
+                    if add_key_to_latest_generated_keys:
+                        self.__add_latest_generated_key(key)
+
+            if not skip_saving_to_json:
+                self.__save_translations()
+
+        self.__clear_extracted_texts()
 
     def __request_translation_with_google(
         self, values: list[str], source_language: str, target_language: str
@@ -202,97 +381,6 @@ class Translator:
 
             return translated_texts[0]["output"]
 
-    def translate_text(self, text: str, delimiter: str | None = None) -> str:
-        """
-        Translate text.
-
-        :param text: Text to translate.
-        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word translated separately and returned as a whole string.
-        """
-
-        if not text or self.__target_language == "en":
-            return text
-        if not isinstance(text, str):
-            return text
-        if not utils.contains_letters(text):
-            return text
-
-        if delimiter:
-            return self.__translate_text_delimiter_separated(
-                text=text, delimiter=delimiter
-            )
-        else:
-            return self.__translate_text(text=text)
-
-    def quick_translate_text(
-        self, text: str, source_language: str, target_language: str
-    ) -> str:
-        """
-        Quick translate text.
-        Can translate from any other supported language to English.
-        Does not cache translations.
-        """
-
-        try:
-            translated_texts = self.__request_translation(
-                values=[text],
-                source_language=source_language,
-                target_language=target_language,
-            )
-        except (Exception,):
-            logger.error(f"Error translating: {text} to {target_language}")
-
-            return text
-
-        return translated_texts[0]["output"]
-
-    def extract_text(
-        self,
-        text: str,
-        delimiter: str | None = None,
-        add_key_to_latest_generated_keys: bool = False,
-    ) -> str:
-        """
-        Extract text.
-        Temporarily store the text in memory to translate later.
-
-        :param text: Text to extract.
-        :param delimiter: Separate text by delimiter.
-        :param add_key_to_latest_generated_keys: Add key to latest generated keys.
-        """
-
-        if not text or self.__target_language == "en":
-            return text
-        if not isinstance(text, str):
-            return text
-        if not utils.contains_letters(text):
-            return text
-
-        extracted_texts = set()
-
-        # Split by delimiter
-        if delimiter:
-            split_text = text.split(delimiter)
-            for index, word in enumerate(split_text):
-                word = word.strip()
-                extracted_texts.add(word)
-        else:
-            extracted_texts.add(text)
-
-        for extracted_text in extracted_texts:
-            key = f"{self.__target_language}.{extracted_text}"
-
-            # If text is not in cache, add it to extracted texts set
-            if not self.__translations_cache.has(key):
-                self.__extracted_texts.add(extracted_text)
-
-            # Text has already been translated
-            else:
-                if add_key_to_latest_generated_keys:
-                    self.__add_latest_generated_key(key)
-
-        return text
-
     def __clear_extracted_texts(self):
         """
         Clear extracted texts.
@@ -308,81 +396,6 @@ class Translator:
         if not self.__latest_generated_keys.get(self.__target_language):
             self.__latest_generated_keys[self.__target_language] = []
         self.__latest_generated_keys[self.__target_language].append(key)
-
-    def translate_extracted_texts(
-        self,
-        count_chars_only: bool = False,
-        skip_saving_to_json: bool = False,
-        add_key_to_latest_generated_keys: bool = False,
-    ):
-        """
-        Translate extracted texts and save them to translations.json.
-        """
-
-        if self.__target_language == "en":
-            self.__clear_extracted_texts()
-            return
-
-        if len(self.__extracted_texts) < 1:
-            return
-
-        # Divide extracted_texts into chunks
-        if self.__cloud_service == "azure":
-            extracted_texts_chunks = utils.divide_list_into_chunks_by_char_count(
-                my_list=list(self.__extracted_texts),
-                n=AZURE_TEXT_TRANSLATIONS_API_MAX_CHARACTERS_PER_REQUEST,
-            )
-        elif self.__cloud_service == "google":
-            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
-                my_list=list(self.__extracted_texts),
-                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
-            )
-        else:
-            extracted_texts_chunks = utils.divide_list_into_chunks_by_text_count(
-                my_list=list(self.__extracted_texts),
-                n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
-            )
-
-        # Skip translation, only count characters instead.
-        # 1. Add the key to the TranslationsCache with the value as the text not translated.
-        # 2. Increase count of translations_char_count.
-        #    This is to be able to count the total amount of chars from texts that can be translated.
-        if count_chars_only:
-            for extracted_texts_chunk in extracted_texts_chunks:
-                for text in extracted_texts_chunk:
-                    key = f"{self.__target_language}.{text}"
-                    self.__translations_cache.set(key=key, value=text)
-                    self.__translations_char_count += len(text)
-
-        # Apply translation
-        else:
-            for extracted_texts_chunk in extracted_texts_chunks:
-                try:
-                    translated_texts = self.__request_translation(
-                        values=extracted_texts_chunk,
-                        source_language="en",
-                        target_language=self.__target_language,
-                    )
-                except (Exception,):
-                    logger.error(
-                        f"Error translating: texts from extracted_texts_chunk to {self.__target_language}"
-                    )
-                    continue
-
-                for translated_text in translated_texts:
-                    input_text = translated_text["input"]
-                    translated_text = translated_text["output"]
-                    key = f"{self.__target_language}.{input_text}"
-                    self.__translations_cache.set(key=key, value=translated_text)
-                    self.__translations_char_count += len(input_text)
-
-                    if add_key_to_latest_generated_keys:
-                        self.__add_latest_generated_key(key)
-
-            if not skip_saving_to_json:
-                self.__save_translations()
-
-        self.__clear_extracted_texts()
 
     def get_translations_char_count(self) -> int:
         """Get translations char count"""

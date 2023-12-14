@@ -42,6 +42,9 @@ python main.py
 
 ## Translations
 
+To allow translations with `Google Cloud Translation API` include the service account's `credentials.json` at the
+root of the project.
+
 ### Back-end
 
 Translations occur automatically on the fly.
@@ -67,9 +70,7 @@ python translate_front.py
 ```
 
 Once translations have been applied, a new folder called `languages` should have been created
-inside `front_translations`.
-
-Copy the `languages` folder to the front-end project at `src/app/i18n`.
+inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
 
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
@@ -92,7 +93,7 @@ The CSV file might contain the following columns:
 `q1` refers to the question from which the respondent gave a response. To include another response add the
 columns `q2_response` and `q2_canonical_code`.
 
-## How to add a campaign
+## How to add a new campaign
 
 1. Create a new config folder at `campaigns-config/[FOLDER_NAME]`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
