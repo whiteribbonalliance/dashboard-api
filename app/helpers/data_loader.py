@@ -168,6 +168,7 @@ def load_campaign_data(campaign_code: str):
     # Set response years
     if "response_year" in columns:
         response_years = df_responses["response_year"].unique().tolist()
+        response_years = [x for x in response_years if x]
         campaign_crud.set_response_years(response_years=response_years)
     else:
         df_responses["response_year"] = ""

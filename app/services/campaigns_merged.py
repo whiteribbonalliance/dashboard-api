@@ -123,7 +123,10 @@ class CampaignsMergedService:
 
         return Campaign(
             campaign_code="",
-            question=Question(code="", question=""),
+            current_response_years=[],
+            all_response_years=[],
+            current_question=Question(code="", question="").dict(),
+            all_questions=[],
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
             living_settings_breakdown=[],
@@ -140,9 +143,6 @@ class CampaignsMergedService:
             filter_1_description=filter_1_description,
             filter_2_description=filter_2_description,
             filters_are_identical=filters_are_identical,
-            all_questions=[],
-            included_response_years=[],
-            all_response_years=[],
         )
 
     def get_filter_options(self) -> FilterOptions:
@@ -412,7 +412,7 @@ class CampaignsMergedService:
 
         # Translator
         translator = Translator(cloud_service="google")
-        translator.change_target_language(target_language=self.__language)
+        translator.set_target_language(target_language=self.__language)
 
         # Change the coordinate from region to the country's coordinate
         for campaign_data in self.__campaigns_data_q1:

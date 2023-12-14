@@ -38,33 +38,35 @@ count_chars_only = False
 def translate_front(cloud_service: CloudService):
     """Apply translation on texts"""
 
+    name = ""
     if cloud_service == "google":
         name = "Google"
     elif cloud_service == "azure":
         name = "Azure"
-    else:
-        name = ""
 
+    # Translations cache
     translations_cache = TranslationsCache()
     translations_cache.load()
 
+    # Load texts to translate
     with open("front_translations/to_translate.json", "r", encoding="utf8") as file:
-        texts: dict = json.loads(file.read())
+        texts_to_translate: dict = json.loads(file.read())
 
     # Translate text for every language
     translator = Translator(cloud_service=cloud_service)
     for language in utils.get_translation_languages(cloud_service=cloud_service).keys():
         print(f"{name} - Translating texts to {language}...")
 
-        translator.change_target_language(target_language=language)
+        translator.set_target_language(target_language=language)
 
-        for text_id, text in texts.items():
+        for text_id, text in texts_to_translate.items():
             translator.extract_text(text=text, add_key_to_latest_generated_keys=True)
 
         translator.translate_extracted_texts(
             count_chars_only=count_chars_only, add_key_to_latest_generated_keys=True
         )
 
+    # Save translations
     if not count_chars_only:
         # Create languages dir
         languages_dir_path = "front_translations/languages"
@@ -79,9 +81,8 @@ def translate_front(cloud_service: CloudService):
         for language, keys in latest_generated_keys.items():
             language_dir_path = f"{languages_dir_path}/{language}"
             os.mkdir(language_dir_path)
-
             translations = {}
-            for text_id, text in texts.items():
+            for text_id, text in texts_to_translate.items():
                 key = f"{language}.{text}"
                 if translations_cache.has(key):
                     translations[text_id] = translations_cache.get(key)
@@ -93,7 +94,7 @@ def translate_front(cloud_service: CloudService):
     if not count_chars_only:
         os.mkdir("front_translations/languages/en/")
         with open(f"front_translations/languages/en/translation.json", "w") as file:
-            file.write(json.dumps(texts))
+            file.write(json.dumps(texts_to_translate))
 
     # Print
     if count_chars_only:

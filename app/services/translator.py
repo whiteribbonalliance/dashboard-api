@@ -60,24 +60,25 @@ class Translator:
         self.__target_language = target_language
         self.__translations_cache = TranslationsCache()
 
-        self.__cloud_service = cloud_service
-
-        # Keep the latest generated keys per language from extracted texts that have been translated
+        # Keep the latest generated translation keys per language from extracted texts that have been translated
         self.__latest_generated_keys = {}
 
         # Extracted texts are texts that were determined to be translated
         self.__extracted_texts = set()
         self.__translations_char_count = 0
 
-        # Translation function
-        if self.__cloud_service == "google":
-            self.__get_translation = self.__get_translation_with_google
-        elif self.__cloud_service == "azure":
-            self.__get_translation = self.__get_translation_with_azure
-        else:
-            self.__get_translation = self.__get_translation_with_google
+        # Cloud service to use (google or azure)
+        self.__cloud_service = cloud_service
 
-    def __get_translation_with_google(
+        # Translation function to use
+        if self.__cloud_service == "google":
+            self.__request_translation = self.__request_translation_with_google
+        elif self.__cloud_service == "azure":
+            self.__request_translation = self.__request_translation_with_azure
+        else:
+            self.__request_translation = self.__request_translation_with_google
+
+    def __request_translation_with_google(
         self, values: list[str], source_language: str, target_language: str
     ) -> list[dict[str, str]]:
         """Get translation with Google"""
@@ -103,7 +104,7 @@ class Translator:
 
         return translations
 
-    def __get_translation_with_azure(
+    def __request_translation_with_azure(
         self, values: list[str], source_language: str, target_language: str
     ) -> list[dict[str, str]]:
         """Get translation with Azure"""
@@ -141,12 +142,9 @@ class Translator:
 
     def __translate_text_delimiter_separated(self, text: str, delimiter: str) -> str:
         """
-        Split string into a list of words e.g. "hello, world" -> ["hello", "world"]
-        Translate each word
-        Merge words back together
+        Split string into a list of words e.g. "hello, world" -> ["hello", "world"] and translate each word then merge words back together
         """
 
-        # Conditions
         if not text or self.__target_language == "en":
             return text
         if not isinstance(text, str):
@@ -155,9 +153,7 @@ class Translator:
             return text
 
         translated_text = ""
-
         split_text = text.split(delimiter)
-
         for index, word in enumerate(split_text):
             word = word.strip()
             translated_text += f"{self.__translate_text(word)}"
@@ -172,10 +168,9 @@ class Translator:
     def __translate_text(self, text: str) -> str:
         """
         Get translation of text from cache.
-        If not in cache, translate the text with Cloud Translate and add it to cache.
+        If translation is not in cache, translate the text and add it to cache.
         """
 
-        # Conditions
         if not text or self.__target_language == "en":
             return text
         if not isinstance(text, str):
@@ -183,15 +178,17 @@ class Translator:
         if not utils.contains_letters(text):
             return text
 
+        # Create key
         key = f"{self.__target_language}.{text}"
 
+        # If translated text already exists, return it
         if self.__translations_cache.has(key):
-            # If translated text already exists, return it
             return self.__translations_cache.get(key)
+
+        # If translated text does not exist, translate it, add it to cache, and return it
         else:
-            # If translated text does not exist, translate it and add it to cache
             try:
-                translated_texts = self.__get_translation(
+                translated_texts = self.__request_translation(
                     values=[text],
                     source_language="en",
                     target_language=self.__target_language,
@@ -207,13 +204,12 @@ class Translator:
 
     def translate_text(self, text: str, delimiter: str | None = None) -> str:
         """
-        Translate text
+        Translate text.
 
-        :param text: Text to translate
-        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word translated separately and returned as a whole string
+        :param text: Text to translate.
+        :param delimiter: If a delimiter is given, then the text will be split using the delimiter and each word translated separately and returned as a whole string.
         """
 
-        # Conditions
         if not text or self.__target_language == "en":
             return text
         if not isinstance(text, str):
@@ -233,13 +229,12 @@ class Translator:
     ) -> str:
         """
         Quick translate text.
-        Can translate from any other language to English.
-        Ignores __target_language.
+        Can translate from any other supported language to English.
         Does not cache translations.
         """
 
         try:
-            translated_texts = self.__get_translation(
+            translated_texts = self.__request_translation(
                 values=[text],
                 source_language=source_language,
                 target_language=target_language,
@@ -259,13 +254,13 @@ class Translator:
     ) -> str:
         """
         Extract text.
+        Temporarily store the text in memory to translate later.
 
-        :param text: Text to extract
-        :param delimiter: Separate text by delimiter and add to texts to extract set
-        :param add_key_to_latest_generated_keys: Add key to latest generated keys
+        :param text: Text to extract.
+        :param delimiter: Separate text by delimiter.
+        :param add_key_to_latest_generated_keys: Add key to latest generated keys.
         """
 
-        # Conditions
         if not text or self.__target_language == "en":
             return text
         if not isinstance(text, str):
@@ -275,6 +270,7 @@ class Translator:
 
         extracted_texts = set()
 
+        # Split by delimiter
         if delimiter:
             split_text = text.split(delimiter)
             for index, word in enumerate(split_text):
@@ -283,25 +279,31 @@ class Translator:
         else:
             extracted_texts.add(text)
 
-        # If text is not in translations.json, add it to extracted texts set
         for extracted_text in extracted_texts:
             key = f"{self.__target_language}.{extracted_text}"
+
+            # If text is not in cache, add it to extracted texts set
             if not self.__translations_cache.has(key):
                 self.__extracted_texts.add(extracted_text)
+
+            # Text has already been translated
             else:
-                # Text has already been translated
                 if add_key_to_latest_generated_keys:
                     self.__add_latest_generated_key(key)
 
         return text
 
     def __clear_extracted_texts(self):
-        """Clear extracted texts"""
+        """
+        Clear extracted texts.
+        """
 
         self.__extracted_texts.clear()
 
     def __add_latest_generated_key(self, key: str):
-        """Add latest generated key"""
+        """
+        Add latest generated key.
+        """
 
         if not self.__latest_generated_keys.get(self.__target_language):
             self.__latest_generated_keys[self.__target_language] = []
@@ -313,7 +315,9 @@ class Translator:
         skip_saving_to_json: bool = False,
         add_key_to_latest_generated_keys: bool = False,
     ):
-        """Translate extracted texts and save them to translations.json"""
+        """
+        Translate extracted texts and save them to translations.json.
+        """
 
         if self.__target_language == "en":
             self.__clear_extracted_texts()
@@ -339,10 +343,10 @@ class Translator:
                 n=GOOGLE_CLOUD_TRANSLATION_API_MAX_TEXTS_PER_REQUEST,
             )
 
-        # Skip translation, count characters instead
-        # 1. Add the key to the TranslationsCache with the value as the text not translated
-        # 2. Increase count of translations_char_count
-        #    This is to be able to count the total amount of chars from texts that can be translated
+        # Skip translation, only count characters instead.
+        # 1. Add the key to the TranslationsCache with the value as the text not translated.
+        # 2. Increase count of translations_char_count.
+        #    This is to be able to count the total amount of chars from texts that can be translated.
         if count_chars_only:
             for extracted_texts_chunk in extracted_texts_chunks:
                 for text in extracted_texts_chunk:
@@ -354,7 +358,7 @@ class Translator:
         else:
             for extracted_texts_chunk in extracted_texts_chunks:
                 try:
-                    translated_texts = self.__get_translation(
+                    translated_texts = self.__request_translation(
                         values=extracted_texts_chunk,
                         source_language="en",
                         target_language=self.__target_language,
@@ -385,8 +389,8 @@ class Translator:
 
         return self.__translations_char_count
 
-    def change_target_language(self, target_language: str):
-        """Change target language"""
+    def set_target_language(self, target_language: str):
+        """Set target language"""
 
         self.__target_language = target_language
 
@@ -395,11 +399,17 @@ class Translator:
 
         return self.__latest_generated_keys
 
+    #
+    # The following functions are used for translating campaign data.
+    #
+
     def apply_t_function_campaign(
         self,
         t: Callable,
         campaign_code: str,
         language: str,
+        current_question: dict,
+        all_questions: list,
         responses_sample: dict,
         responses_breakdown: dict,
         living_settings_breakdown: list,
@@ -411,7 +421,7 @@ class Translator:
         filter_2_average_age: str,
         filter_1_description: str,
         filter_2_description: str,
-    ) -> tuple:
+    ) -> dict:
         """
         Apply extract/translate.
 
@@ -449,6 +459,26 @@ class Translator:
                     "columns:type": [key_depth_rules.IGNORE],
                 },
             )
+
+        # Current question
+        current_question = deep_replacer.replace(
+            data=current_question,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "code": [key_depth_rules.IGNORE],
+            },
+        )
+
+        # question
+        all_questions = deep_replacer.replace(
+            data=all_questions,
+            replace_func=t,
+            pydantic_to_dict=True,
+            key_depth_rules={
+                "code": [key_depth_rules.IGNORE],
+            },
+        )
 
         # Responses breakdown
         responses_breakdown = deep_replacer.replace(
@@ -536,21 +566,23 @@ class Translator:
         filter_1_description = t(text=filter_1_description)
         filter_2_description = t(text=filter_2_description)
 
-        return (
-            responses_sample,
-            responses_breakdown,
-            living_settings_breakdown,
-            top_words_and_phrases,
-            histogram,
-            genders_breakdown,
-            world_bubble_maps_coordinates,
-            filter_1_average_age,
-            filter_2_average_age,
-            filter_1_description,
-            filter_2_description,
-        )
+        return {
+            "current_question": current_question,
+            "all_questions": all_questions,
+            "responses_sample": responses_sample,
+            "responses_breakdown": responses_breakdown,
+            "living_settings_breakdown": living_settings_breakdown,
+            "top_words_and_phrases": top_words_and_phrases,
+            "histogram": histogram,
+            "genders_breakdown": genders_breakdown,
+            "world_bubble_maps_coordinates": world_bubble_maps_coordinates,
+            "filter_1_average_age": filter_1_average_age,
+            "filter_2_average_age": filter_2_average_age,
+            "filter_1_description": filter_1_description,
+            "filter_2_description": filter_2_description,
+        }
 
-    def apply_t_histogram_options(self, t: Callable, options: list[dict]) -> list[dict]:
+    def apply_t_histogram_options(self, t: Callable, options: list[dict]) -> dict:
         """Apply extract/translate"""
 
         # Create deep replacer instance
@@ -567,14 +599,14 @@ class Translator:
             },
         )
 
-        return options
+        return {"options": options}
 
     def apply_t_filter_options(
         self,
         t: Callable,
         country_options: list[dict],
-        country_regions_options: list[dict[str, str | list[dict]]],
-        country_provinces_options: list[dict[str, str | list[dict]]],
+        country_region_options: list[dict[str, str | list[dict]]],
+        country_province_options: list[dict[str, str | list[dict]]],
         response_topic_options: list[dict],
         age_options: list[dict],
         age_bucket_options: list[dict],
@@ -584,7 +616,7 @@ class Translator:
         profession_options: list[dict],
         only_responses_from_categories_options: list[dict],
         only_multi_word_phrases_containing_filter_term_options: list[dict],
-    ) -> tuple:
+    ) -> dict:
         """Apply extract/translate"""
 
         # Create deep replacer instance
@@ -602,8 +634,8 @@ class Translator:
         )
 
         # Country regions options
-        country_regions_options = deep_replacer.replace(
-            data=country_regions_options,
+        country_region_options = deep_replacer.replace(
+            data=country_region_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -614,8 +646,8 @@ class Translator:
         )
 
         # Country provinces options
-        country_provinces_options = deep_replacer.replace(
-            data=country_provinces_options,
+        country_province_options = deep_replacer.replace(
+            data=country_province_options,
             replace_func=t,
             pydantic_to_dict=True,
             key_depth_rules={
@@ -724,17 +756,17 @@ class Translator:
             },
         )
 
-        return (
-            country_options,
-            country_regions_options,
-            country_provinces_options,
-            response_topic_options,
-            age_options,
-            age_bucket_options,
-            age_bucket_default_options,
-            gender_options,
-            living_setting_options,
-            profession_options,
-            only_responses_from_categories_options,
-            only_multi_word_phrases_containing_filter_term_options,
-        )
+        return {
+            "country_options": country_options,
+            "country_region_options": country_region_options,
+            "country_province_options": country_province_options,
+            "response_topic_options": response_topic_options,
+            "age_options": age_options,
+            "age_bucket_options": age_bucket_options,
+            "age_bucket_default_options": age_bucket_default_options,
+            "gender_options": gender_options,
+            "living_setting_options": living_setting_options,
+            "profession_options": profession_options,
+            "only_responses_from_categories_options": only_responses_from_categories_options,
+            "only_multi_word_phrases_containing_filter_term_options": only_multi_word_phrases_containing_filter_term_options,
+        }

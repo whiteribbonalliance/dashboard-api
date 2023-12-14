@@ -86,10 +86,7 @@ class CampaignService:
         self.__all_response_years = self.__get_response_years()
 
         # Response year
-        if response_year and response_year in self.__all_response_years:
-            self.__response_year = response_year
-        else:
-            self.__response_year = None
+        self.__response_year = response_year
 
         # Filters
         self.__filter_1 = filter_1
@@ -197,9 +194,9 @@ class CampaignService:
 
         # Included response years
         if self.__response_year:
-            included_response_years = [self.__response_year]
+            current_response_years = [self.__response_year]
         else:
-            included_response_years = self.__all_response_years
+            current_response_years = self.__all_response_years
 
         # Top words and phrases
         top_words_and_phrases = {
@@ -279,17 +276,38 @@ class CampaignService:
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
 
+        # Current question
+        current_question = Question(
+            code=q_code,
+            question=self.__campaign_config.questions.get(q_code, ""),
+        ).dict()
+
+        # All questions
+        campaign_q_codes = [x for x in self.__crud.get_q_codes()]
+        all_questions = []
+        for campaign_q_code in campaign_q_codes:
+            if config_question := self.__campaign_config.questions.get(campaign_q_code):
+                all_questions.append(
+                    Question(code=campaign_q_code, question=config_question).dict()
+                )
+            else:
+                all_questions.append(Question(code=campaign_q_code, question="").dict())
+        if not all_questions:
+            all_questions.append(Question(code=q_code, question="").dict())
+
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator(cloud_service=self.__cloud_service)
-                translator.change_target_language(target_language=self.__language)
+                translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_function_campaign(
                     t=translator.extract_text,
                     campaign_code=self.__campaign_code,
                     language=self.__language,
+                    current_question=current_question,
+                    all_questions=all_questions,
                     responses_sample=responses_sample,
                     responses_breakdown=responses_breakdown,
                     living_settings_breakdown=living_settings_breakdown,
@@ -306,23 +324,13 @@ class CampaignService:
                 # Translate extracted texts
                 translator.translate_extracted_texts()
 
-                # Apply translations to texts
-                (
-                    responses_sample,
-                    responses_breakdown,
-                    living_settings_breakdown,
-                    top_words_and_phrases,
-                    histogram,
-                    genders_breakdown,
-                    world_bubble_maps_coordinates,
-                    filter_1_average_age,
-                    filter_2_average_age,
-                    filter_1_description,
-                    filter_2_description,
-                ) = translator.apply_t_function_campaign(
+                # Get translations
+                translations_result = translator.apply_t_function_campaign(
                     t=translator.translate_text,
                     campaign_code=self.__campaign_code,
                     language=self.__language,
+                    current_question=current_question,
+                    all_questions=all_questions,
                     responses_sample=responses_sample,
                     responses_breakdown=responses_breakdown,
                     living_settings_breakdown=living_settings_breakdown,
@@ -335,30 +343,36 @@ class CampaignService:
                     filter_1_description=filter_1_description,
                     filter_2_description=filter_2_description,
                 )
+
+                # Apply translations to texts
+                current_question = translations_result["current_question"]
+                all_questions = translations_result["all_questions"]
+                responses_sample = translations_result["responses_sample"]
+                responses_breakdown = translations_result["responses_breakdown"]
+                living_settings_breakdown = translations_result[
+                    "living_settings_breakdown"
+                ]
+                top_words_and_phrases = translations_result["top_words_and_phrases"]
+                histogram = translations_result["histogram"]
+                genders_breakdown = translations_result["genders_breakdown"]
+                world_bubble_maps_coordinates = translations_result[
+                    "world_bubble_maps_coordinates"
+                ]
+                filter_1_average_age = translations_result["filter_1_average_age"]
+                filter_2_average_age = translations_result["filter_2_average_age"]
+                filter_1_description = translations_result["filter_1_description"]
+                filter_2_description = translations_result["filter_2_description"]
+
         except (Exception,) as e:
             logger.warning(
-                f"An error occurred during translation of 'campaign': {str(e)}"
+                f"An error occurred during translation of campaign: {str(e)}"
             )
-
-        # All questions
-        campaign_q_codes = [x for x in self.__crud.get_q_codes()]
-        all_questions = []
-        for campaign_q_code in campaign_q_codes:
-            if question := self.__campaign_config.questions.get(campaign_q_code):
-                all_questions.append(Question(code=campaign_q_code, question=question))
-            else:
-                all_questions.append(Question(code=campaign_q_code, question=""))
-        if not all_questions:
-            all_questions.append(Question(code=q_code, question=""))
 
         return Campaign(
             campaign_code=self.__campaign_code,
-            question=Question(
-                code=q_code,
-                question=self.__campaign_config.questions.get(q_code, ""),
-            ),
+            current_question=current_question,
             all_questions=all_questions,
-            included_response_years=included_response_years,
+            current_response_years=current_response_years,
             all_response_years=self.__all_response_years,
             responses_sample=responses_sample,
             responses_breakdown=responses_breakdown,
@@ -503,14 +517,14 @@ class CampaignService:
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator(cloud_service=self.__cloud_service)
-                translator.change_target_language(target_language=self.__language)
+                translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_filter_options(
                     t=translator.extract_text,
                     country_options=country_options,
-                    country_regions_options=country_region_options,
-                    country_provinces_options=country_province_options,
+                    country_region_options=country_region_options,
+                    country_province_options=country_province_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -525,25 +539,12 @@ class CampaignService:
                 # Translate extracted texts
                 translator.translate_extracted_texts()
 
-                # Apply translations to texts
-                (
-                    country_options,
-                    country_region_options,
-                    country_province_options,
-                    response_topic_options,
-                    age_options,
-                    age_bucket_options,
-                    age_bucket_default_options,
-                    gender_options,
-                    living_setting_options,
-                    profession_options,
-                    only_responses_from_categories_options,
-                    only_multi_word_phrases_containing_filter_term_options,
-                ) = translator.apply_t_filter_options(
+                # Get translations
+                translations_result = translator.apply_t_filter_options(
                     t=translator.translate_text,
                     country_options=country_options,
-                    country_regions_options=country_region_options,
-                    country_provinces_options=country_province_options,
+                    country_region_options=country_region_options,
+                    country_province_options=country_province_options,
                     response_topic_options=response_topic_options,
                     age_options=age_options,
                     age_bucket_options=age_bucket_options,
@@ -554,9 +555,33 @@ class CampaignService:
                     only_responses_from_categories_options=only_responses_from_categories_options,
                     only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
                 )
+
+                # Apply translations to texts
+                country_options = translations_result["country_options"]
+                country_region_options = translations_result["country_region_options"]
+                country_province_options = translations_result[
+                    "country_province_options"
+                ]
+                response_topic_options = translations_result["response_topic_options"]
+                age_options = translations_result["age_options"]
+                age_bucket_options = translations_result["age_bucket_options"]
+                age_bucket_default_options = translations_result[
+                    "age_bucket_default_options"
+                ]
+                gender_options = translations_result["gender_options"]
+                living_setting_options = translations_result["living_setting_options"]
+                profession_options = translations_result["profession_options"]
+                only_responses_from_categories_options = translations_result[
+                    "only_responses_from_categories_options"
+                ]
+                only_multi_word_phrases_containing_filter_term_options = (
+                    translations_result[
+                        "only_multi_word_phrases_containing_filter_term_options"
+                    ]
+                )
         except (Exception,) as e:
             logger.warning(
-                f"An error occurred during translation of 'filter_options': {str(e)}"
+                f"An error occurred during translation of filter_options: {str(e)}"
             )
 
         return FilterOptions(
@@ -632,7 +657,7 @@ class CampaignService:
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
                 translator = Translator(cloud_service=self.__cloud_service)
-                translator.change_target_language(target_language=self.__language)
+                translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
                 translator.apply_t_histogram_options(
@@ -642,13 +667,16 @@ class CampaignService:
                 # Translate extracted texts
                 translator.translate_extracted_texts()
 
-                # Apply translations to texts
-                options = translator.apply_t_histogram_options(
+                # Get translations
+                translations_result = translator.apply_t_histogram_options(
                     translator.translate_text, options=options
                 )
+
+                # Apply translations to texts
+                options = translations_result["options"]
         except (Exception,) as e:
             logger.warning(
-                f"An error occurred during translation of 'histogram_options': {str(e)}"
+                f"An error occurred during translation of histogram_options: {str(e)}"
             )
 
         return options

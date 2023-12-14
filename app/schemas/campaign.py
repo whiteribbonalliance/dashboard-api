@@ -25,14 +25,12 @@ SOFTWARE.
 
 from pydantic import BaseModel
 
-from app.schemas.q_code import Question
-
 
 class Campaign(BaseModel):
     campaign_code: str
-    question: Question
-    all_questions: list[Question]
-    included_response_years: list[str]
+    current_question: dict
+    all_questions: list[dict]
+    current_response_years: list[str]
     all_response_years: list[str]
     responses_sample: dict
     responses_breakdown: dict

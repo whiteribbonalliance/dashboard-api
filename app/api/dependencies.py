@@ -83,6 +83,35 @@ def q_code_check(
     )
 
 
+def response_year_check(
+    campaign_code=Depends(campaign_code_exists_check),
+    response_year: str = "",
+) -> str:
+    """
+    Check response year.
+    """
+
+    if response_year == "":
+        return ""
+
+    # CRUD
+    campaign_crud = crud.Campaign(campaign_code=campaign_code)
+
+    # Response years
+    response_years = campaign_crud.get_response_years()
+    if not response_years:
+        return ""
+
+    # Verify response_year
+    for r in campaign_crud.get_response_years():
+        if r == response_year:
+            return response_year
+
+    raise http_exceptions.ResourceNotFoundHTTPException(
+        "Campaign does not have the provided response year"
+    )
+
+
 def language_check(
     lang: str = "en",
 ) -> str:

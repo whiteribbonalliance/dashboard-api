@@ -69,7 +69,7 @@ def read_campaign(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     language: str = Depends(dependencies.language_check),
     q_code: str = Depends(dependencies.q_code_check),
-    response_year: str = "",
+    response_year: str = Depends(dependencies.response_year_check),
 ):
     """Read campaign"""
 
@@ -234,7 +234,7 @@ def campaign_data(
 def campaign_public_data(
     campaign_req: CampaignRequest,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    response_year: str = "",
+    response_year: str = Depends(dependencies.response_year_check),
 ):
     """Read campaign public data"""
 
