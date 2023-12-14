@@ -2,11 +2,7 @@
 
 ## What does this API do?
 
-This API is used for retrieving campaign responses from BigQuery to display in a dashboard.
-
-## Where is the URL?
-
-https://www-dashboard-api-dot-deft-stratum-290216.uc.r.appspot.com/docs
+This API is used for providing campaign responses to display in a dashboard.
 
 ## Continuous integration
 
@@ -16,11 +12,7 @@ The Docker container is pushed to Google Container Registry.
 
 Then it is deployed to Google App Engine using a Flex environment (see `app.yaml`).
 
-## Development
-
-### install
-
-Environment variables:
+## Environment variables:
 
 - `STAGE=` prod or dev.
 - `NEWRELIC_API_KEY=` The New Relic API key.
@@ -31,6 +23,12 @@ Environment variables:
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
 - `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
 - `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
+
+## Development
+
+Configure the environment variables.
+
+### install
 
 ```bash
 pip install -r requirements.txt
@@ -65,13 +63,13 @@ For example:
 To apply translations run:
 
 ```bash
-python scripts/translate_front.py
+python translate_front.py
 ```
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`.
 
-Copy the `translations` folder to the front-end project at `src/app/i18n`.
+Copy the `languages` folder to the front-end project at `src/app/i18n`.
 
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
@@ -104,7 +102,9 @@ columns `q2_response` and `q2_canonical_code`.
 5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
    at `questions`.
 6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
-   parent-categories and each parent-category can include a list of sub-categories.
+   parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
+   hierarchy of categories, create a parent category with `code` as `NA` and include the categories as its
+   sub-categories.
 
 ## PMNCH - Azure deployment
 
