@@ -138,7 +138,6 @@ def load_campaign_data(campaign_code: str):
     ):
         df_responses["age_bucket"] = df_responses["age"]
         df_responses["age_bucket_default"] = df_responses["age"]
-        df_responses["age"] = ""
     else:
         # Range for age bucket might differ from campaign to campaign
         df_responses["age_bucket"] = df_responses["age"].apply(

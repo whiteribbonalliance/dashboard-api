@@ -26,7 +26,7 @@ SOFTWARE.
 from pydantic import BaseModel, Field
 
 
-class ResponseColumn(BaseModel):
+class ResponseSampleColumn(BaseModel):
     name: str = Field(description="The name")
     id: str = Field(description="The id")
     type: str = Field(description="The type")

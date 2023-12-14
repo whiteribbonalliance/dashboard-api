@@ -49,7 +49,7 @@ from app.schemas.filter_options import FilterOptions
 from app.schemas.option_bool import OptionBool
 from app.schemas.option_str import OptionStr
 from app.schemas.q_code import Question
-from app.schemas.response_column import ResponseColumn
+from app.schemas.response_column import ResponseSampleColumn
 from app.schemas.response_topic import ResponseTopic
 from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
@@ -753,7 +753,7 @@ class CampaignService:
 
         return list(parent_categories)
 
-    def __get_responses_sample_columns(self, q_code: str) -> list[ResponseColumn]:
+    def __get_responses_sample_columns(self, q_code: str) -> list[ResponseSampleColumn]:
         """Get responses sample columns"""
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()

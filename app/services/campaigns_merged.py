@@ -224,7 +224,7 @@ class CampaignsMergedService:
             ),
         }
 
-        # Responses sample - (keep only columns response, description, canonical_country and age)
+        # Responses sample - Only keep these columns
         columns_to_keep = {"response", "description", "canonical_country", "age"}
         responses_sample["columns"] = [
             x for x in responses_sample["columns"] if x.get("id") in columns_to_keep

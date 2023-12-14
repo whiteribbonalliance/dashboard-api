@@ -33,7 +33,7 @@ from app.databases import Database
 from app.schemas.category import ParentCategory
 from app.schemas.country import Country
 from app.schemas.region import Region
-from app.schemas.response_column import ResponseColumn
+from app.schemas.response_column import ResponseSampleColumn
 
 inflect_engine = inflect.engine()
 
@@ -145,7 +145,7 @@ class Campaign:
 
         return []
 
-    def get_responses_sample_columns(self) -> list[ResponseColumn]:
+    def get_responses_sample_columns(self) -> list[ResponseSampleColumn]:
         """Get responses sample columns"""
 
         responses_sample_columns = self.__db.responses_sample_columns
