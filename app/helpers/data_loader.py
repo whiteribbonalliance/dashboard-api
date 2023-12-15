@@ -34,7 +34,7 @@ from app import crud
 from app import global_variables
 from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
-from app.helpers import q_codes_finder
+from app.helpers import q_codes_finder, q_col_names
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country
@@ -258,6 +258,25 @@ def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
             # To datetime
             if "ingestion_time" in df.columns.tolist():
                 df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
+
+            # Required columns
+            required_columns = ["alpha2country", "age"]
+            q_codes = q_codes_finder.find_in_df(df=df)
+            for q_code in q_codes:
+                required_columns.append(
+                    q_col_names.get_response_col_name(q_code=q_code)
+                )
+                required_columns.append(
+                    q_col_names.get_canonical_code_col_name(q_code=q_code)
+                )
+
+            # Check if all required columns are present
+            df_columns = df.columns.tolist()
+            for required_column in required_columns:
+                if required_column not in df_columns:
+                    raise Exception(
+                        f"Required column {required_column} not found in campaign {campaign_code}."
+                    )
 
             return df
 

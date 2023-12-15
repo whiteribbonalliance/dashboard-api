@@ -30,7 +30,8 @@ def find_in_df(df: pd.DataFrame) -> list[str]:
     """
     Find q codes by analysing df.
     q1 refers to the question from which the respondent gave a response.
-    There can be multiple questions e.g. q2, q3 etc.
+    If q1 is included that means that the columns q1_response and q1_canonical_code are present.
+    There can be multiple questions e.g. q1, q2, q3 etc.
     """
 
     campaign_q_codes: list[str] = []
