@@ -117,7 +117,7 @@ async def main():
     server = Server(
         config=uvicorn.Config(
             app=app_fastapi,
-            host=settings.SERVER_HOST,
+            host=settings.HOST,
             port=settings.PORT,
             reload=settings.RELOAD,
             workers=1,

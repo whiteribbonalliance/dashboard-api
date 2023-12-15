@@ -8,14 +8,16 @@ through the endpoints. For more information on how to do this, continue reading 
 
 ## Environment variables:
 
+- `HOST=` The host.
+- `PORT=` The port.
+- `APP_TITLE=` App title.
+- `APP_DESCRIPTION=` App description.
 - `STAGE=` prod or dev.
-- `PORT=` The port to run the API on.
-- `NEWRELIC_API_KEY=` The New Relic API key.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
-- `TRANSLATIONS_ENABLED=` True or `False.
-- `APP_DESCRIPTION=` App description.
-- `APP_TITLE=` App title.
+- `TRANSLATIONS_ENABLED=` Optional - True or False.
+- `NEWRELIC_API_KEY=` Optional - The New Relic API key.
+- `NEW_RELIC_URL=` Optional - The New Relic URL.
 
 ## Development
 
@@ -25,7 +27,8 @@ through the endpoints. For more information on how to do this, continue reading 
 pip install -r requirements.txt
 ```
 
-Configure the environment variables.
+Configure the environment variables. To allow translations with `Google Cloud Translation API` include the service
+account's `credentials.json` at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
 
 Check the section `CSV file` and `How to add a new campaign`.
 

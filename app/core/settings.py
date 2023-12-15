@@ -31,19 +31,22 @@ from pydantic import BaseSettings
 from app.enums.api_prefix import ApiPrefix
 
 STAGE = os.getenv("STAGE", "")
-ONLY_PMNCH = os.getenv("ONLY_PMNCH", "").lower() == "true"
 
 
 class Settings(BaseSettings):
+    HOST: str = os.getenv("HOST")
+    PORT: int = int(os.getenv("PORT", 8000))
     VERSION: str = "1.0.0"
     APP_TITLE: str = os.getenv("APP_TITLE", "")
     API_PREFIX: str = ApiPrefix.v1.value
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
+    NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY", "")
+    NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL", "")
 
     # These env variables are only used for campaign pmn01a
-    ONLY_PMNCH: bool = ONLY_PMNCH
+    ONLY_PMNCH: bool = os.getenv("ONLY_PMNCH", "").lower() == "true"
     AZURE_TRANSLATOR_KEY: str = os.getenv("AZURE_TRANSLATOR_KEY")
     AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
     AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
@@ -53,9 +56,7 @@ class Settings(BaseSettings):
 
 
 class DevSettings(Settings):
-    SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = True
-    PORT: int = int(os.getenv("PORT", 8000))
     RELOAD: bool = True
     CORS: dict = {
         "allow_origins": [
@@ -71,9 +72,7 @@ class DevSettings(Settings):
 
 
 class ProdSettings(Settings):
-    SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
-    PORT: int = int(os.getenv("PORT", 8000))
     RELOAD: bool = False
     CORS: dict = {
         "allow_origins": [

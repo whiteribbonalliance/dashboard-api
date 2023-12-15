@@ -23,12 +23,9 @@ SOFTWARE.
 
 """
 
-"""This module handles advanced logging. Logging both to a stdout and a centralized 3-rd party DB are supported."""
-
 import gzip
 import json
 import logging
-import os
 from logging import Handler, Formatter
 
 import requests
@@ -37,14 +34,14 @@ from app.core.settings import get_settings
 
 settings = get_settings()
 
+NEWRELIC_API_KEY = settings.NEWRELIC_API_KEY
 NEW_RELIC_HEADERS = {
-    "Api-Key": os.environ.get("NEWRELIC_API_KEY"),
+    "Api-Key": NEWRELIC_API_KEY,
     "Content-Encoding": "gzip",
     "Content-Type": "application/gzip",
 }
-
 PROJECT_NAME = "dashboard-api"
-NEW_RELIC_URL = "https://log-api.eu.newrelic.com/log/v1"
+NEW_RELIC_URL = settings.NEW_RELIC_URL
 
 
 # ----------------------------------------------------------------------------------------------------------------------------
@@ -56,7 +53,7 @@ class NewRelicHandler(Handler):
     def emit(self, record):
         log_payload = self.format(record)
 
-        if settings.STAGE == "prod":
+        if settings.STAGE == "prod" and NEW_RELIC_URL and NEWRELIC_API_KEY:
             requests.post(NEW_RELIC_URL, data=log_payload, headers=NEW_RELIC_HEADERS)
 
 
