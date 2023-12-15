@@ -93,7 +93,7 @@ class CampaignService:
         self.__filter_2 = filter_2
 
         # Translation API code
-        self.__cloud_service: CloudService = utils.get_cloud_service_by_campaign(
+        self.__cloud_service: CloudService = utils.get_cloud_service_name_by_campaign(
             campaign_code=self.__campaign_code
         )
 
@@ -2151,7 +2151,7 @@ class CampaignService:
         # CSV filename
         if unique_filename_code:
             unique_filename_code = f"_{unique_filename_code}"
-        csv_filename = f"wra_{self.__campaign_code}{unique_filename_code}.csv"
+        csv_filename = f"export_{self.__campaign_code}{unique_filename_code}.csv"
 
         # Filter by date
         if from_date and to_date:

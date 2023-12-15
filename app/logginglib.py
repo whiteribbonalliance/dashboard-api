@@ -43,7 +43,7 @@ NEW_RELIC_HEADERS = {
     "Content-Type": "application/gzip",
 }
 
-PROJECT_NAME = "wra-global-dashboard-api"
+PROJECT_NAME = "dashboard-api"
 NEW_RELIC_URL = "https://log-api.eu.newrelic.com/log/v1"
 
 

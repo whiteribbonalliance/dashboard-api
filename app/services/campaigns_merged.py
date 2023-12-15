@@ -220,7 +220,6 @@ class CampaignsMergedService:
                     if x.responses_sample
                 ],
                 n_items=1000,
-                shuffle=True,
             ),
         }
 

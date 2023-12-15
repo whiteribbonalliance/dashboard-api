@@ -38,7 +38,9 @@ from app.types import CloudService, AzureBlobStorageContainerMountPath
 
 
 def contains_letters(text: str):
-    """Check if a string contains letters"""
+    """
+    Check if a string contains letters.
+    """
 
     if type(text) is str:
         return re.search(r"[a-zA-Z]", text)
@@ -47,7 +49,9 @@ def contains_letters(text: str):
 def divide_list_into_chunks_by_text_count(
     my_list: list[str], n: int
 ) -> list[list[str]]:
-    """Divide list into chunks by text count"""
+    """
+    Divide list into chunks by text count.
+    """
 
     def divide():
         for i in range(0, len(my_list), n):
@@ -59,7 +63,9 @@ def divide_list_into_chunks_by_text_count(
 def divide_list_into_chunks_by_char_count(
     my_list: list[str], n: int
 ) -> list[list[str]]:
-    """Divide list into chunks by char count"""
+    """
+    Divide list into chunks by char count.
+    """
 
     total_chars_count = sum(len(i) for i in my_list)
     if total_chars_count <= n:
@@ -82,10 +88,12 @@ def divide_list_into_chunks_by_char_count(
     return result_list
 
 
-def get_cloud_service_by_campaign(
+def get_cloud_service_name_by_campaign(
     campaign_code: str,
 ) -> CloudService:
-    """Get translation api code"""
+    """
+    Get cloud service name.
+    """
 
     if campaign_code == LegacyCampaignCode.pmn01a.value:
         cloud_service: CloudService = "azure"
@@ -96,12 +104,14 @@ def get_cloud_service_by_campaign(
 
 
 def clear_tmp_dir():
-    """Clear tmp dir"""
+    """
+    Clear tmp dir.
+    """
 
     if not os.path.isdir("/tmp"):
         return
 
-    for filename in glob.glob("/tmp/wra_*"):
+    for filename in glob.glob("/tmp/export_*"):
         try:
             os.remove(filename)
         except OSError:
@@ -111,20 +121,16 @@ def clear_tmp_dir():
 def get_distributed_list_of_dictionaries(
     data_lists: list[list[dict]],
     sort_by_key: str = None,
-    remove_duplicates: bool = False,
     n_items: int = None,
-    skip_list_size_check: bool = False,
-    shuffle: bool = False,
+    remove_duplicates: bool = False,
 ) -> list[dict]:
     """
     Given a list containing a list of dictionaries, distribute the list items to a single list of dictionaries.
 
     :param data_lists: A list containing lists of dictionaries.
     :param sort_by_key: Optional, sort by dictionary key (desc) and pick top items.
-    :param remove_duplicates: Optional, remove duplicates from list.
     :param n_items: Optional, n items to pick from each list.
-    :param skip_list_size_check: Optional, skip checking the size of returned list.
-    :param shuffle: Optional, shuffle result.
+    :param remove_duplicates: Optional, remove duplicates from list.
     """
 
     distributed_data_list = []
@@ -139,7 +145,7 @@ def get_distributed_list_of_dictionaries(
     # Get items from each list
     for data_list in data_lists:
         if data_list:
-            # n items
+            # Set n items
             if not n_items:
                 n_items = math.ceil(max_items_count / len(data_lists))
             if n_items > len(data_list):
@@ -166,14 +172,12 @@ def get_distributed_list_of_dictionaries(
             if x not in distributed_data_list[:index]
         ]
 
-    # Keep the list the size of max_items_count
-    if not skip_list_size_check:
-        if len(distributed_data_list) > max_items_count:
-            distributed_data_list = distributed_data_list[:max_items_count]
-
     # Shuffle
-    if shuffle:
-        random.shuffle(distributed_data_list)
+    random.shuffle(distributed_data_list)
+
+    # Keep the list the size of max_items_count
+    if len(distributed_data_list) > max_items_count:
+        distributed_data_list = distributed_data_list[:max_items_count]
 
     return distributed_data_list
 
@@ -206,12 +210,11 @@ def get_merged_flattened_list_of_dictionaries(
     data_lists: list[list[dict]], unique_key: str, keys_to_merge: list[str]
 ) -> list[dict]:
     """
-    Given a list containing a list of dictionaries, find duplicates by a specific dictionary key and merge them to a
-    single list.
+    Given a list containing a list of dictionaries, find duplicates by a specific dictionary key and merge them to a single list.
 
     :param data_lists: A list containing lists of dictionaries.
     :param unique_key: Key to use for checking duplicates.
-    :param keys_to_merge: If the value of the key is an int, add the value to an existing dictionary with same key.
+    :param keys_to_merge: Only applicable if the value of the key is an int. Will do an addition with all values with the same key in the flattened list of dictionaries result.
     """
 
     # Flatten the list
@@ -221,11 +224,12 @@ def get_merged_flattened_list_of_dictionaries(
 
     tmp_merged: dict[str, dict] = {}
     for data in data_lists_flattened:
+        # If key is not found, continue
         data_key_value = data.get(unique_key)
         if not data_key_value:
             continue
 
-        # Add data to dict
+        # Add new data to dict
         if data_key_value not in tmp_merged.keys():
             tmp_merged[data_key_value] = data
 
@@ -247,7 +251,7 @@ def extract_first_occurring_numbers(
 ) -> int:
     """
     Extract numbers until the next char is not numeric e.g. "25-30" -> 25.
-    Optionally use "0" in place of the first value if it is "<".
+    Optionally use "0" in place of the first value if it is "<" to include it as a number.
     """
 
     numbers = []
@@ -267,7 +271,9 @@ def extract_first_occurring_numbers(
 
 
 def get_dict_hash_value(dictionary: dict[str, any]) -> str:
-    """Get dictionary hash value"""
+    """
+    Get dictionary hash value.
+    """
 
     md5_hash = hashlib.md5()
     encoded = json.dumps(dictionary, sort_keys=True).encode()
@@ -277,15 +283,18 @@ def get_dict_hash_value(dictionary: dict[str, any]) -> str:
 
 
 def get_string_hash_value(string: str) -> str:
-    """Get string hash value"""
+    """
+    Get string hash value.
+    """
 
     return sha256(string.encode()).hexdigest()
 
 
 def get_translation_languages(cloud_service: CloudService) -> dict:
-    """Get translation languages"""
+    """
+    Get translation languages.
+    """
 
-    # Languages supported by Cloud Translation API
     if cloud_service == "google":
         return constants.LANGUAGES_GOOGLE
     elif cloud_service == "azure":
@@ -295,7 +304,9 @@ def get_translation_languages(cloud_service: CloudService) -> dict:
 
 
 def create_tmp_dir_if_not_exists():
-    """Create '/tmp' dir"""
+    """
+    Create /tmp dir.
+    """
 
     tmp_dir_path = "/tmp"
     if not os.path.isdir(tmp_dir_path):
@@ -304,8 +315,7 @@ def create_tmp_dir_if_not_exists():
 
 def create_pmnch_main_dir_if_not_exists():
     """
-    Create '/pmnch_main' dir.
-    Is a path mapping to an Azure Blob storage container.
+    Create /pmnch_main dir.
     """
 
     container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"

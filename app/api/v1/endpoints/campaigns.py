@@ -330,7 +330,7 @@ async def campaign_countries_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename=wra_{campaign_code}_countries_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=export_{campaign_code}_countries_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
@@ -368,7 +368,7 @@ async def campaign_source_files_breakdown(
         media_type="text/csv",
         headers={
             "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename=wra_{campaign_code}_source_files_breakdown.csv",
+            "Content-Disposition": f"attachment; filename=export_{campaign_code}_source_files_breakdown.csv",
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )

@@ -1,4 +1,4 @@
-# What Women Want Dashboard API
+# Dashboard API
 
 ## What does this API do?
 
