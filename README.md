@@ -14,10 +14,11 @@ through the endpoints. For more information on how to do this, continue reading 
 - `APP_TITLE=` App title.
 - `APP_DESCRIPTION=` App description.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_NAME=` Optional - Bucket name where generated CSV files can be stored for downloading
-  campaign data.
+  campaign data. Requires Google Cloud `credentials.json` with the right permissions.
 - `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths e.g. for downloading
   campaign data.
-- `TRANSLATIONS_ENABLED=` Optional - True or False.
+- `TRANSLATIONS_ENABLED=` Optional - True or False. If True, requires Google Cloud `credentials.json` with the right
+  permissions.
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
 - `NEW_RELIC_URL=` Optional - The New Relic URL.
 
@@ -29,8 +30,8 @@ through the endpoints. For more information on how to do this, continue reading 
 pip install -r requirements.txt
 ```
 
-Configure the environment variables. To allow translations with `Google Cloud Translation API` include the service
-account's `credentials.json` at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
+Configure the environment variables. To allow translations with `Google Cloud Translation API` include the Google Cloud
+service account's `credentials.json` at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
 
 Check the section `CSV file` and `How to add a new campaign`.
 
@@ -46,8 +47,8 @@ You can view the docs at `http://127.0.0.1:8000/docs`.
 
 ## Translations
 
-To allow translations with `Google Cloud Translation API` include the service account's `credentials.json` at the
-root of the project and set `TRANSLATIONS_ENABLED` to `True`.
+To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
+at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
 
 ### Back-end
 
