@@ -34,9 +34,9 @@ STAGE = os.getenv("STAGE", "")
 ONLY_PMNCH = os.getenv("ONLY_PMNCH", "").lower() == "true"
 
 if ONLY_PMNCH:
-    APP_TITLE = "What Young People Want API"
+    APP_TITLE = "What Young People Want Dashboard API"
 else:
-    APP_TITLE = "What Women Want API"
+    APP_TITLE = "Dashboard API"
 
 
 class Settings(BaseSettings):

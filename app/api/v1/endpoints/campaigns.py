@@ -71,7 +71,9 @@ def read_campaign(
     q_code: str = Depends(dependencies.q_code_check),
     response_year: str = Depends(dependencies.response_year_check),
 ):
-    """Read campaign"""
+    """
+    Read campaign.
+    """
 
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
@@ -102,7 +104,9 @@ def read_filter_options(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     language: str = Depends(dependencies.language_check),
 ):
-    """Read filter options for campaign"""
+    """
+    Read filter options for campaign.
+    """
 
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -124,7 +128,9 @@ def read_histogram_options(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     language: str = Depends(dependencies.language_check),
 ):
-    """Read histogram options for campaign"""
+    """
+    Read histogram options for campaign.
+    """
 
     # Service
     campaign_service = CampaignService(campaign_code=campaign_code, language=language)
@@ -133,6 +139,77 @@ def read_histogram_options(
     histogram_options = campaign_service.get_histogram_options()
 
     return histogram_options
+
+
+@router.post(
+    path="/{campaign_code}/data/public",
+    response_class=StreamingResponse,
+    status_code=status.HTTP_200_OK,
+)
+def campaign_public_data(
+    campaign_req: CampaignRequest,
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    response_year: str = Depends(dependencies.response_year_check),
+):
+    """
+    Read campaign public data.
+    This endpoint currently only allows the campaign healthwellbeing.
+    """
+
+    filter_1 = campaign_req.filter_1
+    filter_2 = campaign_req.filter_2
+
+    # Only allow campaign healthwellbeing
+    if campaign_code != LegacyCampaignCode.healthwellbeing.value:
+        raise http_exceptions.UnauthorizedHTTPException(
+            "Reading campaign data not allowed."
+        )
+
+    # Service
+    campaign_service = CampaignService(
+        campaign_code=campaign_code,
+        response_year=response_year,
+        language="en",
+        filter_1=filter_1,
+        filter_2=filter_2,
+    )
+
+    # Create unique filename code from campaign_code and filters by hashing
+    unique_filename_code = ""
+    if filter_1:
+        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
+            filter_1.dict()
+        )
+    if filter_2:
+        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
+            filter_2.dict()
+        )
+    if filter_1 or filter_2:
+        unique_filename_code = (
+            f"{utils.get_string_hash_value(campaign_code)}{unique_filename_code}"
+        )
+
+    # Get url and filename
+    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
+        cloud_service="google", unique_filename_code=unique_filename_code
+    )
+
+    def iter_file():
+        with requests.Session() as session:
+            response = session.get(url=url, stream=True)
+            response.raise_for_status()
+            for chunk in response.iter_content(1024 * 1024):
+                yield chunk
+
+    return StreamingResponse(
+        content=iter_file(),
+        media_type="text/csv",
+        headers={
+            "Content-Type": "text/csv",
+            "Content-Disposition": f"attachment; filename={csv_filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
 
 
 @router.post(
@@ -146,7 +223,9 @@ def campaign_data(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     username: str = Depends(dependencies.verify_user),
 ):
-    """Read campaign data"""
+    """
+    Read campaign data.
+    """
 
     # Get user
     users = databases.get_users_from_databases()
@@ -226,75 +305,6 @@ def campaign_data(
     )
 
 
-@router.post(
-    path="/{campaign_code}/data/public",
-    response_class=StreamingResponse,
-    status_code=status.HTTP_200_OK,
-)
-def campaign_public_data(
-    campaign_req: CampaignRequest,
-    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    response_year: str = Depends(dependencies.response_year_check),
-):
-    """Read campaign public data"""
-
-    filter_1 = campaign_req.filter_1
-    filter_2 = campaign_req.filter_2
-
-    # Only allow campaign healthwellbeing
-    # Note: If campaign pmn01a should use this endpoint, make sure the data comes from Azure
-    if campaign_code != LegacyCampaignCode.healthwellbeing.value:
-        raise http_exceptions.UnauthorizedHTTPException(
-            "Reading campaign data not allowed."
-        )
-
-    # Service
-    campaign_service = CampaignService(
-        campaign_code=campaign_code,
-        response_year=response_year,
-        language="en",
-        filter_1=filter_1,
-        filter_2=filter_2,
-    )
-
-    # Create unique filename code from campaign_code and filters by hashing
-    unique_filename_code = ""
-    if filter_1:
-        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
-            filter_1.dict()
-        )
-    if filter_2:
-        unique_filename_code = unique_filename_code + utils.get_dict_hash_value(
-            filter_2.dict()
-        )
-    if filter_1 or filter_2:
-        unique_filename_code = (
-            f"{utils.get_string_hash_value(campaign_code)}{unique_filename_code}"
-        )
-
-    # Get url and filename
-    url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        cloud_service="google", unique_filename_code=unique_filename_code
-    )
-
-    def iter_file():
-        with requests.Session() as session:
-            response = session.get(url=url, stream=True)
-            response.raise_for_status()
-            for chunk in response.iter_content(1024 * 1024):
-                yield chunk
-
-    return StreamingResponse(
-        content=iter_file(),
-        media_type="text/csv",
-        headers={
-            "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename={csv_filename}",
-            "Access-Control-Expose-Headers": "Content-Disposition",
-        },
-    )
-
-
 @router.get(
     path="/{campaign_code}/data/countries-breakdown",
     response_class=StreamingResponse,
@@ -304,7 +314,9 @@ async def campaign_countries_breakdown(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     _username: str = Depends(dependencies.verify_user),
 ):
-    """Read campaign countries breakdown"""
+    """
+    Read campaign countries breakdown.
+    """
 
     # CRUD
     campaign_crud = crud.Campaign(campaign_code=campaign_code)
@@ -345,7 +357,9 @@ async def campaign_source_files_breakdown(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     _username: str = Depends(dependencies.verify_user),
 ):
-    """Read campaign source files breakdown"""
+    """
+    Read campaign source files breakdown.
+    """
 
     # CRUD
     campaign_crud = crud.Campaign(campaign_code=campaign_code)

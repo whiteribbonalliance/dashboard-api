@@ -29,20 +29,19 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import databases
 from app import utils
 from app.api.v1.api import api_router
 from app.core.settings import get_settings
-from app import databases
-from app.scheduler import app as app_rocketry
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
-
+from app.scheduler import app as app_rocketry
 
 settings = get_settings()
 
 if settings.ONLY_PMNCH:
     description = "What Young People Want Dashboard API."
 else:
-    description = "What Women Want Dashboard API."
+    description = "Dashboard API."
 
 # Create dirs required in local development.
 # In production these dirs are already present.
@@ -54,11 +53,35 @@ if settings.STAGE == "dev" and settings.ONLY_PMNCH:
 # Create in-memory Database objects
 databases.create_databases(campaign_codes=[x.code for x in CAMPAIGNS_CONFIG.values()])
 
+tags_metadata = [
+    {
+        "name": "Campaigns",
+        "description": "Read or download data related to campaigns.",
+    },
+    {
+        "name": "Campaigns merged",
+        "description": "Read data of all campaigns merged together.",
+    },
+    {
+        "name": "Authentication",
+        "description": "Login and receive a token. This token can be used to access protected routes that allow downloading campaigns data.",
+    },
+    {
+        "name": "Data",
+        "description": "Allows reloading the data from source and check loading status.",
+    },
+    {
+        "name": "Settings",
+        "description": "Read app settings.",
+    },
+]
+
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,
     description=description,
     version=settings.VERSION,
     docs_url="/docs",
+    openapi_tags=tags_metadata,
     contact={
         "name": "Thomas Wood",
         "url": "https://fastdatascience.com",
@@ -76,7 +99,7 @@ app_fastapi.add_middleware(
 app_fastapi.include_router(api_router, prefix=settings.API_PREFIX)
 
 
-@app_fastapi.get(path="/", status_code=status.HTTP_200_OK)
+@app_fastapi.get(path="/", status_code=status.HTTP_200_OK, tags=["Index"])
 def index():
     return {"message": "API to supply dashboard with response data."}
 
