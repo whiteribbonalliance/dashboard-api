@@ -29,11 +29,12 @@ import logging
 
 import pandas as pd
 
-from app import constants, databases, q_codes_finder
+from app import constants, databases
 from app import crud
 from app import global_variables
 from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
+from app.helpers import q_codes_finder
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.country import Country

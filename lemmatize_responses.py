@@ -30,8 +30,7 @@ import pandas as pd
 from pywsd.utils import lemmatize_sentence
 
 from app import constants
-from app import q_codes_finder
-from app.helpers import q_col_names
+from app.helpers import q_col_names, q_codes_finder
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 
 nltk.download("averaged_perceptron_tagger")

@@ -53,6 +53,7 @@ if settings.STAGE == "dev" and settings.ONLY_PMNCH:
 # Create in-memory Database objects
 databases.create_databases(campaign_codes=[x.code for x in CAMPAIGNS_CONFIG.values()])
 
+# Tags metadata
 tags_metadata = [
     {
         "name": "Campaigns",
@@ -68,7 +69,7 @@ tags_metadata = [
     },
     {
         "name": "Data",
-        "description": "Allows reloading the data from source and check loading status.",
+        "description": "Allows reloading the data from source and check loading status. Only useful if data is hosted externally.",
     },
     {
         "name": "Settings",
