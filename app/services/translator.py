@@ -70,15 +70,15 @@ class Translator:
         # Cloud service to use (google or azure)
         self.__cloud_service = cloud_service
 
+        # Translations enabled
+        self.__translations_enabled = settings.TRANSLATIONS_ENABLED
+
         # Translation function to use
         if self.__cloud_service == "google":
-            self.__credentials_included = settings.GOOGLE_CREDENTIALS_INCLUDED
             self.__request_translation = self.__request_translation_with_google
         elif self.__cloud_service == "azure":
-            self.__credentials_included = bool(settings.AZURE_TRANSLATOR_KEY)
             self.__request_translation = self.__request_translation_with_azure
         else:
-            self.__credentials_included = settings.GOOGLE_CREDENTIALS_INCLUDED
             self.__request_translation = self.__request_translation_with_google
 
     def translate_text(self, text: str, delimiter: str | None = None) -> str:
@@ -95,7 +95,7 @@ class Translator:
             return text
         if not utils.contains_letters(text):
             return text
-        if not self.__credentials_included:
+        if not self.__translations_enabled:
             return text
 
         if delimiter:
@@ -114,7 +114,7 @@ class Translator:
         Does not cache translations.
         """
 
-        if not self.__credentials_included:
+        if not self.__translations_enabled:
             return text
 
         try:
@@ -151,7 +151,7 @@ class Translator:
             return text
         if not utils.contains_letters(text):
             return text
-        if not self.__credentials_included:
+        if not self.__translations_enabled:
             return text
 
         extracted_texts = set()
@@ -192,7 +192,7 @@ class Translator:
         if self.__target_language == "en":
             self.__clear_extracted_texts()
             return
-        if not self.__credentials_included:
+        if not self.__translations_enabled:
             self.__clear_extracted_texts()
             return
 

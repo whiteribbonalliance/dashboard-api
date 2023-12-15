@@ -34,4 +34,4 @@ router = APIRouter(prefix="/settings")
 
 @router.get(path="/", status_code=status.HTTP_200_OK)
 def read_settings():
-    return {"translations_enabled": settings.GOOGLE_CREDENTIALS_INCLUDED}
+    return {"translations_enabled": settings.TRANSLATIONS_ENABLED}

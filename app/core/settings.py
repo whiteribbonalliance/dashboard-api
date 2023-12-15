@@ -38,22 +38,17 @@ if ONLY_PMNCH:
 else:
     APP_TITLE = "What Women Want API"
 
-if os.path.isfile("credentials.json"):
-    GOOGLE_CREDENTIALS_INCLUDED = True
-else:
-    GOOGLE_CREDENTIALS_INCLUDED = False
-
 
 class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     APP_TITLE: str = APP_TITLE
     API_PREFIX: str = ApiPrefix.v1.value
-    ONLY_PMNCH: bool = ONLY_PMNCH
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
-    GOOGLE_CREDENTIALS_INCLUDED: bool = GOOGLE_CREDENTIALS_INCLUDED
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
+    TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
 
     # These env variables are only used for campaign pmn01a
+    ONLY_PMNCH: bool = ONLY_PMNCH
     AZURE_TRANSLATOR_KEY: str = os.getenv("AZURE_TRANSLATOR_KEY")
     AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
     AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")

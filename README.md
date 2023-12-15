@@ -18,7 +18,11 @@ Then it is deployed to Google App Engine using a Flex environment (see `app.yaml
 - `NEWRELIC_API_KEY=` The New Relic API key.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
-- `ONLY_PMNCH=` `PMNCH` exclusive. Accepts `True` or `False`.
+- `TRANSLATIONS_ENABLED=` True or `False.
+
+The following environment variables are only required for deploying `PMNCH` to `Azure`.
+
+- `ONLY_PMNCH=` True or `False.
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
 - `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
