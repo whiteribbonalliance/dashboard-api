@@ -26,8 +26,10 @@ SOFTWARE.
 import copy
 import json
 import logging
+from io import StringIO
 
 import pandas as pd
+import requests
 
 from app import constants, databases
 from app import crud
@@ -69,7 +71,7 @@ def load_campaign_data(campaign_code: str):
     campaign_crud = crud.Campaign(campaign_code=campaign_code, db=db_tmp)
 
     # Get df
-    df_responses = get_campaign_df(campaign_code=campaign_code)
+    df_responses = load_campaign_df(campaign_code=campaign_code)
     if df_responses is None:
         raise Exception(f"Could not load dataframe for campaign {campaign_code}.")
 
@@ -235,50 +237,72 @@ def load_campaign_data(campaign_code: str):
     databases.set_campaign_db(campaign_code=campaign_code, db=db_tmp)
 
 
-def get_campaign_df(campaign_code: str) -> pd.DataFrame | None:
+def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     """
-    Load campaign dataframe from CSV file.
+    Load campaign dataframe.
     """
 
-    # if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
-    #     # Get data from Azure Blob Storage
-    #     mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
-    #     return pd.read_pickle(
-    #         filepath_or_buffer=f"{mount_path}/what_young_people_want.pkl",
-    #     )
+    df = None
 
-    for campaign_config in CAMPAIGNS_CONFIG.values():
-        if campaign_config.code == campaign_code:
+    # For campaign pmn01a get the data from Azure Blob Storage
+    if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
+        blob = azure_blob_storage_interactions.get_blob(
+            container_name="main", blob_name="pmn01a.csv"
+        )
+        df = pd.read_csv(
+            filepath_or_buffer=StringIO(blob.readall().decode("utf-8")),
+            keep_default_na=False,
+            dtype={"age": str, "response_year": str},
+        )
+
+    # Load data for campaign
+    if campaign_config := CAMPAIGNS_CONFIG.get(campaign_code):
+        dtype = {"age": str, "response_year": str}
+        keep_default_na = False
+
+        # From file
+        if campaign_config.file:
             df = pd.read_csv(
                 filepath_or_buffer=campaign_config.filepath,
-                keep_default_na=False,
-                dtype={"age": str, "response_year": str},
+                keep_default_na=keep_default_na,
+                dtype=dtype,
             )
 
-            # To datetime
-            if "ingestion_time" in df.columns.tolist():
-                df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
-
-            # Required columns
-            required_columns = ["alpha2country", "age"]
-            q_codes = q_codes_finder.find_in_df(df=df)
-            for q_code in q_codes:
-                required_columns.append(
-                    q_col_names.get_response_col_name(q_code=q_code)
-                )
-                required_columns.append(
-                    q_col_names.get_canonical_code_col_name(q_code=q_code)
+        # From link
+        elif campaign_config.link:
+            response = requests.get(url=campaign_config.link)
+            if response.ok:
+                df = pd.read_csv(
+                    filepath_or_buffer=StringIO(response.content.decode("utf-8")),
+                    keep_default_na=keep_default_na,
+                    dtype=dtype,
                 )
 
-            # Check if all required columns are present
-            df_columns = df.columns.tolist()
-            for required_column in required_columns:
-                if required_column not in df_columns:
-                    raise Exception(
-                        f"Required column {required_column} not found in campaign {campaign_code}."
-                    )
+    if df is not None:
+        # To datetime
+        if "ingestion_time" in df.columns.tolist():
+            df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
 
-            return df
+        # Required columns
+        required_columns = ["alpha2country", "age"]
+        q_codes = q_codes_finder.find_in_df(df=df)
+        for q_code in q_codes:
+            required_columns.append(q_col_names.get_response_col_name(q_code=q_code))
+            required_columns.append(
+                q_col_names.get_canonical_code_col_name(q_code=q_code)
+            )
+
+        # Check if all required columns are present
+        df_columns = df.columns.tolist()
+        for required_column in required_columns:
+            if required_column not in df_columns:
+                raise Exception(
+                    f"Required column {required_column} not found in campaign {campaign_code}."
+                )
+
+        return df
+    else:
+        raise Exception(f"Could not load dataframe for campaign {campaign_code}.")
 
 
 def get_age_bucket(age: str | int | None, campaign_code: str = None) -> str | None:

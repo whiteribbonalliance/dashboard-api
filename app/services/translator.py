@@ -38,7 +38,7 @@ from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.logginglib import init_custom_logger
 from app.services.translations_cache import TranslationsCache
-from app.types import CloudService
+from app.types import TCloudService
 
 settings = get_settings()
 
@@ -56,7 +56,7 @@ class Translator:
     To translate from any other language to English, use the quick_translate_text function.
     """
 
-    def __init__(self, cloud_service: CloudService, target_language: str = "en"):
+    def __init__(self, cloud_service: TCloudService, target_language: str = "en"):
         self.__target_language = target_language
         self.__translations_cache = TranslationsCache()
 

@@ -30,7 +30,7 @@ import shutil
 from app import utils
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
-from app.types import CloudService
+from app.types import TCloudService
 
 count_chars_only = False
 
@@ -38,7 +38,7 @@ if not os.path.isfile("credentials.json"):
     raise Exception("credentials.json not found.")
 
 
-def translate_front(cloud_service: CloudService):
+def translate_front(cloud_service: TCloudService):
     """Apply translation on texts"""
 
     name = ""

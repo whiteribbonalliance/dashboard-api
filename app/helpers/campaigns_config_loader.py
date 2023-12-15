@@ -26,6 +26,7 @@ SOFTWARE.
 import json
 import os
 
+import validators
 from pydantic import ValidationError
 
 from app.schemas.campaign_config import CampaignConfig
@@ -53,13 +54,23 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
                     f"Could not validate configuration found in config folder {config_folder}."
                 )
 
+    # If no filename or link was provided
+    if not config.file and not config.link:
+        raise Exception("No filename or link was provided.")
+
     # Check if CSV file exists
-    csv_file = os.path.join(campaigns_config_folder, config_folder, config.filename)
-    if not os.path.isfile(csv_file):
-        raise Exception(
-            f"File {config.filename} was not found in config folder {config_folder}."
-        )
-    config.filepath = os.path.join(csv_file)
+    if config.file:
+        csv_file = os.path.join(campaigns_config_folder, config_folder, config.file)
+        if not os.path.isfile(csv_file):
+            raise Exception(
+                f"File {config.file} was not found in config folder {config_folder}."
+            )
+        config.filepath = os.path.join(csv_file)
+
+    # Check link
+    elif config.link:
+        if not validators.url(config.link):
+            raise Exception(f"{config.link} is not a valid link.")
 
     # Check for duplicate campaign code
     if config.code not in CAMPAIGNS_CONFIG:

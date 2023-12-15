@@ -25,10 +25,6 @@ SOFTWARE.
 
 from typing import Literal
 
-FilterSequence = Literal["1", "2"]
+TFilterSequence = Literal["1", "2"]
 
-CloudService = Literal["google", "azure"]
-
-AzureBlobStorageContainerMountPath = Literal["/pmnch_main"]
-
-AzureBlobStorageContainerName = Literal["main", "csv"]
+TCloudService = Literal["google", "azure"]

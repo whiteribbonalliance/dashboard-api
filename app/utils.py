@@ -34,7 +34,6 @@ from hashlib import sha256
 
 from app import constants
 from app.enums.legacy_campaign_code import LegacyCampaignCode
-from app.types import CloudService, AzureBlobStorageContainerMountPath
 
 
 def contains_letters(text: str):
@@ -90,15 +89,15 @@ def divide_list_into_chunks_by_char_count(
 
 def get_cloud_service_name_by_campaign(
     campaign_code: str,
-) -> CloudService:
+) -> str:
     """
     Get cloud service name.
     """
 
     if campaign_code == LegacyCampaignCode.pmn01a.value:
-        cloud_service: CloudService = "azure"
+        cloud_service: str = "azure"
     else:
-        cloud_service: CloudService = "google"
+        cloud_service: str = "google"
 
     return cloud_service
 
@@ -290,7 +289,7 @@ def get_string_hash_value(string: str) -> str:
     return sha256(string.encode()).hexdigest()
 
 
-def get_translation_languages(cloud_service: CloudService) -> dict:
+def get_translation_languages(cloud_service: str) -> dict:
     """
     Get translation languages.
     """
@@ -318,6 +317,6 @@ def create_pmnch_main_dir_if_not_exists():
     Create /pmnch_main dir.
     """
 
-    container_mount_path: AzureBlobStorageContainerMountPath = "/pmnch_main"
+    container_mount_path: str = "/pmnch_main"
     if not os.path.isdir(container_mount_path):
         os.mkdir(container_mount_path)

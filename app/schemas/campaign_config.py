@@ -23,6 +23,7 @@ SOFTWARE.
 
 """
 
+import validators
 from pydantic import BaseModel, Field, validator
 
 from app.schemas.category import ParentCategory
@@ -30,14 +31,28 @@ from app.schemas.category import ParentCategory
 
 class CampaignConfig(BaseModel):
     code: str = Field(min_length=1)
-    filename: str = Field(min_length=1)
+    file: str = Field()
+    link: str = Field()
     questions: dict[str, str]
     filepath: str = ""
     parent_categories: list[ParentCategory]
 
-    @validator("filename", pre=True)
-    def file_type_check(cls, v):
+    @validator("file", pre=True)
+    def file_check(cls, v):
+        if v == "":
+            return v
+
         if not v.endswith(".csv"):
+            return None
+
+        return v
+
+    @validator("link", pre=True)
+    def link_check(cls, v):
+        if v == "":
+            return v
+
+        if not validators.url(v):
             return None
 
         return v

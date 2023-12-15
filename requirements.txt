@@ -24,3 +24,4 @@ XlsxWriter==3.1.2
 deep-replacer==0.0.5
 pywsd==1.2.5
 nltk==3.8.1
+validators==0.22.0

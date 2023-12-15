@@ -33,7 +33,7 @@ from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.q_code import Question
 from app.services.translator import Translator
-from app.types import FilterSequence
+from app.types import TFilterSequence
 
 
 class CampaignsMergedService:
@@ -463,7 +463,7 @@ class CampaignsMergedService:
 
         return world_bubble_maps_coordinates
 
-    def __get_filter_respondents_count(self, filter_seq: FilterSequence) -> int:
+    def __get_filter_respondents_count(self, filter_seq: TFilterSequence) -> int:
         """Get filter respondents count"""
 
         if filter_seq == "1":
@@ -482,7 +482,7 @@ class CampaignsMergedService:
 
         return sum(filter_respondents_counts)
 
-    def __get_filter_average_age(self, filter_seq: FilterSequence) -> str:
+    def __get_filter_average_age(self, filter_seq: TFilterSequence) -> str:
         """Get filter average age"""
 
         average_age = "N/A"
@@ -510,7 +510,7 @@ class CampaignsMergedService:
 
         return str(average_age)
 
-    def __get_filter_average_age_bucket(self, filter_seq: FilterSequence) -> str:
+    def __get_filter_average_age_bucket(self, filter_seq: TFilterSequence) -> str:
         """Get filter average age bucket"""
 
         # Create a list containing all age buckets
@@ -538,7 +538,7 @@ class CampaignsMergedService:
 
         return self.__filters_are_identical
 
-    def __get_filter_description(self, filter_seq: FilterSequence) -> str:
+    def __get_filter_description(self, filter_seq: TFilterSequence) -> str:
         """
         Get filter description.
 

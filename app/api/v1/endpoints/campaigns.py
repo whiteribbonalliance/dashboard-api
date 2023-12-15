@@ -47,7 +47,7 @@ from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app.types import CloudService
+from app.types import TCloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -262,7 +262,7 @@ def campaign_data(
 
     # Azure
     if campaign_code == LegacyCampaignCode.pmn01a.value:
-        cloud_service: CloudService = "azure"
+        cloud_service: TCloudService = "azure"
 
         # Cleanup
         azure_blob_storage_interactions.cleanup(container_name="csv")
@@ -274,7 +274,7 @@ def campaign_data(
 
     # Google
     else:
-        cloud_service: CloudService = "google"
+        cloud_service: TCloudService = "google"
 
         # Cleanup
         google_cloud_storage_interactions.cleanup()

@@ -24,6 +24,7 @@ SOFTWARE.
 """
 
 import asyncio
+import os
 
 import uvicorn
 from fastapi import FastAPI, status
@@ -37,11 +38,6 @@ from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.scheduler import app as app_rocketry
 
 settings = get_settings()
-
-if settings.ONLY_PMNCH:
-    description = "What Young People Want Dashboard API."
-else:
-    description = "Dashboard API."
 
 # Create dirs required in local development.
 # In production these dirs are already present.
@@ -79,7 +75,7 @@ tags_metadata = [
 
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,
-    description=description,
+    description=os.getenv("APP_DESCRIPTION", ""),
     version=settings.VERSION,
     docs_url="/docs",
     openapi_tags=tags_metadata,

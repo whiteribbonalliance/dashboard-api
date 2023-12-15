@@ -14,14 +14,8 @@ through the endpoints. For more information on how to do this, continue reading 
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
 - `TRANSLATIONS_ENABLED=` True or `False.
-
-The following environment variables are only required for deploying `PMNCH` to `Azure`.
-
-- `ONLY_PMNCH=` True or `False.
-- `AZURE_TRANSLATOR_KEY=` The Azure translator key.
-- `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
-- `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
-- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
+- `APP_DESCRIPTION=` App description.
+- `APP_TITLE=` App title.
 
 ## Development
 
@@ -104,7 +98,8 @@ columns `q2_response` and `q2_canonical_code`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-config/example/config.json`).
 3. Include the CSV file in the new folder.
-4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `filename`.
+4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `file`. If instead you have a direct
+   link to the CSV file you may add the link to `link` and leave `file` empty. `file` has priority.
 5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
    at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`.
 6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
@@ -115,6 +110,14 @@ columns `q2_response` and `q2_canonical_code`.
    lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
 
 ## PMNCH - Azure deployment
+
+Additional environment variables:
+
+- `ONLY_PMNCH=` True or `False.
+- `AZURE_TRANSLATOR_KEY=` The Azure translator key.
+- `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
+- `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
+- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
 
 Because of organization policies, the dashboard at `https://whatyoungpeoplewant.whiteribbonalliance.org` should be
 deployed on `Azure` and make use of its services instead of `Google`. To solve this issue, two new repositories are

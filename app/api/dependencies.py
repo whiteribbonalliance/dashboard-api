@@ -32,7 +32,7 @@ from app import databases
 from app import utils, auth_handler, http_exceptions
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
-from app.types import CloudService
+from app.types import TCloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -119,7 +119,7 @@ def language_check(
     Language check.
     """
 
-    cloud_service: CloudService = "google"
+    cloud_service: TCloudService = "google"
     if lang not in utils.get_translation_languages(cloud_service=cloud_service):
         lang = "en"
 

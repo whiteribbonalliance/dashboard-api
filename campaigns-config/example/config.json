@@ -1,6 +1,7 @@
 {
   "code": "example",
-  "filename": "example.csv",
+  "file": "example.csv",
+  "link": "",
   "questions": {
     "q1": ""
   },

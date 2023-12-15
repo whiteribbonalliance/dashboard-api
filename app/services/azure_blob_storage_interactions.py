@@ -23,7 +23,6 @@ SOFTWARE.
 
 """
 
-import os
 from datetime import datetime, timedelta
 from io import StringIO
 
@@ -33,10 +32,10 @@ from azure.storage.blob import (
     BlobSasPermissions,
     BlobClient,
     generate_blob_sas,
+    StorageStreamDownloader,
 )
 
 from app.core.settings import get_settings
-from app.types import AzureBlobStorageContainerName
 
 settings = get_settings()
 
@@ -44,7 +43,7 @@ EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
 
 def get_container_client(
-    container_name: AzureBlobStorageContainerName,
+    container_name: str,
 ) -> ContainerClient:
     """Get container client"""
 
@@ -60,7 +59,7 @@ def get_container_client(
         )
 
 
-def cleanup(container_name: AzureBlobStorageContainerName, limit_gb: int = 5):
+def cleanup(container_name: str, limit_gb: int = 5):
     """Cleanup"""
 
     # Get container client
@@ -80,7 +79,7 @@ def cleanup(container_name: AzureBlobStorageContainerName, limit_gb: int = 5):
         clear_container(container_name=container_name)
 
 
-def clear_container(container_name: AzureBlobStorageContainerName):
+def clear_container(container_name: str):
     """Clear container"""
 
     # Get container client
@@ -94,9 +93,7 @@ def clear_container(container_name: AzureBlobStorageContainerName):
         container_client.delete_blob(blob.name)
 
 
-def upload_df_as_csv(
-    container_name: AzureBlobStorageContainerName, df: pd.DataFrame, csv_filename: str
-):
+def upload_df_as_csv(container_name: str, df: pd.DataFrame, csv_filename: str):
     """Upload dataframe as CSV"""
 
     # Save to buffer
@@ -119,7 +116,7 @@ def upload_df_as_csv(
     )
 
 
-def blob_exists(container_name: AzureBlobStorageContainerName, blob_name: str) -> bool:
+def blob_exists(container_name: str, blob_name: str) -> bool:
     """Check if blob exists"""
 
     # Get blob
@@ -132,7 +129,24 @@ def blob_exists(container_name: AzureBlobStorageContainerName, blob_name: str) -
     return blob.exists()
 
 
-def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) -> str:
+def get_blob(container_name: str, blob_name: str) -> StorageStreamDownloader[bytes]:
+    """
+    Get blob.
+
+    :param container_name: The container name.
+    :param blob_name: The blob name.
+    """
+
+    # Client
+    container_client = get_container_client(container_name=container_name)
+
+    try:
+        return container_client.download_blob(blob=blob_name)
+    except (Exception,) as e:
+        raise Exception(f"Could not get blob: {str(e)}.")
+
+
+def get_blob_url(container_name: str, blob_name: str) -> str:
     """Get blob url"""
 
     sas_blob = generate_blob_sas(
@@ -145,25 +159,3 @@ def get_blob_url(container_name: AzureBlobStorageContainerName, blob_name: str) 
     )
 
     return f"https://{settings.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"
-
-
-def upload_pmnch_pkl():
-    """Upload PMNCH Pickle file"""
-
-    filename = "pmn01a.pkl"
-
-    # Get blob client
-    blob_client = BlobClient.from_connection_string(
-        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
-        container_name="main",
-        blob_name=filename,
-        max_block_size=4 * 1024 * 1024,  # 4mb
-        max_single_put_size=16 * 1024 * 1024,  # 16mb
-    )
-
-    # Upload
-    with open(file=os.path.join(filename), mode="rb") as data:
-        blob_client.upload_blob(
-            data=data,
-            connection_timeout=10 * 60,  # 10 minutes
-        )

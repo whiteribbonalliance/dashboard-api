@@ -33,15 +33,10 @@ from app.enums.api_prefix import ApiPrefix
 STAGE = os.getenv("STAGE", "")
 ONLY_PMNCH = os.getenv("ONLY_PMNCH", "").lower() == "true"
 
-if ONLY_PMNCH:
-    APP_TITLE = "What Young People Want Dashboard API"
-else:
-    APP_TITLE = "Dashboard API"
-
 
 class Settings(BaseSettings):
     VERSION: str = "1.0.0"
-    APP_TITLE: str = APP_TITLE
+    APP_TITLE: str = os.getenv("APP_TITLE", "")
     API_PREFIX: str = ApiPrefix.v1.value
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
