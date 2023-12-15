@@ -23,16 +23,8 @@ SOFTWARE.
 
 """
 
-from fastapi import APIRouter, status
-
-from app.core.settings import get_settings
-from app.schemas.settings import Settings
-
-settings = get_settings()
-
-router = APIRouter(prefix="/settings")
+from pydantic import BaseModel, Field
 
 
-@router.get(path="/", response_model=Settings, status_code=status.HTTP_200_OK)
-def read_settings():
-    return Settings(translations_enabled=settings.TRANSLATIONS_ENABLED)
+class Settings(BaseModel):
+    translations_enabled: str = Field(description="If translations is enabled")

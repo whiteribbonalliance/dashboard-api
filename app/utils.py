@@ -265,7 +265,7 @@ def extract_first_occurring_numbers(
                 break
 
     if not numbers:
-        return 0
+        return -1
 
     return int("".join(numbers))
 
