@@ -23,8 +23,6 @@ SOFTWARE.
 
 """
 
-"""HTTP Exceptions"""
-
 from fastapi import status, HTTPException
 
 

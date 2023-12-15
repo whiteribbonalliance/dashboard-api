@@ -31,10 +31,11 @@ from app.schemas.category import ParentCategory
 
 class CampaignConfig(BaseModel):
     code: str = Field(min_length=1)
+    password: str = Field()
     file: str = Field()
     link: str = Field()
     questions: dict[str, str]
-    filepath: str = ""
+    filepath: str = Field(default="")
     parent_categories: list[ParentCategory]
 
     @validator("file", pre=True)

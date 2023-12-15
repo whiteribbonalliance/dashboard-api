@@ -8,13 +8,15 @@ through the endpoints. For more information on how to do this, continue reading 
 
 ## Environment variables:
 
+- `STAGE=` prod or dev.
 - `HOST=` The host.
 - `PORT=` The port.
 - `APP_TITLE=` App title.
 - `APP_DESCRIPTION=` App description.
-- `STAGE=` prod or dev.
-- `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
-- `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
+- `GOOGLE_CLOUD_STORAGE_BUCKET_NAME=` Optional - Bucket name where generated CSV files can be stored for downloading
+  campaign data.
+- `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths e.g. for downloading
+  campaign data.
 - `TRANSLATIONS_ENABLED=` Optional - True or False.
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
 - `NEW_RELIC_URL=` Optional - The New Relic URL.
@@ -102,7 +104,9 @@ columns `q2_response` and `q2_canonical_code`.
    from `campaigns-config/example/config.json`).
 3. Include the CSV file in the new folder.
 4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `file`. If instead you have a direct
-   link to the CSV file you may add the link to `link` and leave `file` empty. `file` has priority.
+   link to the CSV file you may add the link to `link` and leave `file` empty. `file` has priority. Optionally,
+   at `password` add a password for accessing protected paths of a campaign. The username for login is the
+   campaign `code`.
 5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
    at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`.
 6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
@@ -168,3 +172,12 @@ for `PMNCH`.
 In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct
 workflow in the repository
 on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
+
+## Legacy campaigns
+
+For deployment of legacy campaigns.
+
+Additional environment variables:
+
+- `HAS_LEGACY_CAMPAIGNS=` True.
+- `GOOGLE_MAPS_API_KEY=` The Google Maps API key.

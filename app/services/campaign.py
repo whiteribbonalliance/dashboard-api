@@ -36,6 +36,7 @@ import pandas as pd
 from app import constants, utils
 from app import crud
 from app import global_variables
+from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import category_hierarchy
 from app.helpers import filters
@@ -60,6 +61,8 @@ from app.types import TFilterSequence, TCloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
+
+settings = get_settings()
 
 
 class CampaignService:

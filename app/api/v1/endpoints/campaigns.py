@@ -150,6 +150,7 @@ def campaign_public_data(
     campaign_req: CampaignRequest,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     response_year: str = Depends(dependencies.response_year_check),
+    _google_credentials_included=Depends(dependencies.google_credentials_included),
 ):
     """
     Read campaign public data.
@@ -222,6 +223,7 @@ def campaign_data(
     date_filter: DateFilter | None = None,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     username: str = Depends(dependencies.verify_user),
+    _google_credentials_included=Depends(dependencies.google_credentials_included),
 ):
     """
     Read campaign data.

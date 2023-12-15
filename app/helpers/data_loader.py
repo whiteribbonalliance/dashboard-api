@@ -245,7 +245,7 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     df = None
 
     # For campaign pmn01a get the data from Azure Blob Storage
-    if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
+    if campaign_code == LegacyCampaignCode.pmn01a.value:
         blob = azure_blob_storage_interactions.get_blob(
             container_name="main", blob_name="pmn01a.csv"
         )
@@ -440,11 +440,6 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
-        # Only load data for what_young_people_want
-        if settings.ONLY_PMNCH:
-            if campaign_config.code != LegacyCampaignCode.pmn01a.value:
-                continue
-
         print(f"INFO:\t  Loading data for campaign {campaign_config.code}...")
 
         try:
@@ -534,7 +529,7 @@ def load_region_coordinates():
             if not new_coordinates_added:
                 new_coordinates_added = True
 
-    # Save region coordinates (Only in development environment)
+    # Save region coordinates (Only in dev)
     if settings.STAGE == "dev" and new_coordinates_added:
         with open(region_coordinates_json, "w") as file:
             file.write(json.dumps(coordinates, indent=2))

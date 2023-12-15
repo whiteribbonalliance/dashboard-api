@@ -23,8 +23,6 @@ SOFTWARE.
 
 """
 
-"""Google Cloud Storage interactions"""
-
 import logging
 from datetime import datetime
 from datetime import timedelta
@@ -34,12 +32,14 @@ from google.cloud import storage
 from google.cloud.storage import Client, Blob, Bucket
 from google.oauth2 import service_account
 
+from app.core.settings import get_settings
 from app.logginglib import init_custom_logger
 
+settings = get_settings()
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
-BUCKET_NAME = "wra"
+BUCKET_NAME = settings.GOOGLE_CLOUD_STORAGE_BUCKET_NAME
 EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
 

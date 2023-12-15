@@ -24,7 +24,6 @@ SOFTWARE.
 """
 
 import asyncio
-import os
 
 import uvicorn
 from fastapi import FastAPI, status
@@ -41,10 +40,8 @@ settings = get_settings()
 
 # Create dirs required in local development.
 # In production these dirs are already present.
-if settings.STAGE == "dev" and not settings.ONLY_PMNCH:
+if settings.STAGE == "dev":
     utils.create_tmp_dir_if_not_exists()
-if settings.STAGE == "dev" and settings.ONLY_PMNCH:
-    utils.create_pmnch_main_dir_if_not_exists()
 
 # Create in-memory Database objects
 databases.create_databases(campaign_codes=[x.code for x in CAMPAIGNS_CONFIG.values()])
@@ -75,7 +72,7 @@ tags_metadata = [
 
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,
-    description=os.getenv("APP_DESCRIPTION", ""),
+    description=settings.APP_DESCRIPTION,
     version=settings.VERSION,
     docs_url="/docs",
     openapi_tags=tags_metadata,

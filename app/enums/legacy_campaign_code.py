@@ -22,14 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-
 from enum import Enum
+
+# pre = "_LEGACY_"
+pre = ""
 
 
 class LegacyCampaignCode(Enum):
-    wra03a: str = "wra03a"
-    pmn01a: str = "pmn01a"
-    midwife: str = "midwife"
-    giz: str = "giz"
-    wwwpakistan: str = "wwwpakistan"
-    healthwellbeing: str = "healthwellbeing"
+    wra03a: str = f"{pre}wra03a"
+    pmn01a: str = f"{pre}pmn01a"
+    midwife: str = f"{pre}midwife"
+    giz: str = f"{pre}giz"
+    wwwpakistan: str = f"{pre}wwwpakistan"
+    healthwellbeing: str = f"{pre}healthwellbeing"

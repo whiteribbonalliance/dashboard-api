@@ -30,20 +30,28 @@ from pydantic import BaseSettings
 
 from app.enums.api_prefix import ApiPrefix
 
-STAGE = os.getenv("STAGE", "")
+STAGE = os.getenv("STAGE", "prod")
+
+if os.path.isfile("credentials.json"):
+    GOOGLE_CREDENTIALS_INCLUDED = True
+else:
+    GOOGLE_CREDENTIALS_INCLUDED = False
 
 
 class Settings(BaseSettings):
+    STAGE: str = STAGE
     HOST: str = os.getenv("HOST")
     PORT: int = int(os.getenv("PORT", 8000))
     VERSION: str = "1.0.0"
     APP_TITLE: str = os.getenv("APP_TITLE", "")
+    APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "")
     API_PREFIX: str = ApiPrefix.v1.value
-    GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
+    GOOGLE_CLOUD_STORAGE_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET_NAME", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY", "")
     NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL", "")
+    GOOGLE_CREDENTIALS_INCLUDED: bool = GOOGLE_CREDENTIALS_INCLUDED
 
     # These env variables are only used for campaign pmn01a
     ONLY_PMNCH: bool = os.getenv("ONLY_PMNCH", "").lower() == "true"
@@ -52,7 +60,8 @@ class Settings(BaseSettings):
     AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
     AZURE_STORAGE_ACCOUNT_NAME: str = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
 
-    STAGE: str = STAGE
+    HAS_LEGACY_CAMPAIGNS: bool = os.getenv("HAS_LEGACY_CAMPAIGNS", "").lower() == "true"
+    GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
 class DevSettings(Settings):

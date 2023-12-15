@@ -30,9 +30,12 @@ from fastapi import Depends
 from app import crud
 from app import databases
 from app import utils, auth_handler, http_exceptions
+from app.core.settings import get_settings
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.types import TCloudService
+
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -158,3 +161,16 @@ def user_exists_check(
         raise http_exceptions.UnauthorizedHTTPException("Unknown user")
 
     return username
+
+
+def google_credentials_included() -> bool:
+    """
+    Check if Google credentials is included.
+    """
+
+    if not settings.GOOGLE_CREDENTIALS_INCLUDED:
+        raise http_exceptions.NotAllowedHTTPException("Could not perform this action.")
+    if not settings.GOOGLE_CLOUD_STORAGE_BUCKET_NAME:
+        raise http_exceptions.NotAllowedHTTPException("Could not perform this action.")
+
+    return True

@@ -50,6 +50,9 @@ async def login(
     form_username = form_data.username
     form_password = form_data.password
 
+    if not form_password:
+        raise http_exceptions.UnauthorizedHTTPException("Login failed")
+
     # If ONLY_PMNCH only allow admin and whatyoungpeoplewant
     if settings.ONLY_PMNCH:
         if not (form_username == "admin" or form_username == "whatyoungpeoplewant"):
