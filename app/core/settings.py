@@ -60,7 +60,7 @@ class Settings(BaseSettings):
 class DevSettings(Settings):
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = True
-    PORT: int = 8000
+    PORT: int = int(os.getenv("PORT", 8000))
     RELOAD: bool = True
     CORS: dict = {
         "allow_origins": [
@@ -78,7 +78,7 @@ class DevSettings(Settings):
 class ProdSettings(Settings):
     SERVER_HOST: str = "0.0.0.0"
     DEBUG: bool = False
-    PORT: int = 8080
+    PORT: int = int(os.getenv("PORT", 8000))
     RELOAD: bool = False
     CORS: dict = {
         "allow_origins": [

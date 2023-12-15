@@ -2,19 +2,14 @@
 
 ## What does this API do?
 
-This API is used for providing campaign responses to display in a dashboard.
-
-## Continuous integration
-
-This API is built automatically by GitHub actions.
-
-The Docker container is pushed to Google Container Registry.
-
-Then it is deployed to Google App Engine using a Flex environment (see `app.yaml`).
+This API is used for providing campaign data to display in a dashboard. To add a new campaign you can create a new
+configuration for the campaign with the required data and run the API, the data will become immediately available
+through the endpoints. For more information on how to do this, continue reading the documentation below.
 
 ## Environment variables:
 
 - `STAGE=` prod or dev.
+- `PORT=` The port to run the API on.
 - `NEWRELIC_API_KEY=` The New Relic API key.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding.
@@ -30,13 +25,15 @@ The following environment variables are only required for deploying `PMNCH` to `
 
 ## Development
 
-Configure the environment variables.
-
 ### install
 
 ```bash
 pip install -r requirements.txt
 ```
+
+Configure the environment variables.
+
+Check the section `CSV file` and `How to add a new campaign`.
 
 ### Run
 
@@ -44,10 +41,14 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## Docs
+
+You can view the docs at `http://127.0.0.1:8000/docs`.
+
 ## Translations
 
 To allow translations with `Google Cloud Translation API` include the service account's `credentials.json` at the
-root of the project.
+root of the project and set `TRANSLATIONS_ENABLED` to `True`.
 
 ### Back-end
 
@@ -83,7 +84,7 @@ inside `front_translations`. Copy the `languages` folder to the front-end projec
 The CSV file might contain the following columns:
 
 - `q1_response`: Required - The response from the respondent.
-- `q1_canonical_code`: Required - The sub-category of the response.
+- `q1_canonical_code`: Required - The category of the response.
 - `alpha2country`: Required - alpha-2 code of the respondent's country.
 - `age`: Required - The respondent's age.
 - `region`: Optional - The respondent's region.
@@ -105,11 +106,12 @@ columns `q2_response` and `q2_canonical_code`.
 3. Include the CSV file in the new folder.
 4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `filename`.
 5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
-   at `questions`.
+   at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`.
 6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
    parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
-   hierarchy of categories, create a parent category with `code` as `NA` and include the categories as its
+   hierarchy of categories, create a parent category with `code` as an empty string and include the categories as its
    sub-categories.
+7. The final step is to lemmatize the responses in the CSV, do so by running `python lemmatize_responses.py`.
 
 ## PMNCH - Azure deployment
 
@@ -157,5 +159,5 @@ for `PMNCH`.
 #### Workflows
 
 In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct
-workflow in
-the repository on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
+workflow in the repository
+on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
