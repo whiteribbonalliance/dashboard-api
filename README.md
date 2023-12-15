@@ -45,40 +45,6 @@ python main.py
 
 You can view the docs at `http://127.0.0.1:8000/docs`.
 
-## Translations
-
-To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
-at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
-
-### Back-end
-
-Translations occur automatically on the fly.
-
-### Front-end
-
-Create a JSON file at `front_translations/to_translate.json` that contains the keys that will be used in the front for
-accessing translations and use as value the text in English.
-
-For example:
-
-```json
-{
-  "title": "Lorem Ipsum",
-  "click-button": "Click button"
-}
-```
-
-To apply translations run:
-
-```bash
-python translate_front.py
-```
-
-Once translations have been applied, a new folder called `languages` should have been created
-inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
-
-*Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
-
 ## CSV file
 
 The CSV file might contain the following columns:
@@ -116,6 +82,40 @@ columns `q2_response` and `q2_canonical_code`.
    sub-categories.
 7. The final step is to lemmatize the responses in the CSV, do so by running `python lemmatize_responses.py`. To only
    lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
+
+## Translations
+
+To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
+at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
+
+### Back-end
+
+Translations occur automatically on the fly.
+
+### Front-end
+
+Create a JSON file at `front_translations/to_translate.json` that contains the keys that will be used in the front for
+accessing translations and use as value the text in English.
+
+For example:
+
+```json
+{
+  "title": "Lorem Ipsum",
+  "click-button": "Click button"
+}
+```
+
+To apply translations run:
+
+```bash
+python translate_front.py
+```
+
+Once translations have been applied, a new folder called `languages` should have been created
+inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
+
+*Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
 ## PMNCH - Azure deployment
 
