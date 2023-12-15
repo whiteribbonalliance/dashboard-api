@@ -1435,7 +1435,7 @@ class CampaignService:
         response_topics = []
 
         for parent_category in parent_categories:
-            # Add the parent category (skip if 'NA')
+            # Add the parent category
             if parent_category.code != "":
                 # Parent category has no description
                 response_topics.append(

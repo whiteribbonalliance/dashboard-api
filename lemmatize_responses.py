@@ -23,6 +23,8 @@ SOFTWARE.
 
 """
 
+import sys
+
 import nltk
 import pandas as pd
 from pywsd.utils import lemmatize_sentence
@@ -36,6 +38,11 @@ nltk.download("averaged_perceptron_tagger")
 nltk.download("wordnet")
 nltk.download("punkt")
 
+# Will only lemmatize these campaigns if provided
+campaign_codes_from_args = []
+if len(sys.argv) > 1:
+    campaign_codes_from_args = sys.argv[1:]
+
 
 def lemmatize_all_responses():
     """
@@ -45,6 +52,9 @@ def lemmatize_all_responses():
     for campaign_config in CAMPAIGNS_CONFIG.values():
         if campaign_config.code in constants.LEGACY_CAMPAIGN_CODES:
             continue
+        if campaign_codes_from_args:
+            if campaign_config.code not in campaign_codes_from_args:
+                continue
 
         print(f"Lemmatizing responses in {campaign_config.filename}...")
 

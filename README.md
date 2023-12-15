@@ -111,7 +111,8 @@ columns `q2_response` and `q2_canonical_code`.
    parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
    hierarchy of categories, create a parent category with `code` as an empty string and include the categories as its
    sub-categories.
-7. The final step is to lemmatize the responses in the CSV, do so by running `python lemmatize_responses.py`.
+7. The final step is to lemmatize the responses in the CSV, do so by running `python lemmatize_responses.py`. To only
+   lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
 
 ## PMNCH - Azure deployment
 
