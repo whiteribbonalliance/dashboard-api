@@ -66,16 +66,17 @@ columns `q2_response` and `q2_canonical_code`.
 
 ## How to add a new campaign
 
-1. Create a new config folder at `campaigns-config/[FOLDER_NAME]`.
+1. Create a new config folder at `campaigns-config/[NEW_CONFIG_FOLDER_NAME]`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-config/example/config.json`).
 3. Include the CSV file in the new folder.
 4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `file`. If instead you have a direct
-   link to the CSV file you may add the link to `link` and leave `file` empty. `file` has priority. Optionally,
+   link to the CSV file you may add the link to `link` and leave `file` empty, `file` has priority. Optionally,
    at `password` add a password for accessing protected paths of a campaign. The username for login is the
    campaign `code`.
 5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
-   at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`.
+   at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user will be able to see the
+   questions in the front-end and switch between responses.
 6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
    parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
    hierarchy of categories, create a parent category with `code` as an empty string and include the categories as its
@@ -180,5 +181,5 @@ For deployment of legacy campaigns.
 
 Additional environment variables:
 
-- `HAS_LEGACY_CAMPAIGNS=` True.
+- `ONLY_LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.

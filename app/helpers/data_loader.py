@@ -128,6 +128,12 @@ def load_campaign_data(campaign_code: str):
             lambda x: x.strip() if x else x
         )
 
+    # Capitalize responses
+    for q_code in campaign_q_codes:
+        df_responses[q_col_names.get_response_col_name(q_code=q_code)] = df_responses[
+            q_col_names.get_response_col_name(q_code=q_code)
+        ].apply(lambda x: x.capitalize() if x else x)
+
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
         lambda x: constants.COUNTRIES_DATA[x]["name"]
@@ -243,21 +249,21 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     """
 
     df = None
+    dtype = {"age": str, "response_year": str}
 
     # For campaign pmn01a get the data from Azure Blob Storage
-    if campaign_code == LegacyCampaignCode.pmn01a.value:
+    if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
         blob = azure_blob_storage_interactions.get_blob(
             container_name="main", blob_name="pmn01a.csv"
         )
         df = pd.read_csv(
             filepath_or_buffer=StringIO(blob.readall().decode("utf-8")),
             keep_default_na=False,
-            dtype={"age": str, "response_year": str},
+            dtype=dtype,
         )
 
     # Load data for campaign
     if campaign_config := CAMPAIGNS_CONFIG.get(campaign_code):
-        dtype = {"age": str, "response_year": str}
         keep_default_na = False
 
         # From file

@@ -60,7 +60,9 @@ class Settings(BaseSettings):
     AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
     AZURE_STORAGE_ACCOUNT_NAME: str = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
 
-    HAS_LEGACY_CAMPAIGNS: bool = os.getenv("HAS_LEGACY_CAMPAIGNS", "").lower() == "true"
+    ONLY_LEGACY_CAMPAIGNS: bool = (
+        os.getenv("ONLY_LEGACY_CAMPAIGNS", "").lower() == "true"
+    )
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
 
 

@@ -121,6 +121,26 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
         elif len(age_buckets) > 0:
             df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
+    def filter_by_response_topics(row_topics_str: str, topics: list[str]):
+        """Filter by response topics"""
+
+        if row_topics_str:
+            for row_topic in row_topics_str.split("/"):
+                for topic in topics:
+                    if row_topic.strip() == topic.strip():
+                        return True
+
+        return False
+
+    def filter_by_response_topic(row_topics_str: str, topic: str):
+        """Filter by response topic"""
+
+        if row_topics_str:
+            if topic.strip() in [x.strip() for x in row_topics_str.split("/")]:
+                return True
+
+        return False
+
     # Apply the filter on specific columns for q1, q2 etc.
     campaign_q_codes = crud.get_q_codes()
     for q_code in campaign_q_codes:
@@ -132,26 +152,6 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
         parent_category_col_name = q_col_names.get_parent_category_col_name(
             q_code=q_code
         )
-
-        def filter_by_response_topics(row_topics_str: str, topics: list[str]):
-            """Filter by response topics"""
-
-            if row_topics_str:
-                for row_topic in row_topics_str.split("/"):
-                    for topic in topics:
-                        if row_topic.strip() == topic.strip():
-                            return True
-
-            return False
-
-        def filter_by_response_topic(row_topics_str: str, topic: str):
-            """Filter by response topic"""
-
-            if row_topics_str:
-                if topic.strip() in [x.strip() for x in row_topics_str.split("/")]:
-                    return True
-
-            return False
 
         # Filter response topics
         if len(response_topics) > 0:
@@ -182,14 +182,14 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
 
         # Filter keyword
         if keyword_filter:
-            text_re = r"\b" + re.escape(keyword_filter)
+            text_re = r"\b" + re.escape(keyword_filter.lower())
             df_copy = df_copy[
                 df_copy[lemmatized_column_name].str.contains(text_re, regex=True)
             ]
 
         # Filter keyword exclude
         if keyword_exclude:
-            text_exclude_re = r"\b" + re.escape(keyword_exclude)
+            text_exclude_re = r"\b" + re.escape(keyword_exclude.lower())
             df_copy = df_copy[
                 ~df_copy[lemmatized_column_name].str.contains(
                     text_exclude_re, regex=True

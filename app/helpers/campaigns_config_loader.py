@@ -56,16 +56,16 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
 
     # Add a pre string to legacy campaign code to prevent conflicts
     # pre = "_LEGACY_"
-    # HAS_LEGACY_CAMPAIGNS = os.getenv("HAS_LEGACY_CAMPAIGNS", "").lower() == "true"
+    # ONLY_LEGACY_CAMPAIGNS = os.getenv("ONLY_LEGACY_CAMPAIGNS", "").lower() == "true"
     # if (
-    #     HAS_LEGACY_CAMPAIGNS
+    #     ONLY_LEGACY_CAMPAIGNS
     #     and f"{pre}{config.code}" in constants.LEGACY_CAMPAIGN_CODES
     # ):
     #     config.code = f"{pre}{config.code}"
 
-    # If no filename or link was provided
+    # If no file or link was provided
     if not config.file and not config.link:
-        raise Exception("No filename or link was provided.")
+        raise Exception("No file or link was provided.")
 
     # Check if CSV file exists
     if config.file:
