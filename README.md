@@ -66,13 +66,10 @@ columns `q2_response` and `q2_canonical_code`.
 
 ## How to create a new campaign
 
-When a new campaign is created, its dashboard will be accessible in the front-end using `dashboard_path` from the
-config.
-
 1. Create a new config folder at `campaigns-config/[NEW_CONFIG_FOLDER_NAME]`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-config/example/config.json`).
-3. Fill the configuration:
+3. Fill in the configuration:
     1. `campaign_code`: Required - An unique code for the campaign.
     2. `password`: Optional - A password for accessing protected paths of a campaign.
     3. `dashboard_path` Required - Path to access the dashboard in the front.
@@ -98,6 +95,10 @@ config.
 6. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
    file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
    prioritized over `file`.
+
+When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` from the
+config after a build has been created in the front-end. If the configuration is updated, a new build is required in the
+front-end to reflect the changes.
 
 ## Translations
 
