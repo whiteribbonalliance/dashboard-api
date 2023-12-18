@@ -38,9 +38,9 @@ router = APIRouter(prefix="/configurations")
     response_model=list[CampaignConfigResponse],
     status_code=status.HTTP_200_OK,
 )
-def read_all_campaigns_configurations():
+def read_campaigns_configurations():
     """
-    Read all campaigns configurations.
+    Read campaigns configurations.
     """
 
     if configurations := CAMPAIGNS_CONFIG.values():
