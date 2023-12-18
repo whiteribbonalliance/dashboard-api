@@ -49,9 +49,9 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
         with open(config_json, "r") as file:
             try:
                 config = CampaignConfigInternal.parse_obj(json.loads(file.read()))
-            except ValidationError:
+            except ValidationError as e:
                 raise Exception(
-                    f"Could not validate configuration found in config folder {config_folder}."
+                    f"Could not validate configuration found in config folder {config_folder}. Error: {str(e)}"
                 )
 
     # Add a pre string to legacy campaign code to prevent conflicts

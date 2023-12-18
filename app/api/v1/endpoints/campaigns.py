@@ -38,8 +38,11 @@ from app import http_exceptions
 from app import utils
 from app.api import dependencies
 from app.enums.legacy_campaign_code import LegacyCampaignCode
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
+from app.http_exceptions import ResourceNotFoundHTTPException
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
+from app.schemas.campaign_config import CampaignConfigResponse
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.date_filter import DateFilter
 from app.schemas.filter_options import FilterOptions
@@ -388,3 +391,33 @@ async def campaign_source_files_breakdown(
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
+
+
+@router.get(
+    path="/configurations/{campaign_code}",
+    response_model=CampaignConfigResponse,
+    status_code=status.HTTP_200_OK,
+)
+def read_config(campaign_code: str = Depends(dependencies.campaign_code_exists_check)):
+    """
+    Read campaign configuration.
+    """
+
+    configuration = CAMPAIGNS_CONFIG.get(campaign_code)
+    if configuration:
+        return configuration
+
+    raise ResourceNotFoundHTTPException("Campaign configuration not found.")
+
+
+@router.get(
+    path="/configurations",
+    response_model=list[CampaignConfigResponse],
+    status_code=status.HTTP_200_OK,
+)
+def read_campaigns_configurations():
+    """
+    Read campaigns configurations.
+    """
+
+    return [x for x in CAMPAIGNS_CONFIG.values()]
