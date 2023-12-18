@@ -266,23 +266,23 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     if campaign_config := CAMPAIGNS_CONFIG.get(campaign_code):
         keep_default_na = False
 
-        # From file
-        if campaign_config.file:
-            df = pd.read_csv(
-                filepath_or_buffer=campaign_config.filepath,
-                keep_default_na=keep_default_na,
-                dtype=dtype,
-            )
-
         # From link
-        elif campaign_config.link:
-            response = requests.get(url=campaign_config.link)
+        if campaign_config.file_link:
+            response = requests.get(url=campaign_config.file_link)
             if response.ok:
                 df = pd.read_csv(
                     filepath_or_buffer=StringIO(response.content.decode("utf-8")),
                     keep_default_na=keep_default_na,
                     dtype=dtype,
                 )
+
+        # From file
+        elif campaign_config.file:
+            df = pd.read_csv(
+                filepath_or_buffer=campaign_config.filepath,
+                keep_default_na=keep_default_na,
+                dtype=dtype,
+            )
 
     if df is not None:
         # To datetime

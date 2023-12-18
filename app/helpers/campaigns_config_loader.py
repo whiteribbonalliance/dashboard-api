@@ -63,23 +63,25 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     # ):
     #     config.code = f"{pre}{config.code}"
 
-    # If no file or link was provided
-    if not config.file and not config.link:
-        raise Exception("No file or link was provided.")
+    # If no file or file link was provided
+    if not config.file and not config.file_link:
+        raise Exception("No CSV file or direct link to CSV file was provided.")
 
-    # Check if CSV file exists
+    # Check link
+    if config.file_link:
+        if not validators.url(config.file_link):
+            raise Exception(f"{config.file_link} is not a valid link.")
+
+    # Check CSV file
     if config.file:
         csv_file = os.path.join(campaigns_config_folder, config_folder, config.file)
+        if not config.file.endswith(".csv"):
+            raise Exception("Invalid CSV file name.")
         if not os.path.isfile(csv_file):
             raise Exception(
                 f"File {config.file} was not found in config folder {config_folder}."
             )
-        config.filepath = os.path.join(csv_file)
-
-    # Check link
-    elif config.link:
-        if not validators.url(config.link):
-            raise Exception(f"{config.link} is not a valid link.")
+        config.filepath = csv_file
 
     # Check for duplicate dashboard path
     if config.dashboard_path in [x.dashboard_path for x in CAMPAIGNS_CONFIG.values()]:

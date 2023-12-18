@@ -23,7 +23,6 @@ SOFTWARE.
 
 """
 
-import validators
 from pydantic import BaseModel, Field, validator
 
 from app.schemas.category import ParentCategory
@@ -60,58 +59,31 @@ class CampaignConfigBase(BaseModel):
 
     @validator("dashboard_path", pre=True)
     def file_check(cls, v: str):
-        if not v:
-            return None
-
-        if " " in v:
-            return None
+        if not v or " " in v:
+            raise Exception("Invalid dashboard path provided.")
 
         return v
 
     @validator("questions", pre=True)
     def question_check(cls, v):
         for key, value in v.items():
-            if not key.startswith("q"):
-                return None
-            if not key.replace("q", "", 1).isnumeric():
-                return None
+            if not key.startswith("q") or not key.replace("q", "", 1).isnumeric():
+                raise Exception("Invalid question code provided.")
 
         return v
 
 
 class CampaignConfigInternal(CampaignConfigBase):
     password: str = Field(default="", description="Password to access protected paths.")
-    file: str = Field(
-        description="Name of the CSV file to be found inside the config folder."
-    )
-    link: str = Field(description="A direct link to the CSV file.")
+    file: str = Field(default="", description="The CSV file in the config folder.")
+    file_link: str = Field(default="", description="A direct link to the CSV file.")
     filepath: str = Field(
         default="",
-        description="Path to CSV file. This field will be filled automatically during loading the config.",
+        description="Path to the CSV file. This field will be filled automatically while loading the config.",
     )
     parent_categories: list[ParentCategory] = Field(
         description="A hierarchy of categories."
     )
-
-    @validator("file", pre=True)
-    def file_check(cls, v: str):
-        if v == "":
-            return v
-
-        if not v.endswith(".csv"):
-            return None
-
-        return v
-
-    @validator("link", pre=True)
-    def link_check(cls, v: str):
-        if v == "":
-            return v
-
-        if not validators.url(v):
-            return None
-
-        return v
 
 
 class CampaignConfigResponse(CampaignConfigBase):

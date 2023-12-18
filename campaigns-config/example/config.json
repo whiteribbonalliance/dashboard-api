@@ -6,7 +6,7 @@
   "seo_title": "My Example Dashboard | MyDashboard",
   "seo_meta_description": "Example dashboard description",
   "file": "example.csv",
-  "link": "https://example.com/data.csv",
+  "file_link": "https://example.com/data.csv",
   "respondent_noun_singular": "respondent",
   "respondent_noun_plural": "respondents",
   "video_link": "https://example.com/video.mp4",
