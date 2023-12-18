@@ -398,7 +398,9 @@ async def campaign_source_files_breakdown(
     response_model=CampaignConfigResponse,
     status_code=status.HTTP_200_OK,
 )
-def read_config(campaign_code: str = Depends(dependencies.campaign_code_exists_check)):
+def read_campaign_configuration(
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+):
     """
     Read campaign configuration.
     """
@@ -415,9 +417,9 @@ def read_config(campaign_code: str = Depends(dependencies.campaign_code_exists_c
     response_model=list[CampaignConfigResponse],
     status_code=status.HTTP_200_OK,
 )
-def read_campaigns_configurations():
+def read_all_campaigns_configurations():
     """
-    Read campaigns configurations.
+    Read all campaigns configurations.
     """
 
     return [x for x in CAMPAIGNS_CONFIG.values()]
