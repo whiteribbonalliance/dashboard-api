@@ -55,7 +55,7 @@ tags_metadata = [
         "description": "Read or download data related to campaigns.",
     },
     {
-        "name": "Campaign configurations",
+        "name": "Campaigns configurations",
         "description": "Read campaign configurations.",
     },
     {
