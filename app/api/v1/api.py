@@ -37,7 +37,7 @@ from app.api.v1.endpoints.info import router as info_router
 from app.api.v1.endpoints.settings import router as settings_router
 
 api_router = APIRouter()
-campaigns_router.include_router(campaign_configurations_router)
+campaigns_router.include_router(campaign_configurations_router, tags=["Campaigns configurations"])
 api_router.include_router(campaigns_router, tags=["Campaigns"])
 api_router.include_router(campaigns_merged_router, tags=["Campaigns merged"])
 api_router.include_router(auth_router, tags=["Authentication"])
