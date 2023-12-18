@@ -80,7 +80,7 @@ config.
     5. `seo_title` Required - Title of the dashboard for SEO.
     6. `seo_meta_description` Required - A description of the dashboard for SEO.
     7. `file` Required - The CSV filename.
-    8. `file_link` Optional - A direct link to the CSV file. Will be prioritized over `file`.
+    8. `file_link` Optional - A direct link to the CSV file. `file_link` will be prioritized over `file`.
     9. `respondent_noun_singular`: Optional - Respondent noun singular.
     10. `respondent_noun_plural`: Optional - Respondent noun plural.
     11. `video_link` - Optional - A Link to a video related to the dashboard.
