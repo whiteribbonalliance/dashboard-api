@@ -22,9 +22,9 @@ through the endpoints. For more information on how to do this, continue reading 
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
 - `NEW_RELIC_URL=` Optional - The New Relic URL.
 
-## Development
+## install
 
-### install
+Install requirements:
 
 ```bash
 pip install -r requirements.txt
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 Configure the environment variables. To allow translations with `Google Cloud Translation API` include the Google Cloud
 service account's `credentials.json` at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
 
-Check the section `CSV file` and `How to add a new campaign`.
+Check the section `CSV file` and `How to add a new campaign` before running the API.
 
 ### Run
 
@@ -64,25 +64,40 @@ The CSV file might contain the following columns:
 `q1` refers to the question from which the respondent gave a response. To include another response add the
 columns `q2_response` and `q2_canonical_code`.
 
-## How to add a new campaign
+## How to create a new campaign
+
+When a new campaign is created, its dashboard will be accessible in the front-end using `dashboard_path` from the
+config.
 
 1. Create a new config folder at `campaigns-config/[NEW_CONFIG_FOLDER_NAME]`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-config/example/config.json`).
-3. Include the CSV file in the new folder.
-4. Inside `config.json` add the campaign code at `code` and add the CSV filename at `file`. If instead you have a direct
-   link to the CSV file you may add the link to `link` and leave `file` empty, `file` has priority. Optionally,
-   at `password` add a password for accessing protected paths of a campaign. The username for login is the
-   campaign `code`.
-5. If there's more than one response included in the data, add the question that relates to it inside `config.json`
-   at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user will be able to see the
-   questions in the front-end and switch between responses.
-6. At `parent_categories` use the example data structure to build a list of categories. This is a list of
-   parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
-   hierarchy of categories, create a parent category with `code` as an empty string and include the categories as its
-   sub-categories.
-7. The final step is to lemmatize the responses in the CSV, do so by running `python lemmatize_responses.py`. To only
-   lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
+3. Fill the configuration:
+    1. `campaign_code`: Required - An unique code for the campaign.
+    2. `password`: Optional - A password for accessing protected paths of a campaign.
+    3. `dashboard_path` Required - Path to access the dashboard in the front.
+    4. `dashboard_name` Required - A name for the dashboard.
+    5. `seo_title` Required - Title of the dashboard for SEO.
+    6. `seo_meta_description` Required - A description of the dashboard for SEO.
+    7. `file` Required - The CSV filename.
+    8. `file_link` Optional - A direct link to the CSV file. Will be prioritized over `file`.
+    9. `respondent_noun_singular`: Optional - Respondent noun singular.
+    10. `respondent_noun_plural`: Optional - Respondent noun plural.
+    11. `video_link` - Optional - A Link to a video related to the dashboard.
+    12. `about_us_link` - Optional - Link to a page about the campaign.
+    13. `questions` Optional - If there's more than one response included in the data, add the question that relates to
+        it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
+        will be able to see the questions in the front-end and switch between responses.
+    14. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
+        parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
+        hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
+        its sub-categories.
+4. Copy your CSV file to the new config folder.
+5. The final step is to lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py`. To
+   only lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
+6. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
+   file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
+   prioritized over `file`.
 
 ## Translations
 
