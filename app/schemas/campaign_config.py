@@ -30,9 +30,12 @@ from app.schemas.category import ParentCategory
 
 
 class CampaignConfigBase(BaseModel):
-    campaign_code: str = Field(min_length=1, description="The campaign code.")
+    campaign_code: str = Field(
+        min_length=1,
+        description="The campaign code. This value should be unique per campaign.",
+    )
     dashboard_path: str = Field(
-        description="The dashboard path that will be used to access it in the front."
+        description="The dashboard path that will be used to access it in the front. This value should be unique per campaign."
     )
     dashboard_name: str = Field(description="Name of the dashboard.")
     seo_title: str = Field(description="Title of the dashboard for SEO.")
@@ -47,6 +50,9 @@ class CampaignConfigBase(BaseModel):
     )
     video_link: str = Field(
         default="", description="A Link to a video related to the dashboard."
+    )
+    about_us_link: str = Field(
+        default="", description="Link to a page about the campaign."
     )
     questions: dict[str, str] = Field(
         description="Questions that were asked to respondents."
