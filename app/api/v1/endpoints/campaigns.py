@@ -391,35 +391,3 @@ async def campaign_source_files_breakdown(
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
-
-
-@router.get(
-    path="/configurations/{campaign_code}",
-    response_model=CampaignConfigResponse,
-    status_code=status.HTTP_200_OK,
-)
-def read_campaign_configuration(
-    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-):
-    """
-    Read campaign configuration.
-    """
-
-    configuration = CAMPAIGNS_CONFIG.get(campaign_code)
-    if configuration:
-        return configuration
-
-    raise ResourceNotFoundHTTPException("Campaign configuration not found.")
-
-
-@router.get(
-    path="/configurations",
-    response_model=list[CampaignConfigResponse],
-    status_code=status.HTTP_200_OK,
-)
-def read_all_campaigns_configurations():
-    """
-    Read all campaigns configurations.
-    """
-
-    return [x for x in CAMPAIGNS_CONFIG.values()]

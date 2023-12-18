@@ -55,6 +55,10 @@ tags_metadata = [
         "description": "Read or download data related to campaigns.",
     },
     {
+        "name": "Campaign configurations",
+        "description": "Read campaign configurations.",
+    },
+    {
         "name": "Campaigns merged",
         "description": "Read data of all campaigns merged together.",
     },

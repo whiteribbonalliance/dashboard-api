@@ -81,12 +81,12 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
         if not validators.url(config.link):
             raise Exception(f"{config.link} is not a valid link.")
 
+    # Check for duplicate dashboard path
+    if config.dashboard_path in [x.dashboard_path for x in CAMPAIGNS_CONFIG.values()]:
+        raise Exception(f"Duplicate dashboard path found for {config.campaign_code}.")
+
     # Check for duplicate campaign code
     if config.campaign_code not in CAMPAIGNS_CONFIG:
         CAMPAIGNS_CONFIG[config.campaign_code] = config
     else:
         raise Exception(f"Duplicate campaign code found for {config.campaign_code}.")
-
-    # Check for duplicate dashboard path
-    if config.dashboard_path in [x.dashboard_path for x in CAMPAIGNS_CONFIG.values()]:
-        raise Exception(f"Duplicate dashboard path found for {config.campaign_code}.")

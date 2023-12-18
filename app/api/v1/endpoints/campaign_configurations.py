@@ -23,25 +23,46 @@ SOFTWARE.
 
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status, Depends
 
-from app.api.v1.endpoints.auth import router as auth_router
-from app.api.v1.endpoints.campaign_configurations import (
-    router as campaign_configurations_router,
+from app.api import dependencies
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
+from app.http_exceptions import ResourceNotFoundHTTPException
+from app.schemas.campaign_config import CampaignConfigResponse
+
+router = APIRouter(prefix="/configurations")
+
+
+@router.get(
+    path="",
+    response_model=list[CampaignConfigResponse],
+    status_code=status.HTTP_200_OK,
 )
-from app.api.v1.endpoints.campaigns import router as campaigns_router
-from app.api.v1.endpoints.campaigns_merged import router as campaigns_merged_router
-from app.api.v1.endpoints.data import router as data_router
-from app.api.v1.endpoints.health_check import router as health_check_router
-from app.api.v1.endpoints.info import router as info_router
-from app.api.v1.endpoints.settings import router as settings_router
+def read_all_campaigns_configurations():
+    """
+    Read all campaigns configurations.
+    """
 
-api_router = APIRouter()
-campaigns_router.include_router(campaign_configurations_router)
-api_router.include_router(campaigns_router, tags=["Campaigns"])
-api_router.include_router(campaigns_merged_router, tags=["Campaigns merged"])
-api_router.include_router(auth_router, tags=["Authentication"])
-api_router.include_router(data_router, tags=["Data"])
-api_router.include_router(settings_router, tags=["Settings"])
-api_router.include_router(health_check_router, tags=["Health Check"])
-api_router.include_router(info_router, tags=["Info"])
+    if configurations := CAMPAIGNS_CONFIG.values():
+        return [x for x in configurations]
+
+    return []
+
+
+@router.get(
+    path="/{campaign_code}",
+    response_model=CampaignConfigResponse,
+    status_code=status.HTTP_200_OK,
+)
+def read_campaign_configuration(
+    campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+):
+    """
+    Read campaign configuration.
+    """
+
+    configuration = CAMPAIGNS_CONFIG.get(campaign_code)
+    if configuration:
+        return configuration
+
+    raise ResourceNotFoundHTTPException("Campaign configuration not found.")
