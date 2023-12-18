@@ -29,9 +29,9 @@ import os
 import validators
 from pydantic import ValidationError
 
-from app.schemas.campaign_config import CampaignConfig
+from app.schemas.campaign_config import CampaignConfigInternal
 
-CAMPAIGNS_CONFIG: dict[str, CampaignConfig] = {}
+CAMPAIGNS_CONFIG: dict[str, CampaignConfigInternal] = {}
 
 campaigns_config_folder = "campaigns-config"
 
@@ -48,7 +48,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     if os.path.isfile(config_json):
         with open(config_json, "r") as file:
             try:
-                config = CampaignConfig.parse_obj(json.loads(file.read()))
+                config = CampaignConfigInternal.parse_obj(json.loads(file.read()))
             except ValidationError:
                 raise Exception(
                     f"Could not validate configuration found in config folder {config_folder}."
@@ -82,7 +82,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
             raise Exception(f"{config.link} is not a valid link.")
 
     # Check for duplicate campaign code
-    if config.code not in CAMPAIGNS_CONFIG:
-        CAMPAIGNS_CONFIG[config.code] = config
+    if config.campaign_code not in CAMPAIGNS_CONFIG:
+        CAMPAIGNS_CONFIG[config.campaign_code] = config
     else:
-        raise Exception(f"Duplicate campaign code found {config.code}.")
+        raise Exception(f"Duplicate campaign code found {config.campaign_code}.")

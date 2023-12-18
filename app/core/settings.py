@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL", "")
     GOOGLE_CREDENTIALS_INCLUDED: bool = GOOGLE_CREDENTIALS_INCLUDED
 
-    # These env variables are only used for campaign pmn01a
+    # These env variables are only used for legacy campaign pmn01a
     ONLY_PMNCH: bool = os.getenv("ONLY_PMNCH", "").lower() == "true"
     AZURE_TRANSLATOR_KEY: str = os.getenv("AZURE_TRANSLATOR_KEY")
     AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")

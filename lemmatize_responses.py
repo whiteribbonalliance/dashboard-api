@@ -49,10 +49,10 @@ def lemmatize_all_responses():
     """
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
-        if campaign_config.code in constants.LEGACY_CAMPAIGN_CODES:
+        if campaign_config.campaign_code in constants.LEGACY_CAMPAIGN_CODES:
             continue
         if campaign_codes_from_args:
-            if campaign_config.code not in campaign_codes_from_args:
+            if campaign_config.campaign_code not in campaign_codes_from_args:
                 continue
 
         print(f"Lemmatizing responses in {campaign_config.file}...")

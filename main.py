@@ -44,7 +44,9 @@ if settings.STAGE == "dev":
     utils.create_tmp_dir_if_not_exists()
 
 # Create in-memory Database objects
-databases.create_databases(campaign_codes=[x.code for x in CAMPAIGNS_CONFIG.values()])
+databases.create_databases(
+    campaign_codes=[x.campaign_code for x in CAMPAIGNS_CONFIG.values()]
+)
 
 # Tags metadata
 tags_metadata = [

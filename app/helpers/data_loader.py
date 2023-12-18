@@ -140,7 +140,7 @@ def load_campaign_data(campaign_code: str):
     )
 
     # Age bucket
-    # Note: Campaigns wra03a and midwife already contain age as an age bucket
+    # Note: Legacy campaigns wra03a and midwife already contain age as an age bucket
     if (
         campaign_code == LegacyCampaignCode.wra03a.value
         or campaign_code == LegacyCampaignCode.midwife.value
@@ -251,7 +251,7 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     df = None
     dtype = {"age": str, "response_year": str}
 
-    # For campaign pmn01a get the data from Azure Blob Storage
+    # For legacy campaign pmn01a get the data from Azure Blob Storage
     if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
         blob = azure_blob_storage_interactions.get_blob(
             container_name="main", blob_name="pmn01a.csv"
@@ -446,15 +446,15 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
-        print(f"INFO:\t  Loading data for campaign {campaign_config.code}...")
+        print(f"INFO:\t  Loading data for campaign {campaign_config.campaign_code}...")
 
         try:
-            load_campaign_data(campaign_code=campaign_config.code)
-            load_campaign_ngrams_unfiltered(campaign_code=campaign_config.code)
+            load_campaign_data(campaign_code=campaign_config.campaign_code)
+            load_campaign_ngrams_unfiltered(campaign_code=campaign_config.campaign_code)
             ApiCache().clear_cache()
         except (Exception,):
             logger.exception(
-                f"""Error loading data for campaign {campaign_config.code}"""
+                f"""Error loading data for campaign {campaign_config.campaign_code}"""
             )
 
     print(f"INFO:\t  Loading campaigns data completed.")
@@ -486,7 +486,7 @@ def load_region_coordinates():
 
     # Get new region coordinates (if coordinate is not in region_coordinates.json)
     focused_on_country_campaigns_codes = []
-    for campaign_code in [x.code for x in CAMPAIGNS_CONFIG.values()]:
+    for campaign_code in [x.campaign_code for x in CAMPAIGNS_CONFIG.values()]:
         if (
             campaign_code == LegacyCampaignCode.giz.value
             or campaign_code == LegacyCampaignCode.wwwpakistan.value

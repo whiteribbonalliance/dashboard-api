@@ -122,7 +122,7 @@ inside `front_translations`. Copy the `languages` folder to the front-end projec
 
 Additional environment variables:
 
-- `ONLY_PMNCH=` True or `False.
+- `ONLY_PMNCH=` True.
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
 - `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.

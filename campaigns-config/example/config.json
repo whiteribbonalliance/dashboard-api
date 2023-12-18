@@ -1,10 +1,17 @@
 {
-  "code": "example",
+  "campaign_code": "example",
   "password": "123QWE,./",
+  "dashboard_path": "example",
+  "dashboard_name": "My Example Dashboard",
   "file": "example.csv",
-  "link": "",
+  "link": "https://example.com/data.csv",
+  "respondent_noun_singular": "respondent",
+  "respondent_noun_plural": "respondents",
+  "seo_title": "My Example Dashboard | MyDashboard",
+  "seo_meta_description": "Example dashboard description",
+  "video_link": "https://example.com/video.mp4",
   "questions": {
-    "q1": ""
+    "q1": "Question 1"
   },
   "parent_categories": [
     {

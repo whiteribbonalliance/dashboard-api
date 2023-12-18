@@ -157,7 +157,7 @@ class Campaign:
     def get_respondent_noun_singular(self) -> str:
         """Get respondent noun singular"""
 
-        respondent_noun = self.__db.respondent_noun
+        respondent_noun = self.__db.respondent_noun_singular
         if respondent_noun:
             return respondent_noun
 
@@ -166,7 +166,7 @@ class Campaign:
     def get_respondent_noun_plural(self) -> str:
         """Get respondent noun plural"""
 
-        respondent_noun = self.__db.respondent_noun
+        respondent_noun = self.__db.respondent_noun_singular
         if respondent_noun:
             respondent_noun_plural = inflect_engine.plural(respondent_noun)
 

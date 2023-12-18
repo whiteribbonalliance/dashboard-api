@@ -154,13 +154,13 @@ def campaign_public_data(
 ):
     """
     Read campaign public data.
-    This endpoint currently only allows the campaign healthwellbeing.
+    This endpoint currently only allows the legacy campaign healthwellbeing.
     """
 
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    # Only allow campaign healthwellbeing
+    # Only allow legacy campaign healthwellbeing
     if campaign_code != LegacyCampaignCode.healthwellbeing.value:
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."

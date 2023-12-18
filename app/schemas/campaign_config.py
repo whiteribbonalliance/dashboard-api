@@ -29,31 +29,35 @@ from pydantic import BaseModel, Field, validator
 from app.schemas.category import ParentCategory
 
 
-class CampaignConfig(BaseModel):
-    code: str = Field(min_length=1)
-    password: str = Field()
-    file: str = Field()
-    link: str = Field()
-    questions: dict[str, str]
-    filepath: str = Field(default="")
-    parent_categories: list[ParentCategory]
+class CampaignConfigBase(BaseModel):
+    campaign_code: str = Field(min_length=1, description="The campaign code.")
+    dashboard_path: str = Field(
+        description="The dashboard path that will be used to access it in the front."
+    )
+    dashboard_name: str = Field(description="Name of the dashboard.")
+    seo_title: str = Field(description="Title of the dashboard for SEO.")
+    seo_meta_description: str = Field(
+        description="A description of the dashboard for SEO."
+    )
+    respondent_noun_singular: str = Field(
+        min_length=1, default="respondent", description="Respondent noun singular."
+    )
+    respondent_noun_plural: str = Field(
+        min_length=1, default="respondents", description="Respondent noun plural."
+    )
+    video_link: str = Field(
+        default="", description="A Link to a video related to the dashboard."
+    )
+    questions: dict[str, str] = Field(
+        description="Questions that were asked to respondents."
+    )
 
-    @validator("file", pre=True)
-    def file_check(cls, v):
-        if v == "":
-            return v
-
-        if not v.endswith(".csv"):
+    @validator("dashboard_path", pre=True)
+    def file_check(cls, v: str):
+        if not v:
             return None
 
-        return v
-
-    @validator("link", pre=True)
-    def link_check(cls, v):
-        if v == "":
-            return v
-
-        if not validators.url(v):
+        if " " in v:
             return None
 
         return v
@@ -67,3 +71,42 @@ class CampaignConfig(BaseModel):
                 return None
 
         return v
+
+
+class CampaignConfigInternal(CampaignConfigBase):
+    password: str = Field(default="", description="Password to access protected paths.")
+    file: str = Field(
+        description="Name of the CSV file to be found inside the config folder."
+    )
+    link: str = Field(description="A direct link to the CSV file.")
+    filepath: str = Field(
+        default="",
+        description="Path to CSV file. This field will be filled automatically during loading the config.",
+    )
+    parent_categories: list[ParentCategory] = Field(
+        description="A hierarchy of categories."
+    )
+
+    @validator("file", pre=True)
+    def file_check(cls, v: str):
+        if v == "":
+            return v
+
+        if not v.endswith(".csv"):
+            return None
+
+        return v
+
+    @validator("link", pre=True)
+    def link_check(cls, v: str):
+        if v == "":
+            return v
+
+        if not validators.url(v):
+            return None
+
+        return v
+
+
+class CampaignConfigResponse(CampaignConfigBase):
+    pass

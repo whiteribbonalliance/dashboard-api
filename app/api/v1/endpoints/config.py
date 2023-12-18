@@ -23,23 +23,34 @@ SOFTWARE.
 
 """
 
-from fastapi import APIRouter
+import logging
 
-from app.api.v1.endpoints.auth import router as auth_router
-from app.api.v1.endpoints.campaigns import router as campaigns_router
-from app.api.v1.endpoints.campaigns_merged import router as campaigns_merged_router
-from app.api.v1.endpoints.config import router as config_router
-from app.api.v1.endpoints.data import router as data_router
-from app.api.v1.endpoints.health_check import router as health_check_router
-from app.api.v1.endpoints.info import router as info_router
-from app.api.v1.endpoints.settings import router as settings_router
+from fastapi import APIRouter, status, Depends
 
-api_router = APIRouter()
-campaigns_router.include_router(config_router, tags=["Config"])
-api_router.include_router(campaigns_router, tags=["Campaigns"])
-api_router.include_router(campaigns_merged_router, tags=["Campaigns merged"])
-api_router.include_router(auth_router, tags=["Authentication"])
-api_router.include_router(health_check_router, tags=["Health Check"])
-api_router.include_router(info_router, tags=["Info"])
-api_router.include_router(data_router, tags=["Data"])
-api_router.include_router(settings_router, tags=["Settings"])
+from app.api import dependencies
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
+from app.http_exceptions import ResourceNotFoundHTTPException
+from app.logginglib import init_custom_logger
+from app.schemas.campaign_config import CampaignConfigResponse
+
+logger = logging.getLogger(__name__)
+init_custom_logger(logger)
+
+router = APIRouter(prefix="")
+
+
+@router.get(
+    path="/{campaign_code}/config",
+    response_model=CampaignConfigResponse,
+    status_code=status.HTTP_200_OK,
+)
+def read_config(campaign_code: str = Depends(dependencies.campaign_code_exists_check)):
+    """
+    Read config.
+    """
+
+    config = CAMPAIGNS_CONFIG.get(campaign_code)
+    if config:
+        return config
+
+    raise ResourceNotFoundHTTPException("Campaign config not found.")
