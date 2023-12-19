@@ -89,9 +89,12 @@ columns `q2_response` and `q2_canonical_code`.
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
         its sub-categories.
 4. Copy your CSV file to the new config folder.
-5. The final step is to lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py`. To
+5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py`. To
    only lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
-6. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
+6. Apply translations, this should be done even if translations is disabled to create a translations output of only
+   English. `[CAMPAIGN_CODE]-title` and `[CAMPAIGN_CODE]-subtext` are required to add to `to_translate.json`. Read the
+   `Translations` section for more information.
+7. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
    file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
    prioritized over `file`.
 
@@ -119,7 +122,8 @@ For example:
 
 ```json
 {
-  "title": "Lorem Ipsum",
+  "example-title": "Lorem Ipsum",
+  "example-subtext": "Lorem Ipsum",
   "click-button": "Click button"
 }
 ```
@@ -129,6 +133,11 @@ To apply translations run:
 ```bash
 python translate_front.py
 ```
+
+*Note: The above should be done even if translations is disabled, this is because with translations disabled, the
+default language is English and the output of the translations function will contain only the language English which is
+used in the front. `example` in `example-title` refers to a campaign code. `[CAMPAIGN_CODE]-title`
+and `[CAMPAIGN_CODE]-subtext` are always required to include in `to_translate.json`.*
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
