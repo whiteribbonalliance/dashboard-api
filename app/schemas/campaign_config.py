@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
+from typing import Annotated
 
 from pydantic import BaseModel, Field, validator
 
@@ -52,22 +53,11 @@ class CampaignConfigBase(BaseModel):
     about_us_link: str = Field(
         default="", description="Link to a page about the campaign."
     )
-    questions: dict[str, str] = Field(
-        description="Questions that were asked to respondents."
-    )
 
     @validator("dashboard_path", pre=True)
     def file_check(cls, v: str):
         if not v or " " in v:
             raise Exception("Invalid dashboard path provided.")
-
-        return v
-
-    @validator("questions", pre=True)
-    def question_check(cls, v):
-        for key, value in v.items():
-            if not key.startswith("q") or not key.replace("q", "", 1).isnumeric():
-                raise Exception("Invalid question code provided.")
 
         return v
 
@@ -83,6 +73,17 @@ class CampaignConfigInternal(CampaignConfigBase):
     parent_categories: list[ParentCategory] = Field(
         description="A hierarchy of categories."
     )
+    questions: dict[str, str] = Field(
+        description="Questions that were asked to respondents."
+    )
+
+    @validator("questions", pre=True)
+    def question_check(cls, v):
+        for key, value in v.items():
+            if not key.startswith("q") or not key.replace("q", "", 1).isnumeric():
+                raise Exception("Invalid question code provided.")
+
+        return v
 
 
 class CampaignConfigResponse(CampaignConfigBase):

@@ -61,7 +61,6 @@ def read_campaigns_configurations():
                     respondent_noun_plural="respondents",
                     video_link="https://www.youtube.com/watch?v=nBzide5J3Hk",
                     about_us_link="https://whiteribbonalliance.org/movements/womens-health",
-                    questions={},
                 )
             )
 
