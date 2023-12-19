@@ -55,12 +55,12 @@ def read_campaigns_configurations():
                 CampaignConfigResponse(
                     campaign_code="allcampaigns",
                     dashboard_path="allcampaigns",
-                    seo_title="All Campaigns",
+                    seo_title="Dashboard of Dashboards | White Ribbon Alliance",
                     seo_meta_description="All campaigns",
                     respondent_noun_singular="respondent",
                     respondent_noun_plural="respondents",
-                    video_link="",
-                    about_us_link="",
+                    video_link="https://www.youtube.com/watch?v=nBzide5J3Hk",
+                    about_us_link="https://whiteribbonalliance.org/movements/womens-health",
                     questions={},
                 )
             )
