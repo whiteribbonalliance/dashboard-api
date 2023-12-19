@@ -97,8 +97,10 @@ columns `q2_response` and `q2_canonical_code`.
    prioritized over `file`.
 
 When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` from the
-config after a build has been created in the front-end. If the configuration is updated, a new build is required in the
-front-end to reflect the changes.
+config after a build has been created in the front-end.
+
+Note: If the configuration has been updated, a new build is required in the front-end to reflect the changes. Changes
+also includes enabling or disabling translations.
 
 ## Translations
 

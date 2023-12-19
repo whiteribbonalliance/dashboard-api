@@ -35,6 +35,8 @@ CAMPAIGNS_CONFIG: dict[str, CampaignConfigInternal] = {}
 
 campaigns_config_folder = "campaigns-config"
 
+print("INFO:\t  Loading configurations...")
+
 for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     # Check if it is a folder
     if not os.path.isdir(os.path.join(campaigns_config_folder, config_folder)):
