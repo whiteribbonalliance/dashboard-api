@@ -36,7 +36,6 @@ class CampaignConfigBase(BaseModel):
     dashboard_path: str = Field(
         description="The dashboard path that will be used to access it in the front. This value should be unique per campaign."
     )
-    dashboard_name: str = Field(description="Name of the dashboard.")
     seo_title: str = Field(description="Title of the dashboard for SEO.")
     seo_meta_description: str = Field(
         description="A description of the dashboard for SEO."

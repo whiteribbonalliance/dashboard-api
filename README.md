@@ -73,19 +73,18 @@ columns `q2_response` and `q2_canonical_code`.
     1. `campaign_code`: Required - An unique code for the campaign.
     2. `password`: Optional - A password for accessing protected paths of a campaign.
     3. `dashboard_path` Required - Path to access the dashboard in the front.
-    4. `dashboard_name` Required - A name for the dashboard.
-    5. `seo_title` Required - Title of the dashboard for SEO.
-    6. `seo_meta_description` Required - A description of the dashboard for SEO.
-    7. `file` Required - The CSV filename.
-    8. `file_link` Optional - A direct link to the CSV file. `file_link` will be prioritized over `file`.
-    9. `respondent_noun_singular`: Optional - Respondent noun singular.
-    10. `respondent_noun_plural`: Optional - Respondent noun plural.
-    11. `video_link` - Optional - A Link to a video related to the dashboard.
-    12. `about_us_link` - Optional - Link to a page about the campaign.
-    13. `questions` Optional - If there's more than one response included in the data, add the question that relates to
+    4. `seo_title` Required - Title of the dashboard for SEO.
+    5. `seo_meta_description` Required - A description of the dashboard for SEO.
+    6. `file` Required - The CSV filename.
+    7. `file_link` Optional - A direct link to the CSV file. `file_link` will be prioritized over `file`.
+    8. `respondent_noun_singular`: Optional - Respondent noun singular.
+    9. `respondent_noun_plural`: Optional - Respondent noun plural.
+    10. `video_link` - Optional - A Link to a video related to the dashboard.
+    11. `about_us_link` - Optional - Link to a page about the campaign.
+    12. `questions` Optional - If there's more than one response included in the data, add the question that relates to
         it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
         will be able to see the questions in the front-end and switch between responses.
-    14. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
+    13. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
         parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
         its sub-categories.

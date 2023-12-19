@@ -48,7 +48,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     # Load config
     config_json = os.path.join(campaigns_config_folder, config_folder, "config.json")
     if os.path.isfile(config_json):
-        with open(config_json, "r") as file:
+        with open(config_json, "r", encoding="utf8") as file:
             try:
                 config = CampaignConfigInternal.parse_obj(json.loads(file.read()))
             except ValidationError as e:
