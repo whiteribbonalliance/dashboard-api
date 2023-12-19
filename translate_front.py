@@ -28,11 +28,14 @@ import os
 import shutil
 
 from app import utils
+from app.core.settings import get_settings
 from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import TCloudService
 
 count_chars_only = False
+
+settings = get_settings()
 
 if not os.path.isfile("credentials.json"):
     raise Exception("credentials.json not found.")
@@ -57,7 +60,10 @@ def translate_front(cloud_service: TCloudService):
 
     # Translate text for every language
     translator = Translator(cloud_service=cloud_service)
-    for language in utils.get_translation_languages(cloud_service=cloud_service).keys():
+    languages = utils.get_translation_languages(cloud_service=cloud_service).keys()
+    if not settings.TRANSLATIONS_ENABLED:
+        languages = ["en"]
+    for language in languages:
         print(f"{name} - Translating texts to {language}...")
 
         translator.set_target_language(target_language=language)

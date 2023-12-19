@@ -123,8 +123,8 @@ class Translator:
                 source_language=source_language,
                 target_language=target_language,
             )
-        except (Exception,):
-            logger.error(f"Error translating: {text} to {target_language}")
+        except (Exception,) as e:
+            logger.error(f"Error translating {text} to {target_language}. {str(e)}")
 
             return text
 
@@ -236,9 +236,9 @@ class Translator:
                         source_language="en",
                         target_language=self.__target_language,
                     )
-                except (Exception,):
+                except (Exception,) as e:
                     logger.error(
-                        f"Error translating: texts from extracted_texts_chunk to {self.__target_language}"
+                        f"Error translating texts from extracted_texts_chunk to {self.__target_language}. {str(e)}"
                     )
                     continue
 
@@ -372,8 +372,10 @@ class Translator:
                     source_language="en",
                     target_language=self.__target_language,
                 )
-            except (Exception,):
-                logger.error(f"Error translating: {text} to {self.__target_language}")
+            except (Exception,) as e:
+                logger.error(
+                    f"Error translating {text} to {self.__target_language}. {str(e)}"
+                )
                 return text
 
             # Add translation to cache

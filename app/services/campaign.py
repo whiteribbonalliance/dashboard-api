@@ -626,8 +626,6 @@ class CampaignService:
             label="Show breakdown by profession",
         )
 
-        options: list[dict] = []
-
         if self.__campaign_code == LegacyCampaignCode.wra03a.value:
             options = [
                 breakdown_age_bucket_option.dict(),
@@ -655,6 +653,12 @@ class CampaignService:
             options = [breakdown_age_bucket_option.dict()]
         elif self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
             options = [breakdown_age_bucket_option.dict()]
+        else:
+            options = [
+                breakdown_age_bucket_option.dict(),
+                breakdown_gender_option.dict(),
+                breakdown_country_option.dict(),
+            ]
 
         # Translate
         try:

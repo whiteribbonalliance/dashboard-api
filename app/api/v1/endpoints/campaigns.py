@@ -38,11 +38,8 @@ from app import http_exceptions
 from app import utils
 from app.api import dependencies
 from app.enums.legacy_campaign_code import LegacyCampaignCode
-from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
-from app.http_exceptions import ResourceNotFoundHTTPException
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
-from app.schemas.campaign_config import CampaignConfigResponse
 from app.schemas.campaign_request import CampaignRequest
 from app.schemas.date_filter import DateFilter
 from app.schemas.filter_options import FilterOptions

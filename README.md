@@ -2,9 +2,9 @@
 
 ## What does this API do?
 
-This API is used for providing campaign data to display in a dashboard. To add a new campaign you can create a new
-configuration for the campaign with the required data and run the API, the data will become immediately available
-through the endpoints. For more information on how to do this, continue reading the documentation below.
+This API is used for providing campaign data to display in the front-end dashboard. Follow the steps at
+section `How to create a new campaign`. Once a new campaign was added, the data will become available through the
+endpoints. For more information, continue reading the documentation below.
 
 ## Environment variables:
 
@@ -67,15 +67,14 @@ columns `q2_response` and `q2_canonical_code`.
 ## How to create a new campaign
 
 1. Create a new config folder at `campaigns-config/[NEW_CONFIG_FOLDER_NAME]`.
-2. Inside the new folder create the file `config.json` (copy `config.json`
-   from `campaigns-config/example/config.json`).
+2. Inside the new folder create the file `config.json` (copy `config.json` from `campaigns-config/example/config.json`).
 3. Fill in the configuration:
     1. `campaign_code`: Required - An unique code for the campaign.
     2. `password`: Optional - A password for accessing protected paths of a campaign.
     3. `dashboard_path` Required - Path to access the dashboard in the front.
     4. `seo_title` Required - Title of the dashboard for SEO.
     5. `seo_meta_description` Required - A description of the dashboard for SEO.
-    6. `file` Required - The CSV filename.
+    6. `file` Required - Your CSV filename.
     7. `file_link` Optional - A direct link to the CSV file. `file_link` will be prioritized over `file`.
     8. `respondent_noun_singular`: Optional - Respondent noun singular.
     9. `respondent_noun_plural`: Optional - Respondent noun plural.
@@ -87,13 +86,10 @@ columns `q2_response` and `q2_canonical_code`.
     13. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
         parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
-        its sub-categories.
+        its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code` etc.
 4. Copy your CSV file to the new config folder.
-5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py`. To
-   only lemmatize a specific campaign you can run `python lemmatize_responses.py my_campaign_code`.
-6. Apply translations, this should be done even if translations is disabled to create a translations output of only
-   English. `[CAMPAIGN_CODE]-title` and `[CAMPAIGN_CODE]-subtext` are required to add to `to_translate.json`. Read the
-   `Translations` section for more information.
+5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py my_campaign_code`.
+6. Apply translations, read the `Translations` section for more information.
 7. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
    file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
    prioritized over `file`.
@@ -115,18 +111,19 @@ Translations occur automatically on the fly.
 
 ### Front-end
 
-Create a JSON file at `front_translations/to_translate.json` that contains the keys that will be used in the front for
-accessing translations and use as value the text in English.
+Create the JSON file `front_translations/to_translate.json` if it doesn't exist yet, and add the keys that will be used
+in the front-end for accessing translations and use as value the text in English.
 
 For example:
 
 ```json
 {
   "example-title": "Lorem Ipsum",
-  "example-subtext": "Lorem Ipsum",
-  "click-button": "Click button"
+  "example-subtext": "Lorem Ipsum"
 }
 ```
+
+`example` here refers to a campaign code.
 
 To apply translations run:
 
@@ -137,7 +134,7 @@ python translate_front.py
 *Note: The above should be done even if translations is disabled, this is because with translations disabled, the
 default language is English and the output of the translations function will contain only the language English which is
 used in the front. `example` in `example-title` refers to a campaign code. `[CAMPAIGN_CODE]-title`
-and `[CAMPAIGN_CODE]-subtext` are always required to include in `to_translate.json`.*
+and `[CAMPAIGN_CODE]-subtext` are always required to be included in `to_translate.json`.*
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.

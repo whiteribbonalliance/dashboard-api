@@ -48,9 +48,14 @@ def lemmatize_all_responses():
     Lemmatize all responses.
     """
 
+    if not campaign_codes_from_args:
+        print("Nothing to lemmatize.")
+        return
+
     for campaign_config in CAMPAIGNS_CONFIG.values():
         if campaign_config.campaign_code in constants.LEGACY_CAMPAIGN_CODES:
             continue
+
         if campaign_codes_from_args:
             if campaign_config.campaign_code not in campaign_codes_from_args:
                 continue
