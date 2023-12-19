@@ -44,7 +44,7 @@ def read_campaigns_configurations():
     """
 
     if configurations := CAMPAIGNS_CONFIG.values():
-        return [x for x in configurations]
+        return configurations
 
     return []
 

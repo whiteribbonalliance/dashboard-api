@@ -29,7 +29,7 @@ import nltk
 import pandas as pd
 from pywsd.utils import lemmatize_sentence
 
-from app import constants
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import q_col_names, q_codes_finder
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 
@@ -53,7 +53,7 @@ def lemmatize_all_responses():
         return
 
     for campaign_config in CAMPAIGNS_CONFIG.values():
-        if campaign_config.campaign_code in constants.LEGACY_CAMPAIGN_CODES:
+        if campaign_config.campaign_code in [x.value for x in LegacyCampaignCode]:
             continue
 
         if campaign_codes_from_args:

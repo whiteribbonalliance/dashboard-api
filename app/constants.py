@@ -25,10 +25,6 @@ SOFTWARE.
 
 import json
 
-from app.enums.legacy_campaign_code import LegacyCampaignCode
-
-LEGACY_CAMPAIGN_CODES = [x.value for x in LegacyCampaignCode]
-
 # Load stopwords from file
 with open("stopwords.json", "r", encoding="utf8") as file:
     STOPWORDS: dict = json.loads(file.read())

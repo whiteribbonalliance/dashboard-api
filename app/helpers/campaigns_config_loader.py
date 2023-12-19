@@ -56,15 +56,6 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
                     f"Could not validate configuration found in config folder {config_folder}. Error: {str(e)}"
                 )
 
-    # Add a pre string to legacy campaign code to prevent conflicts
-    # pre = "_LEGACY_"
-    # ONLY_LEGACY_CAMPAIGNS = os.getenv("ONLY_LEGACY_CAMPAIGNS", "").lower() == "true"
-    # if (
-    #     ONLY_LEGACY_CAMPAIGNS
-    #     and f"{pre}{config.code}" in constants.LEGACY_CAMPAIGN_CODES
-    # ):
-    #     config.code = f"{pre}{config.code}"
-
     # If no file or file link was provided
     if not config.file and not config.file_link:
         raise Exception("No CSV file or direct link to CSV file was provided.")
