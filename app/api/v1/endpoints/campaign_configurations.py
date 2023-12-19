@@ -26,9 +26,12 @@ SOFTWARE.
 from fastapi import APIRouter, status, Depends
 
 from app.api import dependencies
+from app.core.settings import get_settings
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.http_exceptions import ResourceNotFoundHTTPException
-from app.schemas.campaign_config import CampaignConfigResponse
+from app.schemas.campaign_config import CampaignConfigResponse, CampaignConfigInternal
+
+settings = get_settings()
 
 router = APIRouter(prefix="/configurations")
 
@@ -43,7 +46,25 @@ def read_campaigns_configurations():
     Read campaigns configurations.
     """
 
-    if configurations := CAMPAIGNS_CONFIG.values():
+    configurations: list[CampaignConfigResponse | CampaignConfigInternal] = list(
+        CAMPAIGNS_CONFIG.values()
+    )
+    if configurations:
+        if settings.ONLY_LEGACY_CAMPAIGNS:
+            configurations.append(
+                CampaignConfigResponse(
+                    campaign_code="allcampaigns",
+                    dashboard_path="allcampaigns",
+                    seo_title="All Campaigns",
+                    seo_meta_description="All campaigns",
+                    respondent_noun_singular="respondent",
+                    respondent_noun_plural="respondents",
+                    video_link="",
+                    about_us_link="",
+                    questions={},
+                )
+            )
+
         return configurations
 
     return []

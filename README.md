@@ -88,7 +88,8 @@ columns `q2_response` and `q2_canonical_code`.
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
         its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code` etc.
 4. Copy your CSV file to the new config folder.
-5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py my_campaign_code`.
+5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py my_campaign_code` with the
+   new campaign code.
 6. Apply translations, read the `Translations` section for more information.
 7. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
    file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
