@@ -24,7 +24,7 @@ SOFTWARE.
 """
 
 from fastapi import APIRouter, status
-
+import os
 from app.core.settings import get_settings
 from app.schemas.settings import Settings
 
@@ -38,4 +38,8 @@ def read_settings():
     return Settings(
         translations_enabled=settings.TRANSLATIONS_ENABLED,
         cloud_service=settings.CLOUD_SERVICE,
+        owner_name=os.getenv("OWNER_NAME", ""),
+        owner_link=os.getenv("OWNER_LINK", ""),
+        company_name=os.getenv("COMPANY_NAME", ""),
+        company_link=os.getenv("COMPANY_LINK", ""),
     )

@@ -33,3 +33,7 @@ class Settings(BaseModel):
     cloud_service: TCloudService = Field(
         description="The cloud service to use for e.g. translations."
     )
+    owner_name: str = Field()
+    owner_link: str = Field()
+    company_name: str = Field()
+    company_link: str = Field()

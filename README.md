@@ -8,11 +8,15 @@ endpoints. For more information, continue reading the documentation below.
 
 ## Environment variables:
 
-- `STAGE=` prod or dev.
-- `HOST=` The host.
-- `PORT=` The port.
-- `APP_TITLE=` App title.
-- `APP_DESCRIPTION=` App description.
+- `STAGE=` Required - prod or dev.
+- `HOST=` Required - The host.
+- `PORT=` Required - The port.
+- `APP_TITLE=` Optional - App title.
+- `APP_DESCRIPTION=` Optional - App description.
+- `OWNER_NAME=` Optional - Owner name - to display in footer.
+- `ONWER_LINK=` Optional - Owner link - to display in footer.
+- `COMPANY_NAME=` Optional - Company name - to display in footer.
+- `COMPANY_LINK=` Optional - Company link - to display in footer.
   campaign data. Requires Google Cloud `credentials.json` with the right permissions.
 - `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths e.g. for downloading
   campaign data.
@@ -92,8 +96,8 @@ columns `q2_response` and `q2_canonical_code`.
     5. `seo_meta_description` Required - A description of the dashboard for SEO.
     6. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
-       or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. This file has
-       to be lemmatized, read step 5.
+       or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
+       in the file have to be lemmatized, read step 5.
     7. `respondent_noun_singular`: Optional - Respondent noun singular.
     8. `respondent_noun_plural`: Optional - Respondent noun plural.
     9. `video_link` - Optional - A Link to a video related to the dashboard.

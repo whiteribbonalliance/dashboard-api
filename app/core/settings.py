@@ -46,8 +46,8 @@ class Settings(BaseSettings):
     HOST: str = os.getenv("HOST")
     PORT: int = int(os.getenv("PORT", 8000))
     VERSION: str = "1.0.0"
-    APP_TITLE: str = os.getenv("APP_TITLE", "")
-    APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "")
+    APP_TITLE: str = os.getenv("APP_TITLE", "Dashboard")
+    APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "Dashboard")
     API_PREFIX: str = ApiPrefix.v1.value
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
