@@ -33,6 +33,6 @@ settings = get_settings()
 router = APIRouter(prefix="/settings")
 
 
-@router.get(path="/", response_model=Settings, status_code=status.HTTP_200_OK)
+@router.get(path="", response_model=Settings, status_code=status.HTTP_200_OK)
 def read_settings():
     return Settings(translations_enabled=settings.TRANSLATIONS_ENABLED)
