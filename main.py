@@ -84,8 +84,8 @@ app_fastapi = FastAPI(
     docs_url="/docs",
     openapi_tags=tags_metadata,
     contact={
-        "name": os.getenv("OWNER_NAME", ""),
-        "url": os.getenv("OWNER_LINK", ""),
+        "name": settings.OWNER_NAME,
+        "url": settings.OWNER_LINK,
     },
 )
 

@@ -38,8 +38,8 @@ def read_settings():
     return Settings(
         translations_enabled=settings.TRANSLATIONS_ENABLED,
         cloud_service=settings.CLOUD_SERVICE,
-        owner_name=os.getenv("OWNER_NAME", ""),
-        owner_link=os.getenv("OWNER_LINK", ""),
-        company_name=os.getenv("COMPANY_NAME", ""),
-        company_link=os.getenv("COMPANY_LINK", ""),
+        owner_name=settings.OWNER_NAME,
+        owner_link=settings.OWNER_LINK,
+        company_name=settings.COMPANY_NAME,
+        company_link=settings.COMPANY_LINK,
     )
