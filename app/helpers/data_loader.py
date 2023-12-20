@@ -251,24 +251,21 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     df = None
     dtype = {"age": str, "response_year": str}
 
-    # For legacy campaign pmn01a get the data from Azure Blob Storage
-    if settings.ONLY_PMNCH and campaign_code == LegacyCampaignCode.pmn01a.value:
-        blob = azure_blob_storage_interactions.get_blob(
-            container_name="main", blob_name="pmn01a.csv"
-        )
-        df = pd.read_csv(
-            filepath_or_buffer=StringIO(blob.readall().decode("utf-8")),
-            keep_default_na=False,
-            dtype=dtype,
-        )
-
     # Load data for campaign
     if campaign_config := CAMPAIGNS_CONFIG.get(campaign_code):
         keep_default_na = False
 
+        # From local file
+        if campaign_config.file.local:
+            df = pd.read_csv(
+                filepath_or_buffer=campaign_config.filepath,
+                keep_default_na=keep_default_na,
+                dtype=dtype,
+            )
+
         # From link
-        if campaign_config.file_link:
-            response = requests.get(url=campaign_config.file_link)
+        elif campaign_config.file.link:
+            response = requests.get(url=campaign_config.file.link)
             if response.ok:
                 df = pd.read_csv(
                     filepath_or_buffer=StringIO(response.content.decode("utf-8")),
@@ -276,13 +273,30 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
                     dtype=dtype,
                 )
 
-        # From file
-        elif campaign_config.file:
-            df = pd.read_csv(
-                filepath_or_buffer=campaign_config.filepath,
-                keep_default_na=keep_default_na,
-                dtype=dtype,
-            )
+        # From cloud
+        elif campaign_config.file.cloud:
+            if settings.CLOUD_SERVICE == "google":
+                blob = google_cloud_storage_interactions.get_blob(
+                    bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_FILE,
+                    blob_name=campaign_config.file.cloud,
+                )
+                df = pd.read_csv(
+                    filepath_or_buffer=StringIO(
+                        blob.download_as_bytes().decode("utf-8")
+                    ),
+                    keep_default_na=False,
+                    dtype=dtype,
+                )
+            elif settings.CLOUD_SERVICE == "azure":
+                blob = azure_blob_storage_interactions.get_blob(
+                    container_name=settings.AZURE_STORAGE_CONTAINER_FILE,
+                    blob_name=campaign_config.file.cloud,
+                )
+                df = pd.read_csv(
+                    filepath_or_buffer=StringIO(blob.readall().decode("utf-8")),
+                    keep_default_na=False,
+                    dtype=dtype,
+                )
 
     if df is not None:
         # To datetime
@@ -430,11 +444,13 @@ def reload_data(
             ApiCache().clear_cache()
 
         # Clear bucket
-        if clear_google_cloud_storage_bucket and not settings.ONLY_PMNCH:
-            google_cloud_storage_interactions.clear_bucket()
+        if clear_google_cloud_storage_bucket and not settings.CLOUD_SERVICE == "google":
+            google_cloud_storage_interactions.clear_bucket(
+                bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA
+            )
 
         # Clear container
-        if clear_azure_blob_storage_container and settings.ONLY_PMNCH:
+        elif clear_azure_blob_storage_container and settings.CLOUD_SERVICE == "azure":
             azure_blob_storage_interactions.clear_container(container_name="csv")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")

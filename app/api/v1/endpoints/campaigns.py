@@ -37,6 +37,7 @@ from app import databases
 from app import http_exceptions
 from app import utils
 from app.api import dependencies
+from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
@@ -47,7 +48,6 @@ from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services.api_cache import ApiCache
 from app.services.campaign import CampaignService
-from app.types import TCloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -55,6 +55,8 @@ init_custom_logger(logger)
 router = APIRouter(prefix="/campaigns")
 
 api_cache = ApiCache()
+
+settings = get_settings()
 
 
 @router.post(
@@ -146,15 +148,14 @@ def read_histogram_options(
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-def campaign_public_data(
+def download_campaign_public_data(
     campaign_req: CampaignRequest,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     response_year: str = Depends(dependencies.response_year_check),
-    _google_credentials_included=Depends(dependencies.google_credentials_included),
 ):
     """
-    Read campaign public data.
-    This endpoint currently only allows the legacy campaign healthwellbeing.
+    Download campaign public data.
+    This endpoint only works with legacy campaign healthwellbeing.
     """
 
     filter_1 = campaign_req.filter_1
@@ -192,7 +193,7 @@ def campaign_public_data(
 
     # Get url and filename
     url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-        cloud_service="google", unique_filename_code=unique_filename_code
+        cloud_service=settings.CLOUD_SERVICE, unique_filename_code=unique_filename_code
     )
 
     def iter_file():
@@ -218,15 +219,14 @@ def campaign_public_data(
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-def campaign_data(
+def download_campaign_data(
     _request: Request,
     date_filter: DateFilter | None = None,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     username: str = Depends(dependencies.verify_user),
-    _google_credentials_included=Depends(dependencies.google_credentials_included),
 ):
     """
-    Read campaign data.
+    Download campaign data.
     """
 
     # Get user
@@ -263,31 +263,26 @@ def campaign_data(
         logger.warning(f"Could not parse date from date_filter: {str(e)}")
 
     # Azure
-    if campaign_code == LegacyCampaignCode.pmn01a.value:
-        cloud_service: TCloudService = "azure"
-
+    if settings.CLOUD_SERVICE == "azure":
         # Cleanup
-        azure_blob_storage_interactions.cleanup(container_name="csv")
-
-        # Get url and filename
-        url, csv_filename = campaign_service.get_campaign_data_url_and_filename(
-            cloud_service=cloud_service, from_date=from_date, to_date=to_date
+        azure_blob_storage_interactions.cleanup(
+            container_name=settings.AZURE_STORAGE_CONTAINER_TMP_DATA
         )
 
     # Google
-    else:
-        cloud_service: TCloudService = "google"
-
+    elif settings.CLOUD_SERVICE == "google":
         # Cleanup
-        google_cloud_storage_interactions.cleanup()
-
-        # Get url and filename
-        (
-            url,
-            csv_filename,
-        ) = campaign_service.get_campaign_data_url_and_filename(
-            cloud_service=cloud_service, from_date=from_date, to_date=to_date
+        google_cloud_storage_interactions.cleanup(
+            bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA
         )
+
+    # Get url and filename
+    (
+        url,
+        csv_filename,
+    ) = campaign_service.get_campaign_data_url_and_filename(
+        cloud_service=settings.CLOUD_SERVICE, from_date=from_date, to_date=to_date
+    )
 
     def iter_file():
         with requests.Session() as session:
@@ -312,12 +307,12 @@ def campaign_data(
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_countries_breakdown(
+async def download_campaign_countries_breakdown(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     _username: str = Depends(dependencies.verify_user),
 ):
     """
-    Read campaign countries breakdown.
+    Download campaign countries breakdown.
     """
 
     # CRUD
@@ -355,12 +350,12 @@ async def campaign_countries_breakdown(
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
 )
-async def campaign_source_files_breakdown(
+async def download_campaign_source_files_breakdown(
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
     _username: str = Depends(dependencies.verify_user),
 ):
     """
-    Read campaign source files breakdown.
+    Download campaign source files breakdown.
     """
 
     # CRUD

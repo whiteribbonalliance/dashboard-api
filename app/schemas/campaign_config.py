@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-from typing import Annotated
+from typing import Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -55,20 +55,25 @@ class CampaignConfigBase(BaseModel):
     )
 
     @validator("dashboard_path", pre=True)
-    def file_check(cls, v: str):
+    def dashboard_path_check(cls, v: str):
         if not v or " " in v:
             raise Exception("Invalid dashboard path provided.")
 
         return v
 
 
+class File(BaseModel):
+    local: Optional[str] = Field(default=None, description="Local file name.")
+    link: Optional[str] = Field(default=None, description="Direct link to file.")
+    cloud: Optional[str] = Field(default=None, description="Blob name.")
+
+
 class CampaignConfigInternal(CampaignConfigBase):
     password: str = Field(default="", description="Password to access protected paths.")
-    file: str = Field(default="", description="The CSV file in the config folder.")
-    file_link: str = Field(default="", description="A direct link to the CSV file.")
+    file: File = Field("Where to find the CSV file.")
     filepath: str = Field(
         default="",
-        description="Path to the CSV file. This field will be filled automatically while loading the config.",
+        description="Local path to the CSV file. This field will be filled automatically while loading the config.",
     )
     parent_categories: list[ParentCategory] = Field(
         description="A hierarchy of categories."

@@ -37,13 +37,13 @@ from app.api.v1.endpoints.info import router as info_router
 from app.api.v1.endpoints.settings import router as settings_router
 
 api_router = APIRouter()
-campaigns_router.include_router(
-    campaign_configurations_router, tags=["Campaign configurations"]
+api_router.include_router(
+    campaign_configurations_router, tags=["Campaigns Configurations"]
 )
 api_router.include_router(campaigns_router, tags=["Campaigns"])
-api_router.include_router(campaigns_merged_router, tags=["Campaigns merged"])
+api_router.include_router(campaigns_merged_router, tags=["Campaigns Merged"])
 api_router.include_router(auth_router, tags=["Authentication"])
 api_router.include_router(data_router, tags=["Data"])
-api_router.include_router(settings_router, tags=["Settings"])
+api_router.include_router(settings_router, tags=["App Settings"])
 api_router.include_router(health_check_router, tags=["Health Check"])
 api_router.include_router(info_router, tags=["Info"])

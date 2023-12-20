@@ -32,10 +32,13 @@ from app.enums.api_prefix import ApiPrefix
 
 STAGE = os.getenv("STAGE", "prod")
 
-if os.path.isfile("credentials.json"):
-    GOOGLE_CREDENTIALS_INCLUDED = True
-else:
-    GOOGLE_CREDENTIALS_INCLUDED = False
+CLOUD_SERVICE = os.getenv("CLOUD_SERVICE", "").lower()
+if CLOUD_SERVICE and CLOUD_SERVICE not in ["google", "azure"]:
+    raise Exception(f"Invalid cloud service: {CLOUD_SERVICE}.")
+
+if CLOUD_SERVICE == "google":
+    if not os.path.isfile("credentials.json"):
+        raise Exception("credentials.json not found.")
 
 
 class Settings(BaseSettings):
@@ -46,23 +49,32 @@ class Settings(BaseSettings):
     APP_TITLE: str = os.getenv("APP_TITLE", "")
     APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "")
     API_PREFIX: str = ApiPrefix.v1.value
-    GOOGLE_CLOUD_STORAGE_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET_NAME", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
-    NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY", "")
-    NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL", "")
-    GOOGLE_CREDENTIALS_INCLUDED: bool = GOOGLE_CREDENTIALS_INCLUDED
+    NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
+    NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL")
+    CLOUD_SERVICE: str = CLOUD_SERVICE
 
-    # These env variables are only used for legacy campaign pmn01a
-    ONLY_PMNCH: bool = os.getenv("ONLY_PMNCH", "").lower() == "true"
+    # Google
+    GOOGLE_CLOUD_STORAGE_BUCKET_FILE: str = os.getenv(
+        "GOOGLE_CLOUD_STORAGE_BUCKET_FILE"
+    )
+    GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: str = os.getenv(
+        "GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA", ""
+    )
+
+    # Azure
     AZURE_TRANSLATOR_KEY: str = os.getenv("AZURE_TRANSLATOR_KEY")
     AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
     AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
     AZURE_STORAGE_ACCOUNT_NAME: str = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
-
-    ONLY_LEGACY_CAMPAIGNS: bool = (
-        os.getenv("ONLY_LEGACY_CAMPAIGNS", "").lower() == "true"
+    AZURE_STORAGE_CONTAINER_FILE: str = os.getenv("AZURE_STORAGE_CONTAINER_FILE")
+    AZURE_STORAGE_CONTAINER_TMP_DATA: str = os.getenv(
+        "AZURE_STORAGE_CONTAINER_TMP_DATA"
     )
+
+    # Only for legacy campaigns
+    LEGACY_CAMPAIGNS: bool = os.getenv("LEGACY_CAMPAIGNS", "").lower() == "true"
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
@@ -73,6 +85,7 @@ class DevSettings(Settings):
         "allow_origins": [
             "http://localhost",
             "http://localhost:3000",
+            "http://localhost:3001",
             "http://explore.whiteribbonalliance.local:3000",
             "http://whatyoungpeoplewant.whiteribbonalliance.local:3000",
         ],

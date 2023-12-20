@@ -64,6 +64,9 @@ init_custom_logger(logger)
 
 settings = get_settings()
 
+# Cloud service
+CLOUD_SERVICE: TCloudService = settings.CLOUD_SERVICE
+
 
 class CampaignService:
     def __init__(
@@ -95,13 +98,8 @@ class CampaignService:
         self.__filter_1 = filter_1
         self.__filter_2 = filter_2
 
-        # Translation API code
-        self.__cloud_service: TCloudService = utils.get_cloud_service_name_by_campaign(
-            campaign_code=self.__campaign_code
-        )
-
         # Translator
-        self.__translator = Translator(cloud_service=self.__cloud_service)
+        self.__translator = Translator(cloud_service=CLOUD_SERVICE)
 
         # For filtering purposes, translate keyword_filter and keyword_exclude back to English
         if self.__language != "en":
@@ -301,7 +299,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(cloud_service=self.__cloud_service)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
                 translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -519,7 +517,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(cloud_service=self.__cloud_service)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
                 translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -663,7 +661,7 @@ class CampaignService:
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
-                translator = Translator(cloud_service=self.__cloud_service)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
                 translator.set_target_language(target_language=self.__language)
 
                 # Extract texts
@@ -2213,14 +2211,17 @@ class CampaignService:
             csv_filepath = f"/tmp/{csv_filename}"
             creating_csv_filepath = f"/tmp/wra_creating_{csv_filename}"
             storage_csv_filepath = f"{csv_filename}"
+            bucket_name = settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA
 
             # If file exists in Google Cloud Storage
             if google_cloud_storage_interactions.blob_exists(
-                blob_name=storage_csv_filepath
+                bucket_name=bucket_name,
+                blob_name=storage_csv_filepath,
             ):
                 # Get url
                 url = google_cloud_storage_interactions.get_blob_url(
-                    blob_ame=storage_csv_filepath
+                    bucket_name=bucket_name,
+                    blob_ame=storage_csv_filepath,
                 )
 
                 # Remove unique filename code
@@ -2249,6 +2250,7 @@ class CampaignService:
 
                 # Upload
                 google_cloud_storage_interactions.upload_file(
+                    bucket_name=bucket_name,
                     source_filename=csv_filepath,
                     destination_filename=storage_csv_filepath,
                 )
@@ -2258,7 +2260,8 @@ class CampaignService:
 
                 # Get url
                 url = google_cloud_storage_interactions.get_blob_url(
-                    blob_ame=storage_csv_filepath
+                    bucket_name=bucket_name,
+                    blob_ame=storage_csv_filepath,
                 )
 
                 # Remove unique filename code
@@ -2272,7 +2275,7 @@ class CampaignService:
 
         # Azure
         elif cloud_service == "azure":
-            container_name: str = "csv"
+            container_name: str = settings.AZURE_STORAGE_CONTAINER_TMP_DATA
 
             # If file exists in Azure Blob Storage
             if azure_blob_storage_interactions.blob_exists(

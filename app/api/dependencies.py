@@ -33,7 +33,6 @@ from app import utils, auth_handler, http_exceptions
 from app.core.settings import get_settings
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
-from app.types import TCloudService
 
 settings = get_settings()
 
@@ -122,9 +121,13 @@ def language_check(
     Language check.
     """
 
-    cloud_service: TCloudService = "google"
-    if lang not in utils.get_translation_languages(cloud_service=cloud_service):
-        lang = "en"
+    if not settings.TRANSLATIONS_ENABLED:
+        return "en"
+
+    if lang not in utils.get_translation_languages(
+        cloud_service=settings.CLOUD_SERVICE
+    ):
+        return "en"
 
     return lang
 
@@ -161,16 +164,3 @@ def user_exists_check(
         raise http_exceptions.UnauthorizedHTTPException("Unknown user")
 
     return username
-
-
-def google_credentials_included() -> bool:
-    """
-    Check if Google credentials is included.
-    """
-
-    if not settings.GOOGLE_CREDENTIALS_INCLUDED:
-        raise http_exceptions.NotAllowedHTTPException("Could not perform this action.")
-    if not settings.GOOGLE_CLOUD_STORAGE_BUCKET_NAME:
-        raise http_exceptions.NotAllowedHTTPException("Could not perform this action.")
-
-    return True

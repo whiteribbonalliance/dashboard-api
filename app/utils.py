@@ -33,8 +33,6 @@ import re
 from hashlib import sha256
 
 from app import constants
-from app.enums.legacy_campaign_code import LegacyCampaignCode
-from app.types import TCloudService
 
 
 def contains_letters(text: str):
@@ -86,19 +84,6 @@ def divide_list_into_chunks_by_char_count(
             result_list.append(tmp_list)
 
     return result_list
-
-
-def get_cloud_service_name_by_campaign(campaign_code: str) -> TCloudService:
-    """
-    Get cloud service name.
-    """
-
-    if campaign_code == LegacyCampaignCode.pmn01a.value:
-        cloud_service: TCloudService = "azure"
-    else:
-        cloud_service: TCloudService = "google"
-
-    return cloud_service
 
 
 def clear_tmp_dir():

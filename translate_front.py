@@ -37,18 +37,11 @@ count_chars_only = False
 
 settings = get_settings()
 
-if not os.path.isfile("credentials.json"):
-    raise Exception("credentials.json not found.")
+CLOUD_SERVICE = settings.CLOUD_SERVICE
 
 
 def translate_front(cloud_service: TCloudService):
     """Apply translation on texts"""
-
-    name = ""
-    if cloud_service == "google":
-        name = "Google"
-    elif cloud_service == "azure":
-        name = "Azure"
 
     # Translations cache
     translations_cache = TranslationsCache()
@@ -64,7 +57,7 @@ def translate_front(cloud_service: TCloudService):
     if not settings.TRANSLATIONS_ENABLED:
         languages = ["en"]
     for language in languages:
-        print(f"{name} - Translating texts to {language}...")
+        print(f"{cloud_service} - Translating texts to {language}...")
 
         translator.set_target_language(target_language=language)
 
@@ -116,8 +109,4 @@ def translate_front(cloud_service: TCloudService):
         )
 
 
-translate_front(cloud_service="google")
-
-# Values already translated by Google will not be translated again
-# Azure has languages that Google does not
-# translate_front(cloud_service="azure")
+translate_front(cloud_service=CLOUD_SERVICE)

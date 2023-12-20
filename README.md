@@ -13,14 +13,31 @@ endpoints. For more information, continue reading the documentation below.
 - `PORT=` The port.
 - `APP_TITLE=` App title.
 - `APP_DESCRIPTION=` App description.
-- `GOOGLE_CLOUD_STORAGE_BUCKET_NAME=` Optional - Bucket name where generated CSV files can be stored for downloading
   campaign data. Requires Google Cloud `credentials.json` with the right permissions.
 - `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths e.g. for downloading
   campaign data.
-- `TRANSLATIONS_ENABLED=` Optional - True or False. If True, requires Google Cloud `credentials.json` with the right
-  permissions.
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
 - `NEW_RELIC_URL=` Optional - The New Relic URL.
+- `TRANSLATIONS_ENABLED=` Optional - True or False.
+- `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
+  CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
+  the functionalities mentioned.
+
+Google:
+
+- `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - if `google`, The Google cloud storage bucket to load the CSV file from.
+- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - if `google`, The Google cloud storage bucket to temporarily store
+  download data.
+
+Azure:
+
+- `AZURE_TRANSLATOR_KEY=` Optional - if `azure`, The Azure translator key.
+- `AZURE_STORAGE_ACCOUNT_NAME=` Optional - if `azure`, The Azure storage account name.
+- `AZURE_STORAGE_CONTAINER_FILE=` Optional - if `azure`, The Azure storage container to load the CSV file from.
+- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - if `azure`, The Azure storage container to temporarily store download
+  data.
+- `AZURE_STORAGE_ACCOUNT_KEY=` Optional - if `azure`, The Azure storage account key.
+- `AZURE_STORAGE_CONNECTION_STRING=` Optional - if `azure`, The Azure storage connection string.
 
 ## install
 
@@ -30,8 +47,12 @@ Install requirements:
 pip install -r requirements.txt
 ```
 
-Configure the environment variables. To allow translations with `Google Cloud Translation API` include the Google Cloud
-service account's `credentials.json` at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
+Configure the environment variables.
+
+To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
+at the root of the project. For `Azure Translator` fill the env variable `AZURE_TRANSLATOR_KEY`.
+
+Set `TRANSLATIONS_ENABLED` to `True`.
 
 Check the section `CSV file` and `How to add a new campaign` before running the API.
 
@@ -74,32 +95,31 @@ columns `q2_response` and `q2_canonical_code`.
     3. `dashboard_path` Required - Path to access the dashboard in the front.
     4. `seo_title` Required - Title of the dashboard for SEO.
     5. `seo_meta_description` Required - A description of the dashboard for SEO.
-    6. `file` Required - Your CSV filename.
-    7. `file_link` Optional - A direct link to the CSV file. `file_link` will be prioritized over `file`.
-    8. `respondent_noun_singular`: Optional - Respondent noun singular.
-    9. `respondent_noun_plural`: Optional - Respondent noun plural.
-    10. `video_link` - Optional - A Link to a video related to the dashboard.
-    11. `about_us_link` - Optional - Link to a page about the campaign.
-    12. `questions` Optional - If there's more than one response included in the data, add the question that relates to
+    6. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
+       defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
+       or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. This file has
+       to be lemmatized, read step 5.
+    7. `respondent_noun_singular`: Optional - Respondent noun singular.
+    8. `respondent_noun_plural`: Optional - Respondent noun plural.
+    9. `video_link` - Optional - A Link to a video related to the dashboard.
+    10. `about_us_link` - Optional - Link to a page about the campaign.
+    11. `questions` Optional - If there's more than one response included in the data, add the question that relates to
         it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
         will be able to see the questions in the front-end and switch between responses.
-    13. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
+    12. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
         parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
-        its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code` etc.
+        its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code`.
 4. Copy your CSV file to the new config folder.
-5. Lemmatize the responses in the CSV file, do so by running `python lemmatize_responses.py my_campaign_code` with the
-   new campaign code.
-6. Apply translations, read the `Translations` section for more information.
-7. Optional - If you wish to use a link instead to load the CSV file, after lemmatizing the data, upload the CSV
-   file to your hosting of choice and add the direct link at `file_link` inside `config.json`. `file_link` will be
-   prioritized over `file`.
+5. Lemmatize the responses in the CSV file, set `file` to `{"local" : "your-csv-file-name.csv"}` and
+   run `python lemmatize_responses.py my_campaign_code`, replace `my_campaign_code` with your new campaign code.
+6. Create translations for the front, read the `Translations` section for more information.
 
 When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` from the
 config after a build has been created in the front-end.
 
-Note: If the configuration has been updated, a new build is required in the front-end to reflect the changes. Changes
-also includes enabling or disabling translations.
+*Note: If the configuration has been updated, a new build is required in the front-end to reflect the changes. Changes
+also includes enabling or disabling translations.*
 
 ## Translations
 
@@ -143,14 +163,6 @@ inside `front_translations`. Copy the `languages` folder to the front-end projec
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
 
 ## PMNCH - Azure deployment
-
-Additional environment variables:
-
-- `ONLY_PMNCH=` True.
-- `AZURE_TRANSLATOR_KEY=` The Azure translator key.
-- `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
-- `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
-- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
 
 Because of organization policies, the dashboard at `https://whatyoungpeoplewant.whiteribbonalliance.org` should be
 deployed on `Azure` and make use of its services instead of `Google`. To solve this issue, two new repositories are
@@ -203,7 +215,9 @@ on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-ena
 
 For deployment of legacy campaigns.
 
+Legacy campaigns are campaigns that were used to run this dashboard originally.
+
 Additional environment variables:
 
-- `ONLY_LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
+- `ADMIN_PASSWORD=` Admin password.

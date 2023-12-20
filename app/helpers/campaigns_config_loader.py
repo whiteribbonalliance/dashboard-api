@@ -29,7 +29,10 @@ import os
 import validators
 from pydantic import ValidationError
 
+from app.core.settings import get_settings
 from app.schemas.campaign_config import CampaignConfigInternal
+
+settings = get_settings()
 
 CAMPAIGNS_CONFIG: dict[str, CampaignConfigInternal] = {}
 
@@ -42,6 +45,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     if not os.path.isdir(os.path.join(campaigns_config_folder, config_folder)):
         continue
 
+    # Skip example
     if config_folder == "example":
         continue
 
@@ -56,19 +60,24 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
                     f"Could not validate configuration found in config folder {config_folder}. Error: {str(e)}"
                 )
 
-    # If no file or file link was provided
-    if not config.file and not config.file_link:
-        raise Exception("No CSV file or direct link to CSV file was provided.")
+    # Only one file location should be provided
+    if (
+        sum([bool(config.file.local), bool(config.file.link), bool(config.file.cloud)])
+        != 1
+    ):
+        raise Exception("Provide one file location.")
 
     # Check link
-    if config.file_link:
-        if not validators.url(config.file_link):
-            raise Exception(f"{config.file_link} is not a valid link.")
+    if config.file.link:
+        if not validators.url(config.file.link):
+            raise Exception(f"{config.file.link} is not a valid link.")
 
     # Check CSV file
-    if config.file:
-        csv_file = os.path.join(campaigns_config_folder, config_folder, config.file)
-        if not config.file.endswith(".csv"):
+    if config.file.local:
+        csv_file = os.path.join(
+            campaigns_config_folder, config_folder, config.file.local
+        )
+        if not config.file.local.endswith(".csv"):
             raise Exception("Invalid CSV file name.")
         if not os.path.isfile(csv_file):
             raise Exception(

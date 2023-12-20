@@ -55,12 +55,12 @@ tags_metadata = [
         "description": "Read or download data related to campaigns.",
     },
     {
-        "name": "Campaigns configurations",
-        "description": "Read campaign configurations.",
+        "name": "Campaigns Configurations",
+        "description": "Read campaigns configurations.",
     },
     {
-        "name": "Campaigns merged",
-        "description": "Read data of all campaigns merged together.",
+        "name": "Campaigns Merged",
+        "description": "Read data of all campaigns merged together as one campaign.",
     },
     {
         "name": "Authentication",
@@ -68,10 +68,10 @@ tags_metadata = [
     },
     {
         "name": "Data",
-        "description": "Allows reloading the data from source and check loading status. Only useful if data is hosted externally.",
+        "description": "Allows reloading the data from source and check loading status. Only useful if CSV file is hosted externally.",
     },
     {
-        "name": "Settings",
+        "name": "App Settings",
         "description": "Read app settings.",
     },
 ]

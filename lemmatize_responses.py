@@ -60,7 +60,10 @@ def lemmatize_all_responses():
             if campaign_config.campaign_code not in campaign_codes_from_args:
                 continue
 
-        print(f"Lemmatizing responses in {campaign_config.file}...")
+        if not campaign_config.file.local:
+            raise Exception("No file was provided.")
+
+        print(f"Lemmatizing responses in {campaign_config.file.local}...")
 
         # Load dataframe
         df = pd.read_csv(

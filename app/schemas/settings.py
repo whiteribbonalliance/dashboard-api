@@ -25,6 +25,11 @@ SOFTWARE.
 
 from pydantic import BaseModel, Field
 
+from app.types import TCloudService
+
 
 class Settings(BaseModel):
-    translations_enabled: str = Field(description="If translations is enabled")
+    translations_enabled: bool = Field(description="If translations is enabled.")
+    cloud_service: TCloudService = Field(
+        description="The cloud service to use for e.g. translations."
+    )

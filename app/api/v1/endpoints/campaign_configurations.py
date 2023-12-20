@@ -50,8 +50,9 @@ def read_campaigns_configurations():
         CAMPAIGNS_CONFIG.values()
     )
     if configurations:
-        if settings.ONLY_LEGACY_CAMPAIGNS:
-            configurations.append(
+        if settings.LEGACY_CAMPAIGNS:
+            configurations.insert(
+                0,
                 CampaignConfigResponse(
                     campaign_code="allcampaigns",
                     dashboard_path="allcampaigns",
@@ -61,7 +62,7 @@ def read_campaigns_configurations():
                     respondent_noun_plural="respondents",
                     video_link="https://www.youtube.com/watch?v=nBzide5J3Hk",
                     about_us_link="https://whiteribbonalliance.org/movements/womens-health",
-                )
+                ),
             )
 
         return configurations

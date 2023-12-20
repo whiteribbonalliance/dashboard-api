@@ -33,7 +33,14 @@ from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.q_code import Question
 from app.services.translator import Translator
-from app.types import TFilterSequence
+from app.types import TFilterSequence, TCloudService
+from app.core.settings import get_settings
+
+
+settings = get_settings()
+
+# Cloud service
+CLOUD_SERVICE: TCloudService = settings.CLOUD_SERVICE
 
 
 class CampaignsMergedService:
@@ -410,7 +417,7 @@ class CampaignsMergedService:
         """Get world bubble maps coordinates"""
 
         # Translator
-        translator = Translator(cloud_service="google")
+        translator = Translator(cloud_service=CLOUD_SERVICE)
         translator.set_target_language(target_language=self.__language)
 
         # Change the coordinate from region to the country's coordinate
