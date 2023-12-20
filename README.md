@@ -39,7 +39,7 @@ Azure:
 - `AZURE_STORAGE_ACCOUNT_KEY=` Optional - if `azure`, The Azure storage account key.
 - `AZURE_STORAGE_CONNECTION_STRING=` Optional - if `azure`, The Azure storage connection string.
 
-## install
+## Install
 
 Install requirements:
 
@@ -48,11 +48,6 @@ pip install -r requirements.txt
 ```
 
 Configure the environment variables.
-
-To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
-at the root of the project. For `Azure Translator` fill the env variable `AZURE_TRANSLATOR_KEY`.
-
-Set `TRANSLATIONS_ENABLED` to `True`.
 
 Check the section `CSV file` and `How to add a new campaign` before running the API.
 
@@ -124,11 +119,13 @@ also includes enabling or disabling translations.*
 ## Translations
 
 To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
-at the root of the project and set `TRANSLATIONS_ENABLED` to `True`.
+at the root of the project. For `Azure Translator` fill the env variable `AZURE_TRANSLATOR_KEY`.
+
+Set `TRANSLATIONS_ENABLED` to `True`.
 
 ### Back-end
 
-Translations occur automatically on the fly.
+Translations occur automatically on the fly when requesting campaign data with one of the supported languages.
 
 ### Front-end
 
@@ -152,10 +149,10 @@ To apply translations run:
 python translate_front.py
 ```
 
-*Note: The above should be done even if translations is disabled, this is because with translations disabled, the
-default language is English and the output of the translations function will contain only the language English which is
-used in the front. `example` in `example-title` refers to a campaign code. `[CAMPAIGN_CODE]-title`
-and `[CAMPAIGN_CODE]-subtext` are always required to be included in `to_translate.json`.*
+*Note: When adding a new campaign, the above should be done even if translations is disabled, this is because with
+translations disabled, the default language is English and the output of the translations function will contain only the
+language English which is used in the front. `example` in `example-title` refers to a campaign
+code. `[CAMPAIGN_CODE]-title` and `[CAMPAIGN_CODE]-subtext` are always required to be included in `to_translate.json`.*
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
