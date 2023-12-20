@@ -26,6 +26,7 @@ SOFTWARE.
 import pandas as pd
 
 from app import utils, constants
+from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import filters
 from app.schemas.campaign import Campaign
@@ -34,8 +35,6 @@ from app.schemas.filter_options import FilterOptions
 from app.schemas.q_code import Question
 from app.services.translator import Translator
 from app.types import TFilterSequence, TCloudService
-from app.core.settings import get_settings
-
 
 settings = get_settings()
 

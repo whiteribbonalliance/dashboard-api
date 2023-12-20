@@ -24,7 +24,7 @@ SOFTWARE.
 """
 
 from fastapi import APIRouter, status
-import os
+
 from app.core.settings import get_settings
 from app.schemas.settings import Settings
 
