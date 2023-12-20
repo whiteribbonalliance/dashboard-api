@@ -220,5 +220,6 @@ Legacy campaigns are campaigns that were used to run this dashboard originally.
 
 Additional environment variables:
 
+- `LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
 - `ADMIN_PASSWORD=` Admin password.
