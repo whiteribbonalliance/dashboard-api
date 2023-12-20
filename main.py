@@ -24,6 +24,7 @@ SOFTWARE.
 """
 
 import asyncio
+import os
 
 import uvicorn
 from fastapi import FastAPI, status
@@ -83,8 +84,8 @@ app_fastapi = FastAPI(
     docs_url="/docs",
     openapi_tags=tags_metadata,
     contact={
-        "name": "Thomas Wood",
-        "url": "https://fastdatascience.com",
+        "name": os.getenv("OWNER_NAME", ""),
+        "url": os.getenv("OWNER_LINK", ""),
     },
 )
 
