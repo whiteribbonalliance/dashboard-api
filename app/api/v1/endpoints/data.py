@@ -44,10 +44,13 @@ router = APIRouter(prefix="/data")
     response_model=DataIsLoading,
     status_code=status.HTTP_200_OK,
 )
-def read_data_loading_status(_username: str = Depends(dependencies.user_exists_check)):
+def read_data_loading_status():
     """Check if data is loading"""
 
-    return DataIsLoading(is_loading=global_variables.is_loading_data)
+    return DataIsLoading(
+        is_loading=global_variables.is_loading_data,
+        initial_loading_complete=global_variables.initial_loading_data_complete,
+    )
 
 
 @router.post(

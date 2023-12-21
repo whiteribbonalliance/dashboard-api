@@ -428,6 +428,7 @@ def load_initial_data():
         logger.error(f"An error occurred while loading initial data: {str(e)}")
 
     global_variables.is_loading_data = False
+    global_variables.initial_loading_data_complete = True
 
 
 def reload_data(
