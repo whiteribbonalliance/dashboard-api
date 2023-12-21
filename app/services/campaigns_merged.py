@@ -43,6 +43,11 @@ CLOUD_SERVICE: TCloudService = settings.CLOUD_SERVICE
 
 
 class CampaignsMergedService:
+    """
+    Service for merging campaigns data into one "campaign".
+    Only includes data that is available throughout all campaigns.
+    """
+
     def __init__(
         self,
         language: str,

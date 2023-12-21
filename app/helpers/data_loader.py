@@ -101,6 +101,10 @@ def load_campaign_data(campaign_code: str):
         df_responses["setting"] = df_responses["setting"].apply(
             lambda x: x.title() if x else x
         )
+    if "profession" in columns:
+        df_responses["profession"] = df_responses["profession"].apply(
+            lambda x: x.title() if x else x
+        )
 
     # Apply strip and upper
     if "alpha2country" in columns:
@@ -111,6 +115,10 @@ def load_campaign_data(campaign_code: str):
     # Apply strip
     if "setting" in columns:
         df_responses["setting"] = df_responses["setting"].apply(
+            lambda x: x.strip() if x else x
+        )
+    if "profession" in columns:
+        df_responses["profession"] = df_responses["profession"].apply(
             lambda x: x.strip() if x else x
         )
     if "region" in columns:

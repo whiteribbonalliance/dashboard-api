@@ -69,6 +69,10 @@ CLOUD_SERVICE: TCloudService = settings.CLOUD_SERVICE
 
 
 class CampaignService:
+    """
+    Service for all things campaign related.
+    """
+
     def __init__(
         self,
         campaign_code: str,
@@ -225,13 +229,7 @@ class CampaignService:
         histogram = self.__get_histogram()
 
         # Genders breakdown
-        if (
-            self.__campaign_code == LegacyCampaignCode.pmn01a.value
-            or self.__campaign_code == LegacyCampaignCode.healthwellbeing.value
-        ):
-            genders_breakdown = self.__get_genders_breakdown()
-        else:
-            genders_breakdown = []
+        genders_breakdown = self.__get_genders_breakdown()
 
         # World bubble maps coordinates
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
@@ -624,37 +622,19 @@ class CampaignService:
             label="Show breakdown by profession",
         )
 
-        if self.__campaign_code == LegacyCampaignCode.wra03a.value:
-            options = [
-                breakdown_age_bucket_option.dict(),
-                breakdown_country_option.dict(),
-            ]
-        elif self.__campaign_code == LegacyCampaignCode.pmn01a.value:
+        if self.__campaign_code == LegacyCampaignCode.pmn01a.value:
             options = [
                 breakdown_age_option.dict(),
                 breakdown_gender_option.dict(),
-                breakdown_country_option.dict(),
-            ]
-        elif self.__campaign_code == LegacyCampaignCode.midwife.value:
-            options = [
-                breakdown_age_bucket_option.dict(),
                 breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
             ]
-        elif self.__campaign_code == LegacyCampaignCode.healthwellbeing.value:
-            options = [
-                breakdown_age_option.dict(),
-                breakdown_age_bucket_option.dict(),
-                breakdown_country_option.dict(),
-            ]
-        elif self.__campaign_code == LegacyCampaignCode.giz.value:
-            options = [breakdown_age_bucket_option.dict()]
-        elif self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
-            options = [breakdown_age_bucket_option.dict()]
         else:
             options = [
                 breakdown_age_bucket_option.dict(),
+                breakdown_age_option.dict(),
                 breakdown_gender_option.dict(),
+                breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
             ]
 
