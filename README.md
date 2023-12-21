@@ -120,10 +120,8 @@ columns `q2_response` and `q2_canonical_code`.
    run `python lemmatize_responses.py my_campaign_code`, replace `my_campaign_code` with your new campaign code.
 6. Create translations for the front, read the `Translations` section for more information.
 
-When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` from the
-config after a new build has been created in the front-end.
-
-*As a rule of thumb, generate a new build in the front-end if any changes have been applied in the back-end.*
+When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` defined in
+the config.
 
 ## Translations
 
@@ -226,5 +224,5 @@ Legacy campaigns are campaigns that were used to run this dashboard originally.
 Additional environment variables:
 
 - `LEGACY_CAMPAIGNS=` True.
-- `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
+- `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found.
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password.
