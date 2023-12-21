@@ -133,7 +133,7 @@ def get_blob(container_name: str, blob_name: str) -> StorageStreamDownloader[byt
     container_client = get_container_client(container_name=container_name)
 
     try:
-        return container_client.download_blob(blob=blob_name)
+        return container_client.download_blob(blob=blob_name, max_concurrency=3)
     except (Exception,) as e:
         raise Exception(f"Could not get blob: {str(e)}.")
 
