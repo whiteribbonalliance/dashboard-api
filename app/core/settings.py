@@ -53,10 +53,10 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     APP_TITLE: str = os.getenv("APP_TITLE", "Dashboard")
     APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "Dashboard")
-    OWNER_NAME: str = (os.getenv("OWNER_NAME", ""),)
-    OWNER_LINK: str = (os.getenv("OWNER_LINK", ""),)
-    COMPANY_NAME: str = (os.getenv("COMPANY_NAME", ""),)
-    COMPANY_LINK: str = (os.getenv("COMPANY_LINK", ""),)
+    OWNER_NAME: str = os.getenv("OWNER_NAME", "")
+    OWNER_LINK: str = os.getenv("OWNER_LINK", "")
+    COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
+    COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
     API_PREFIX: str = ApiPrefix.v1.value
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
