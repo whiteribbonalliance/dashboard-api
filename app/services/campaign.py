@@ -512,6 +512,17 @@ class CampaignService:
             for x in self.__get_only_multi_word_phrases_containing_filter_term_options()
         ]
 
+        # Exclude these histogram filter options
+        if (
+            self.__campaign_code == LegacyCampaignCode.wra03a.value
+            or self.__campaign_code == LegacyCampaignCode.midwife.value
+        ):
+            age_options = []
+        if self.__campaign_code == LegacyCampaignCode.pmn01a.value:
+            age_bucket_options = []
+        if self.__campaign_code == LegacyCampaignCode.midwife.value:
+            gender_options = []
+
         # Translate
         try:
             if self.__language != "en" and TranslationsCache().is_loaded():
@@ -625,6 +636,16 @@ class CampaignService:
         if self.__campaign_code == LegacyCampaignCode.pmn01a.value:
             options = [
                 breakdown_age_option.dict(),
+                breakdown_gender_option.dict(),
+                breakdown_profession_option.dict(),
+                breakdown_country_option.dict(),
+            ]
+        elif (
+            self.__campaign_code == LegacyCampaignCode.wra03a.value
+            or self.__campaign_code == LegacyCampaignCode.midwife.value
+        ):
+            options = [
+                breakdown_age_bucket_option.dict(),
                 breakdown_gender_option.dict(),
                 breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
@@ -1765,6 +1786,20 @@ class CampaignService:
                 keep_last_n = 20
                 if len(histogram[column_name]) > keep_last_n:
                     histogram[column_name] = histogram[column_name][-keep_last_n:]
+
+        # Exclude these histogram options
+        if (
+            self.__campaign_code == LegacyCampaignCode.wra03a.value
+            or self.__campaign_code == LegacyCampaignCode.midwife.value
+        ):
+            if histogram.get("ages"):
+                histogram["ages"] = []
+        if self.__campaign_code == LegacyCampaignCode.pmn01a.value:
+            if histogram.get("age_buckets"):
+                histogram["age_buckets"] = []
+        if self.__campaign_code == LegacyCampaignCode.midwife.value:
+            if histogram.get("genders"):
+                histogram["genders"] = []
 
         return histogram
 
