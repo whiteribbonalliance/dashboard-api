@@ -32,9 +32,11 @@ from app.api.v1.endpoints.campaign_configurations import (
 from app.api.v1.endpoints.campaigns import router as campaigns_router
 from app.api.v1.endpoints.campaigns_merged import router as campaigns_merged_router
 from app.api.v1.endpoints.data import router as data_router
+from app.api.v1.endpoints.geo_json_world import router as geo_json_world_router
 from app.api.v1.endpoints.health_check import router as health_check_router
 from app.api.v1.endpoints.info import router as info_router
 from app.api.v1.endpoints.settings import router as settings_router
+from app.api.v1.endpoints.topo_json import router as topo_json_router
 
 api_router = APIRouter()
 api_router.include_router(
@@ -44,6 +46,8 @@ api_router.include_router(campaigns_router, tags=["Campaigns"])
 api_router.include_router(campaigns_merged_router, tags=["Campaigns Merged"])
 api_router.include_router(auth_router, tags=["Authentication"])
 api_router.include_router(data_router, tags=["Data"])
+api_router.include_router(geo_json_world_router, tags=["GeoJSON World"])
+api_router.include_router(topo_json_router, tags=["TopoJSON"])
 api_router.include_router(settings_router, tags=["App Settings"])
 api_router.include_router(health_check_router, tags=["Health Check"])
 api_router.include_router(info_router, tags=["Info"])

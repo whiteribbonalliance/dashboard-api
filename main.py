@@ -72,6 +72,14 @@ tags_metadata = [
         "description": "Allows reloading the data from source and check loading status. Only useful if CSV file is hosted externally.",
     },
     {
+        "name": "GeoJSON World",
+        "description": "Read GeoJSON world data.",
+    },
+    {
+        "name": "TopoJSON",
+        "description": "Read TopoJSON. Only supports alpha2-code MX.",
+    },
+    {
         "name": "App Settings",
         "description": "Read app settings.",
     },
