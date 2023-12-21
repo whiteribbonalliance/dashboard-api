@@ -27,8 +27,8 @@ endpoints. For more information, continue reading the documentation below.
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - Allows reloading CSV file from source every 12th hour.
-- `{CAMPAIGN_CODE}_PASSWORD` Optional - A password for accessing protected paths of a campaign
-  e.g. `example_PASSWORD=123QWE,./`.
+- `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
+  e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
 
 Google:
 
