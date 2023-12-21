@@ -33,8 +33,9 @@ endpoints. For more information, continue reading the documentation below.
 Google:
 
 - `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - if `google`, The Google cloud storage bucket to load the CSV file from.
-- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - if `google`, The Google cloud storage bucket to temporarily store
-  download data.
+- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - if `google`, The Google cloud storage bucket to temporarily cache
+  download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
+  or `/api/v1/campaigns/{campaign_code}/data/public`.
 
 Azure:
 
