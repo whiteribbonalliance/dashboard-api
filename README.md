@@ -26,6 +26,8 @@ endpoints. For more information, continue reading the documentation below.
 - `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
+- `{CAMPAIGN_CODE}_PASSWORD` Optional - A password for accessing protected paths of a campaign
+  e.g. `example_PASSWORD=123QWE,./`.
 
 Google:
 
@@ -86,26 +88,25 @@ columns `q2_response` and `q2_canonical_code`.
 
 ## How to create a new campaign
 
-1. Create a new config folder at `campaigns-config/[NEW_CONFIG_FOLDER_NAME]`.
+1. Create a new config folder at `campaigns-config/{NEW_CONFIG_FOLDER_NAME}`.
 2. Inside the new folder create the file `config.json` (copy `config.json` from `campaigns-config/example/config.json`).
 3. Fill in the configuration:
     1. `campaign_code`: Required - An unique code for the campaign.
-    2. `password`: Optional - A password for accessing protected paths of a campaign.
-    3. `dashboard_path` Required - Path to access the dashboard in the front.
-    4. `seo_title` Required - Title of the dashboard for SEO.
-    5. `seo_meta_description` Required - A description of the dashboard for SEO.
-    6. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
+    2. `dashboard_path` Required - Path to access the dashboard in the front.
+    3. `seo_title` Required - Title of the dashboard for SEO.
+    4. `seo_meta_description` Required - A description of the dashboard for SEO.
+    5. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
        or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
        in the file have to be lemmatized, read step 5.
-    7. `respondent_noun_singular`: Optional - Respondent noun singular.
-    8. `respondent_noun_plural`: Optional - Respondent noun plural.
-    9. `video_link` - Optional - A Link to a video related to the dashboard.
-    10. `about_us_link` - Optional - Link to a page about the campaign.
-    11. `questions` Optional - If there's more than one response included in the data, add the question that relates to
+    6. `respondent_noun_singular`: Optional - Respondent noun singular.
+    7. `respondent_noun_plural`: Optional - Respondent noun plural.
+    8. `video_link` - Optional - A Link to a video related to the dashboard.
+    9. `about_us_link` - Optional - Link to a page about the campaign.
+    10. `questions` Optional - If there's more than one response included in the data, add the question that relates to
         it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
         will be able to see the questions in the front-end and switch between responses.
-    12. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
+    11. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
         parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
         its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code`.
@@ -115,10 +116,9 @@ columns `q2_response` and `q2_canonical_code`.
 6. Create translations for the front, read the `Translations` section for more information.
 
 When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` from the
-config after a build has been created in the front-end.
+config after a new build has been created in the front-end.
 
-*Note: If the configuration has been updated, a new build is required in the front-end to reflect the changes. Changes
-also includes enabling or disabling translations.*
+*As a rule of thumb, generate a new build in the front-end if any changes have been applied in the back-end.*
 
 ## Translations
 
@@ -156,7 +156,7 @@ python translate_front.py
 *Note: When adding a new campaign, the above should be done even if translations is disabled, this is because with
 translations disabled, the default language is English and the output of the translations function will contain only the
 language English which is used in the front. `example` in `example-title` refers to a campaign
-code. `[CAMPAIGN_CODE]-title` and `[CAMPAIGN_CODE]-subtext` are always required to be included in `to_translate.json`.*
+code. `{CAMPAIGN_CODE}-title` and `{CAMPAIGN_CODE}-subtext` are always required to be included in `to_translate.json`.*
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
@@ -222,4 +222,4 @@ Additional environment variables:
 
 - `LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key.
-- `ADMIN_PASSWORD=` Admin password.
+- `ADMIN_DASHBOARD_PASSWORD=` Admin password.

@@ -69,7 +69,6 @@ class File(BaseModel):
 
 
 class CampaignConfigInternal(CampaignConfigBase):
-    password: str = Field(default="", description="Password to access protected paths.")
     file: File = Field("Where to find the CSV file.")
     filepath: str = Field(
         default="",

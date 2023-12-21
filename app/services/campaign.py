@@ -1844,7 +1844,8 @@ class CampaignService:
                 canonical_country,
                 region,
             ), value in region_counts.items():
-                if region:
+                # If no region was provided, use the country's coordinate
+                if not region:
                     coordinate_country = constants.COUNTRY_COORDINATE[alpha2country]
                     region_coordinates.append(
                         {
@@ -1855,6 +1856,7 @@ class CampaignService:
                             "lon": coordinate_country[1],
                         }
                     )
+                    continue
 
                 country_regions_coordinates = global_variables.region_coordinates.get(
                     alpha2country
