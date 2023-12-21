@@ -26,7 +26,7 @@ endpoints. For more information, continue reading the documentation below.
 - `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
-- `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - Allows reloading CSV file from source every 12th hour.
+- `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
 
