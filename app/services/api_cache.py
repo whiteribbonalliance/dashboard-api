@@ -38,7 +38,7 @@ from app.helpers.singleton_meta import SingletonMeta
 
 class ApiCache(metaclass=SingletonMeta):
     """
-    Cache API responses (Singleton class)
+    Cache API responses (Singleton class).
     """
 
     def __init__(self):

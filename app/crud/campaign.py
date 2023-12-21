@@ -39,6 +39,10 @@ inflect_engine = inflect.engine()
 
 
 class Campaign:
+    """
+    Used for communication with the db object stored in memory.
+    """
+
     def __init__(self, campaign_code: str, db: Database = None):
         if db:
             self.__db = db
