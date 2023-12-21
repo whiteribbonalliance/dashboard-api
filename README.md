@@ -41,8 +41,9 @@ Azure:
 - `AZURE_TRANSLATOR_KEY=` Optional - if `azure`, The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` Optional - if `azure`, The Azure storage account name.
 - `AZURE_STORAGE_CONTAINER_FILE=` Optional - if `azure`, The Azure storage container to load the CSV file from.
-- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - if `azure`, The Azure storage container to temporarily store download
-  data.
+- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - if `azure`, The Azure storage container to temporarily cache download
+  data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
+  or `/api/v1/campaigns/{campaign_code}/data/public`.
 - `AZURE_STORAGE_ACCOUNT_KEY=` Optional - if `azure`, The Azure storage account key.
 - `AZURE_STORAGE_CONNECTION_STRING=` Optional - if `azure`, The Azure storage connection string.
 
