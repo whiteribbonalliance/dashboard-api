@@ -99,7 +99,9 @@ columns `q2_response` and `q2_canonical_code`.
     5. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
        or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
-       in the file have to be lemmatized, read step 5.
+       in the CSV have to be lemmatized, read step 5. If you are using `cloud`, it is necessary to fill in the env
+       variable `GOOGLE_CLOUD_STORAGE_BUCKET_FILE`or `AZURE_STORAGE_CONTAINER_FILE`, this is where you should upload the
+       CSV.
     6. `respondent_noun_singular`: Optional - Respondent noun singular.
     7. `respondent_noun_plural`: Optional - Respondent noun plural.
     8. `video_link` - Optional - A Link to a video related to the dashboard.
