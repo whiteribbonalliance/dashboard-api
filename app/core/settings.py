@@ -30,15 +30,20 @@ from pydantic import BaseSettings
 
 from app.enums.api_prefix import ApiPrefix
 
-STAGE = os.getenv("STAGE", "prod")
+# Check stage
+STAGE = os.getenv("STAGE")
+if not STAGE:
+    raise Exception("Stage should be dev or prod.")
+elif STAGE not in ["dev", "prod"]:
+    raise Exception("Stage should be dev or prod.")
 
+# Check cloud service
 CLOUD_SERVICE = os.getenv("CLOUD_SERVICE", "").lower()
 if CLOUD_SERVICE and CLOUD_SERVICE not in ["google", "azure"]:
     raise Exception(f"Invalid cloud service: {CLOUD_SERVICE}.")
-
 if CLOUD_SERVICE == "google":
     if not os.path.isfile("credentials.json"):
-        raise Exception("credentials.json not found.")
+        raise Exception("Required file credentials.json not found.")
 
 
 class Settings(BaseSettings):
@@ -134,5 +139,5 @@ class ProdSettings(Settings):
 def get_settings():
     if STAGE == "dev":
         return DevSettings()
-    else:
+    if STAGE == "prod":
         return ProdSettings()
