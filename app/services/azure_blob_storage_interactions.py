@@ -42,21 +42,13 @@ settings = get_settings()
 EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
 
-def get_container_client(
-    container_name: str,
-) -> ContainerClient:
+def get_container_client(container_name: str) -> ContainerClient:
     """Get container client"""
 
-    if container_name == "csv":
-        return ContainerClient.from_connection_string(
-            conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
-            container_name=container_name,
-        )
-    elif container_name == "main":
-        return ContainerClient.from_connection_string(
-            conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
-            container_name=container_name,
-        )
+    return ContainerClient.from_connection_string(
+        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
+        container_name=container_name,
+    )
 
 
 def cleanup(container_name: str, limit_gb: int = 5):
