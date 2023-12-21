@@ -150,8 +150,8 @@ def load_campaign_data(campaign_code: str):
     # Age bucket
     # Note: Legacy campaigns wra03a and midwife already contain age as an age bucket
     if (
-            campaign_code == LegacyCampaignCode.wra03a.value
-            or campaign_code == LegacyCampaignCode.midwife.value
+        campaign_code == LegacyCampaignCode.wra03a.value
+        or campaign_code == LegacyCampaignCode.midwife.value
     ):
         df_responses["age_bucket"] = df_responses["age"]
         df_responses["age_bucket_default"] = df_responses["age"]
@@ -431,9 +431,9 @@ def load_initial_data():
 
 
 def reload_data(
-        clear_api_cache: bool,
-        clear_google_cloud_storage_bucket: bool,
-        clear_azure_blob_storage_container,
+    clear_api_cache: bool,
+    clear_google_cloud_storage_bucket: bool,
+    clear_azure_blob_storage_container,
 ):
     """Reload data"""
 
@@ -459,7 +459,9 @@ def reload_data(
 
         # Clear container as the data cached might be out of date
         elif clear_azure_blob_storage_container and settings.CLOUD_SERVICE == "azure":
-            azure_blob_storage_interactions.clear_container(container_name="csv")
+            azure_blob_storage_interactions.clear_container(
+                container_name=settings.AZURE_STORAGE_CONTAINER_TMP_DATA
+            )
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 
@@ -512,8 +514,8 @@ def load_region_coordinates():
     focused_on_country_campaigns_codes = []
     for campaign_code in [x.campaign_code for x in CAMPAIGNS_CONFIG.values()]:
         if (
-                campaign_code == LegacyCampaignCode.giz.value
-                or campaign_code == LegacyCampaignCode.wwwpakistan.value
+            campaign_code == LegacyCampaignCode.giz.value
+            or campaign_code == LegacyCampaignCode.wwwpakistan.value
         ):
             focused_on_country_campaigns_codes.append(campaign_code)
 
