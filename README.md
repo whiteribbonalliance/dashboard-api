@@ -10,10 +10,10 @@ There's currently six dashboards deployed with this project, you can visit them 
 
 - https://explore.whiteribbonalliance.org/en/whatwomenwant
 - https://explore.whiteribbonalliance.org/en/midwivesvoices
-- http://explore.whiteribbonalliance.org/en/wwwpakistan
-- http://explore.whiteribbonalliance.org/en/healthwellbeing
-- http://explore.whiteribbonalliance.org/en/giz
-- https://wypw.1point8b.org
+- https://explore.whiteribbonalliance.org/en/wwwpakistan
+- https://explore.whiteribbonalliance.org/en/healthwellbeing
+- https://explore.whiteribbonalliance.org/en/giz
+- https://wypw.1point8b.org/en
 
 ## Environment variables:
 
