@@ -31,10 +31,14 @@ There's currently six dashboards deployed with this project, you can visit them 
 - `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
+- `GOOGLE_MAPS_API_KEY=` Optional - Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
+  are found (when new data is added to these campaigns).
 - `INCLUDE_ALLCAMPAIGNS=` Optional - Allow displaying dashboard of all data merged together at `allcampaigns`.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
+- `ADMIN_DASHBOARD_PASSWORD=` Optional - Admin password for accessing protected paths all campaigns when logging in with
+  username `admin`.
 - `OWNER_NAME=` Optional - Owner name - to display in footer.
 - `ONWER_LINK=` Optional - Owner link - to display in footer.
 - `COMPANY_NAME=` Optional - Company name - to display in footer.
@@ -228,18 +232,6 @@ for `PMNCH`.
 In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct
 workflow in the repository
 on GitHub: `https://docs.github.com/en/actions/using-workflows/disabling-and-enabling-a-workflow`.
-
-## Legacy campaigns
-
-For deployment of legacy campaigns.
-
-Legacy campaigns are campaigns that were used to run this dashboard originally.
-
-Additional environment variables:
-
-- `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found (
-  occurs when new data is added).
-- `ADMIN_DASHBOARD_PASSWORD=` Admin password.
 
 ## License
 
