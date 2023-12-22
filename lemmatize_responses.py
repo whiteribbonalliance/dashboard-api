@@ -80,7 +80,7 @@ def lemmatize():
             lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
             df[lemmatized_column_name] = df[response_column].apply(lemmatize_text)
 
-            df.to_csv(path_or_buf=campaign_config.filepath, index=False, header=True)
+        df.to_csv(path_or_buf=campaign_config.filepath, index=False, header=True)
 
 
 def lemmatize_text(text: str) -> str:
