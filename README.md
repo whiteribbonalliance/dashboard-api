@@ -136,7 +136,6 @@ columns `q2_response` and `q2_canonical_code`.
 4. Copy your CSV file to the new config folder.
 5. Lemmatize the responses in the CSV file, set `file` to `{"local" : "your-csv-file-name.csv"}` and
    run `python lemmatize_responses.py my_campaign_code`, replace `my_campaign_code` with your new campaign code.
-6. Create translations for the front, read the `Translations` section for more information.
 
 When a new campaign is successfully created, its dashboard will be accessible in the front-end using
 the `dashboard_path` defined in the config.
