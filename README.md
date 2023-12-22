@@ -3,8 +3,17 @@
 ## What does this API do?
 
 This API is used for providing campaign data to display in the front-end dashboard. Follow the steps at
-section `How to create a new campaign`. Once a new campaign was added, the data will become available through the
-endpoints. For more information, continue reading the documentation below.
+section `How to create a new campaign`. Once a new campaign configuration was added, the data will become available
+through the endpoints. For more information, continue reading the documentation below.
+
+There's currently six dashboards deployed with this project, you can visit them at:
+
+- https://explore.whiteribbonalliance.org/en/whatwomenwant
+- https://explore.whiteribbonalliance.org/en/midwivesvoices
+- http://explore.whiteribbonalliance.org/en/wwwpakistan
+- http://explore.whiteribbonalliance.org/en/healthwellbeing
+- http://explore.whiteribbonalliance.org/en/giz
+- https://wypw.1point8b.org
 
 ## Environment variables:
 
