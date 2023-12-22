@@ -1,0 +1,52 @@
+{
+  "campaign_code": "pmn01a",
+  "dashboard_path": "whatyoungpeoplewant",
+  "campaign_title": "Results Dashboard",
+  "campaign_subtext": "Welcome to the “What Young People Want“ Dashboard! This interactive tool provides a visual representation of the responses and insights we are gathering from young people aged 10-24 around the world. The core of the initiative is an open-ended question: “To improve my well-being, I want...“. Young people from across the globe have been answering this, giving us unique insights into their needs, hopes, and aspirations. Explore the data, discover the stories behind the numbers, and join us in amplifying the voices of 1.8 billion young people worldwide. To learn more about the campaign, visit http://www.1point8.org.",
+  "site_title": "Results Dashboard | PMNCH",
+  "site_description": "What Young People Want Interactive Dashboard",
+  "file": {
+    "link": "https://wra.blob.core.windows.net/wra/pmn01a.csv"
+  },
+  "respondent_noun_singular": "respondent",
+  "respondent_noun_plural": "respondents",
+  "video_link": "https://youtu.be/E6_ERqyI8nA",
+  "about_us_link": "",
+  "questions": {},
+  "parent_categories": [
+    {
+      "code": "",
+      "description": "",
+      "sub_categories": [
+        {
+          "code": "EDUCATION",
+          "description": "Learning, competence, education, skills and employability"
+        },
+        {
+          "code": "ENVIRONMENT",
+          "description": "Environment"
+        },
+        {
+          "code": "HEALTH",
+          "description": "Good health and optimum nutrition"
+        },
+        {
+          "code": "MENTALHEALTH",
+          "description": "Connectedness, positive values and contribution to society"
+        },
+        {
+          "code": "POWER",
+          "description": "Agency and resilience"
+        },
+        {
+          "code": "SAFETY",
+          "description": "Safety and a supportive environment"
+        },
+        {
+          "code": "OTHER",
+          "description": "All other requests"
+        }
+      ]
+    }
+  ]
+}
