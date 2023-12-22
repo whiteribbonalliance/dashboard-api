@@ -17,9 +17,8 @@ endpoints. For more information, continue reading the documentation below.
 - `ONWER_LINK=` Optional - Owner link - to display in footer.
 - `COMPANY_NAME=` Optional - Company name - to display in footer.
 - `COMPANY_LINK=` Optional - Company link - to display in footer.
-  campaign data. Requires Google Cloud `credentials.json` with the right permissions.
-- `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths e.g. for downloading
-  campaign data.
+- `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths
+  e.g. `/api/v1/campaigns/{campaign_code}/data/`.
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
 - `NEW_RELIC_URL=` Optional - The New Relic URL.
 - `TRANSLATIONS_ENABLED=` Optional - True or False.
