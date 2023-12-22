@@ -23,17 +23,22 @@ SOFTWARE.
 
 """
 
-from fastapi import APIRouter, status, Depends
+import copy
+from fastapi import APIRouter, status, Depends, Request
 
 from app.api import dependencies
 from app.core.settings import get_settings
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.http_exceptions import ResourceNotFoundHTTPException
 from app.schemas.campaign_config import CampaignConfigResponse, CampaignConfigInternal
+from app.services.api_cache import ApiCache
+from app.services.translator import Translator
 
 settings = get_settings()
 
 router = APIRouter(prefix="/configurations")
+
+api_cache = ApiCache()
 
 
 @router.get(
@@ -41,29 +46,70 @@ router = APIRouter(prefix="/configurations")
     response_model=list[CampaignConfigResponse],
     status_code=status.HTTP_200_OK,
 )
-def read_campaigns_configurations():
+@api_cache.cache_response
+def read_campaigns_configurations(
+    _request: Request, language: str = Depends(dependencies.language_check)
+):
     """
     Read campaigns configurations.
     """
 
-    configurations: list[CampaignConfigResponse | CampaignConfigInternal] = list(
-        CAMPAIGNS_CONFIG.values()
-    )
+    configurations: list[CampaignConfigResponse | CampaignConfigInternal] = [
+        x for x in CAMPAIGNS_CONFIG.values()
+    ]
     if configurations:
+        configurations = copy.deepcopy(configurations)
         if settings.LEGACY_CAMPAIGNS:
             configurations.insert(
                 0,
                 CampaignConfigResponse(
                     campaign_code="allcampaigns",
                     dashboard_path="allcampaigns",
-                    seo_title="Dashboard of Dashboards | White Ribbon Alliance",
-                    seo_meta_description="All campaigns",
+                    campaign_title="Dashboard of Dashboards",
+                    campaign_subtext="",
+                    site_title="Dashboard of Dashboards | White Ribbon Alliance",
+                    site_description="All campaigns",
                     respondent_noun_singular="respondent",
                     respondent_noun_plural="respondents",
                     video_link="https://www.youtube.com/watch?v=nBzide5J3Hk",
                     about_us_link="https://whiteribbonalliance.org/movements/womens-health",
                 ),
             )
+
+        # Translate
+        if settings.TRANSLATIONS_ENABLED:
+            translator = Translator(
+                target_language=language, cloud_service=settings.CLOUD_SERVICE
+            )
+            e = translator.extract_text
+            t = translator.translate_text
+
+            for configuration in configurations:
+                # Extract
+                configuration.campaign_title = e(configuration.campaign_title)
+                configuration.campaign_subtext = e(configuration.campaign_subtext)
+                configuration.respondent_noun_singular = e(
+                    configuration.respondent_noun_singular
+                )
+                configuration.site_title = e(configuration.site_description)
+                configuration.site_description = e(configuration.site_description)
+                configuration.respondent_noun_plural = e(
+                    configuration.respondent_noun_plural
+                )
+
+                translator.translate_extracted_texts()
+
+                # Translate
+                configuration.campaign_title = t(configuration.campaign_title)
+                configuration.campaign_subtext = t(configuration.campaign_subtext)
+                configuration.respondent_noun_singular = t(
+                    configuration.respondent_noun_singular
+                )
+                configuration.site_title = t(configuration.site_description)
+                configuration.site_description = t(configuration.site_description)
+                configuration.respondent_noun_plural = t(
+                    configuration.respondent_noun_plural
+                )
 
         return configurations
 
@@ -76,7 +122,9 @@ def read_campaigns_configurations():
     status_code=status.HTTP_200_OK,
 )
 def read_campaign_configuration(
+    _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
+    language: str = Depends(dependencies.language_check),
 ):
     """
     Read campaign configuration.
@@ -84,6 +132,41 @@ def read_campaign_configuration(
 
     configuration = CAMPAIGNS_CONFIG.get(campaign_code)
     if configuration:
+        configuration = copy.deepcopy(configuration)
+        # Translate
+        if settings.TRANSLATIONS_ENABLED:
+            translator = Translator(
+                target_language=language, cloud_service=settings.CLOUD_SERVICE
+            )
+            e = translator.extract_text
+            t = translator.translate_text
+
+            # Extract
+            configuration.campaign_title = e(configuration.campaign_title)
+            configuration.campaign_subtext = e(configuration.campaign_subtext)
+            configuration.respondent_noun_singular = e(
+                configuration.respondent_noun_singular
+            )
+            configuration.site_title = e(configuration.site_description)
+            configuration.site_description = e(configuration.site_description)
+            configuration.respondent_noun_plural = e(
+                configuration.respondent_noun_plural
+            )
+
+            translator.translate_extracted_texts()
+
+            # Apply translations
+            configuration.campaign_title = t(configuration.campaign_title)
+            configuration.campaign_subtext = t(configuration.campaign_subtext)
+            configuration.respondent_noun_singular = t(
+                configuration.respondent_noun_singular
+            )
+            configuration.site_title = t(configuration.site_description)
+            configuration.site_description = t(configuration.site_description)
+            configuration.respondent_noun_plural = t(
+                configuration.respondent_noun_plural
+            )
+
         return configuration
 
     raise ResourceNotFoundHTTPException("Campaign configuration not found.")

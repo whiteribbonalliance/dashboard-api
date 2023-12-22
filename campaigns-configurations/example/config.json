@@ -1,8 +1,10 @@
 {
   "campaign_code": "example",
   "dashboard_path": "example",
-  "seo_title": "My Example Dashboard | MyDashboard",
-  "seo_meta_description": "Example dashboard description",
+  "campaign_title": "My Example Dashboard",
+  "campaign_subtext": "My Example Dashboard subtext",
+  "site_title": "My Example Dashboard | MyDashboard",
+  "site_description": "Example dashboard description",
   "file": {
     "local": "file.csv"
   },

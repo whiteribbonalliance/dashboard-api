@@ -57,6 +57,10 @@ Azure - `CLOUD_SERVICE=azure`:
 - `AZURE_STORAGE_ACCOUNT_KEY=` Optional - if `azure`, The Azure storage account key.
 - `AZURE_STORAGE_CONNECTION_STRING=` Optional - if `azure`, The Azure storage connection string.
 
+## System requirements
+
+- Python 3.10 or above.
+
 ## Install
 
 Install requirements:
@@ -77,7 +81,7 @@ python main.py
 
 ## Docs
 
-You can view the docs at `http://127.0.0.1:8000/docs`.
+You can view the docs locally at `http://127.0.0.1:8000/docs`.
 
 ## CSV file
 
@@ -95,6 +99,8 @@ The CSV file might contain the following columns:
 - `setting`: Optional - The respondent's living setting.
 - `response_year`: Optional - The year the response was collected.
 
+### Add another response in CSV file
+
 `q1` refers to the question from which the respondent gave a response. To include another response add the
 columns `q2_response` and `q2_canonical_code`.
 
@@ -106,8 +112,8 @@ columns `q2_response` and `q2_canonical_code`.
 3. Fill in the configuration:
     1. `campaign_code`: Required - An unique code for the campaign.
     2. `dashboard_path` Required - Path to access the dashboard in the front.
-    3. `seo_title` Required - Title of the dashboard for SEO.
-    4. `seo_meta_description` Required - A description of the dashboard for SEO.
+    3. `site_title` Required - Title of the dashboard for SEO.
+    4. `site_description` Required - A description of the dashboard for SEO.
     5. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
        or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
@@ -146,30 +152,23 @@ Translations occur automatically on the fly when requesting campaign data with o
 
 ### Front-end
 
-Create the JSON file `front_translations/to_translate.json` if it doesn't exist yet, and add the keys that will be used
-in the front-end for accessing translations and use as value the text in English.
+To generate static translations for the front-end, create a JSON file at `front_translations/to_translate.json` if it
+doesn't exist yet, and add the keys that will be used in the front-end for accessing translations and use as value the
+text in English.
 
 For example:
 
 ```json
 {
-  "example-title": "Lorem Ipsum",
-  "example-subtext": "Lorem Ipsum"
+  "example-text": "Lorem Ipsum"
 }
 ```
-
-`example` here refers to a campaign code.
 
 To apply translations run:
 
 ```bash
 python translate_front.py
 ```
-
-*Note: When adding a new campaign, the above should be done even if translations is disabled, this is because with
-translations disabled, the default language is English and the output of the translations function will contain only the
-language English which is used in the front. `example` in `example-title` refers to a campaign
-code. `{CAMPAIGN_CODE}-title` and `{CAMPAIGN_CODE}-subtext` are always required to be included in `to_translate.json`.*
 
 Once translations have been applied, a new folder called `languages` should have been created
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
@@ -236,3 +235,7 @@ Additional environment variables:
 - `LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found.
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password.
+
+## License
+
+MIT License.
