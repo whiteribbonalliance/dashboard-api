@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     RELOAD_DATA_EVERY_12TH_HOUR: bool = (
         os.getenv("RELOAD_DATA_EVERY_12TH_HOUR", "").lower() == "true"
     )
+    INCLUDE_ALLCAMPAIGNS: bool = os.getenv("INCLUDE_ALLCAMPAIGNS", "") == "true"
 
     # Google
     GOOGLE_CLOUD_STORAGE_BUCKET_FILE: str = os.getenv(
@@ -89,7 +90,6 @@ class Settings(BaseSettings):
     )
 
     # Only for legacy campaigns
-    LEGACY_CAMPAIGNS: bool = os.getenv("LEGACY_CAMPAIGNS", "").lower() == "true"
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
 
 

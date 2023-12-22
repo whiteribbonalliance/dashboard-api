@@ -31,6 +31,7 @@ There's currently six dashboards deployed with this project, you can visit them 
 - `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
+- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `allcampaigns`.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
@@ -90,7 +91,7 @@ The CSV file might contain the following columns:
 - `q1_response`: Required - The response from the respondent.
 - `q1_canonical_code`: Required - The category of the response.
 - `alpha2country`: Required - alpha-2 code of the respondent's country.
-- `age`: Required - The respondent's age.
+- `age`: Optional - The respondent's age.
 - `region`: Optional - The respondent's region.
 - `province`: Optional - The respondent's province.
 - `gender`: Optional - The respondent's gender.
@@ -98,6 +99,7 @@ The CSV file might contain the following columns:
 - `profession`: Optional - The respondent's profession.
 - `setting`: Optional - The respondent's living setting.
 - `response_year`: Optional - The year the response was collected.
+- `data_source`: Optional - Source of data.
 
 ### Add another response in CSV file
 
@@ -235,7 +237,6 @@ Legacy campaigns are campaigns that were used to run this dashboard originally.
 
 Additional environment variables:
 
-- `LEGACY_CAMPAIGNS=` True.
 - `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found.
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password.
 

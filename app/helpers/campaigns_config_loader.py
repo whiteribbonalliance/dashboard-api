@@ -62,6 +62,10 @@ for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
                     f"Could not validate configuration found in config folder {config_folder}. Error: {str(e)}"
                 )
 
+    # allcampaigns path is reserved
+    if settings.INCLUDE_ALLCAMPAIGNS and config.dashboard_path == "allcampaigns":
+        raise Exception("The path allcampaigns is reserved.")
+
     # Only one file location should be provided
     if (
         sum([bool(config.file.local), bool(config.file.link), bool(config.file.cloud)])

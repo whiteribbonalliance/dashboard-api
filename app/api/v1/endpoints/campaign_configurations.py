@@ -64,7 +64,7 @@ def read_campaigns_configurations(
     ]
     if configurations:
         configurations = copy.deepcopy(configurations)
-        if settings.LEGACY_CAMPAIGNS:
+        if settings.INCLUDE_ALLCAMPAIGNS:
             configurations.insert(
                 0,
                 CampaignConfigResponse(

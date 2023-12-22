@@ -140,5 +140,5 @@ front_translations/*
 !front_translations/to_translate.json
 
 # Campaigns config
-campaigns-configurations/*
-!campaigns-configurations/example
+# campaigns-configurations/*
+# !campaigns-configurations/example
