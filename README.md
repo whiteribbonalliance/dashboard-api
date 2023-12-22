@@ -110,24 +110,26 @@ columns `q2_response` and `q2_canonical_code`.
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-configurations/example/config.json`).
 3. Fill in the configuration:
-    1. `campaign_code`: Required - An unique code for the campaign.
+    1. `campaign_code` Required - An unique code for the campaign.
     2. `dashboard_path` Required - Path to access the dashboard in the front.
-    3. `site_title` Required - Title of the dashboard for SEO.
-    4. `site_description` Required - A description of the dashboard for SEO.
-    5. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
+    3. `campaign_title` Required - The campaign title.
+    4. `campaign_subtext` Required - The campaign subtext.
+    5. `site_title` Required - Title of the dashboard.
+    6. `site_description` Required - A description of the dashboard.
+    7. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
        or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
        in the CSV have to be lemmatized, read step 5. If you are using `cloud`, it is necessary to set `CLOUD_SERVICE`
        and fill in the env variables for `Google` or `Azure`. Upload the CSV file at `GOOGLE_CLOUD_STORAGE_BUCKET_FILE`
        or `AZURE_STORAGE_CONTAINER_FILE`.
-    6. `respondent_noun_singular`: Optional - Respondent noun singular.
-    7. `respondent_noun_plural`: Optional - Respondent noun plural.
-    8. `video_link` - Optional - A Link to a video related to the dashboard.
-    9. `about_us_link` - Optional - Link to a page about the campaign.
-    10. `questions` Optional - If there's more than one response included in the data, add the question that relates to
+    8. `respondent_noun_singular`: Optional - Respondent noun singular.
+    9. `respondent_noun_plural`: Optional - Respondent noun plural.
+    10. `video_link` - Optional - A Link to a video related to the dashboard.
+    11. `about_us_link` - Optional - Link to a page about the campaign.
+    12. `questions` Optional - If there's more than one response included in the data, add the question that relates to
         it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
         will be able to see the questions in the front-end and switch between responses.
-    11. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
+    13. `parent_categories` Required - use the example data structure to build a list of categories. This is a list of
         parent-categories and each parent-category can include a list of sub-categories. In the case that there is no
         hierarchy of categories, create a parent category with `code` as an empty string and include the categories as
         its sub-categories. in the CSV file the sub-categories for responses should be added at `q1_canonical_code`.
