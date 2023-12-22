@@ -11,12 +11,9 @@ endpoints. For more information, continue reading the documentation below.
 - `STAGE=` Required - prod or dev.
 - `HOST=` Required - The host.
 - `PORT=` Required - The port.
+- `ALLOW_ORIGINS=` Required - Allow origins e.g. "https://example1.com https://example2.com"
 - `APP_TITLE=` Optional - App title.
 - `APP_DESCRIPTION=` Optional - App description.
-- `OWNER_NAME=` Optional - Owner name - to display in footer.
-- `ONWER_LINK=` Optional - Owner link - to display in footer.
-- `COMPANY_NAME=` Optional - Company name - to display in footer.
-- `COMPANY_LINK=` Optional - Company link - to display in footer.
 - `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths
   e.g. `/api/v1/campaigns/{campaign_code}/data/`.
 - `NEWRELIC_API_KEY=` Optional - The New Relic API key.
@@ -28,6 +25,10 @@ endpoints. For more information, continue reading the documentation below.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
+- `OWNER_NAME=` Optional - Owner name - to display in footer.
+- `ONWER_LINK=` Optional - Owner link - to display in footer.
+- `COMPANY_NAME=` Optional - Company name - to display in footer.
+- `COMPANY_LINK=` Optional - Company link - to display in footer.
 
 Google - `CLOUD_SERVICE=google`:
 

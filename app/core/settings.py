@@ -45,6 +45,9 @@ if CLOUD_SERVICE == "google":
     if not os.path.isfile("credentials.json"):
         raise Exception("Required file credentials.json not found.")
 
+ALLOW_ORIGINS = os.getenv("ALLOW_ORIGINS", "").split(" ")
+ALLOW_ORIGINS = list(filter(None, ALLOW_ORIGINS))
+
 
 class Settings(BaseSettings):
     STAGE: str = STAGE
@@ -97,9 +100,6 @@ class DevSettings(Settings):
         "allow_origins": [
             "http://localhost",
             "http://localhost:3000",
-            "http://localhost:3001",
-            "http://explore.whiteribbonalliance.local:3000",
-            "http://whatyoungpeoplewant.whiteribbonalliance.local:3000",
         ],
         "allow_credentials": True,
         "allow_methods": ["*"],
@@ -111,15 +111,7 @@ class ProdSettings(Settings):
     DEBUG: bool = False
     RELOAD: bool = False
     CORS: dict = {
-        "allow_origins": [
-            "https://explore.whiteribbonalliance.org",
-            "https://whatwomenwant.whiteribbonalliance.org",
-            "https://whatyoungpeoplewant.whiteribbonalliance.org",
-            "https://midwivesvoices.whiteribbonalliance.org",
-            "https://admin.whiteribbonalliance.org",
-            "https://pmnch-front.azurewebsites.net",
-            "https://wypw.1point8b.org",
-        ],
+        "allow_origins": ALLOW_ORIGINS,
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
         "allow_headers": [
