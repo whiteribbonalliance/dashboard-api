@@ -140,8 +140,5 @@ front_translations/*
 !front_translations/to_translate.json
 
 # Campaigns config
-campaigns-config/*
-!campaigns-config/example
-
-# Test
-test.py
+campaigns-configurations/*
+!campaigns-configurations/example

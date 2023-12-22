@@ -36,13 +36,13 @@ settings = get_settings()
 
 CAMPAIGNS_CONFIG: dict[str, CampaignConfigInternal] = {}
 
-campaigns_config_folder = "campaigns-config"
+campaigns_configurations_folder = "campaigns-configurations"
 
 print("INFO:\t  Loading configurations...")
 
-for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
+for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
     # Check if it is a folder
-    if not os.path.isdir(os.path.join(campaigns_config_folder, config_folder)):
+    if not os.path.isdir(os.path.join(campaigns_configurations_folder, config_folder)):
         continue
 
     # Skip example
@@ -50,7 +50,9 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
         continue
 
     # Load config
-    config_json = os.path.join(campaigns_config_folder, config_folder, "config.json")
+    config_json = os.path.join(
+        campaigns_configurations_folder, config_folder, "config.json"
+    )
     if os.path.isfile(config_json):
         with open(config_json, "r", encoding="utf8") as file:
             try:
@@ -75,7 +77,7 @@ for config_folder in os.listdir(os.path.join(campaigns_config_folder)):
     # Check CSV file
     if config.file.local:
         csv_file = os.path.join(
-            campaigns_config_folder, config_folder, config.file.local
+            campaigns_configurations_folder, config_folder, config.file.local
         )
         if not config.file.local.endswith(".csv"):
             raise Exception("Invalid CSV file name.")

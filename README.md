@@ -30,14 +30,14 @@ endpoints. For more information, continue reading the documentation below.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
 
-Google:
+Google - `CLOUD_SERVICE=google`:
 
 - `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - if `google`, The Google cloud storage bucket to load the CSV file from.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - if `google`, The Google cloud storage bucket to temporarily cache
   download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
   or `/api/v1/campaigns/{campaign_code}/data/public`.
 
-Azure:
+Azure - `CLOUD_SERVICE=azure`:
 
 - `AZURE_TRANSLATOR_KEY=` Optional - if `azure`, The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` Optional - if `azure`, The Azure storage account name.
@@ -91,8 +91,9 @@ columns `q2_response` and `q2_canonical_code`.
 
 ## How to create a new campaign
 
-1. Create a new config folder at `campaigns-config/{NEW_CONFIG_FOLDER_NAME}`.
-2. Inside the new folder create the file `config.json` (copy `config.json` from `campaigns-config/example/config.json`).
+1. Create a new config folder at `campaigns-configurations/{NEW_CONFIG_FOLDER_NAME}`.
+2. Inside the new folder create the file `config.json` (copy `config.json`
+   from `campaigns-configurations/example/config.json`).
 3. Fill in the configuration:
     1. `campaign_code`: Required - An unique code for the campaign.
     2. `dashboard_path` Required - Path to access the dashboard in the front.
@@ -120,8 +121,8 @@ columns `q2_response` and `q2_canonical_code`.
    run `python lemmatize_responses.py my_campaign_code`, replace `my_campaign_code` with your new campaign code.
 6. Create translations for the front, read the `Translations` section for more information.
 
-When a new campaign is created, its dashboard will be accessible in the front-end using the `dashboard_path` defined in
-the config.
+When a new campaign is successfully created, its dashboard will be accessible in the front-end using
+the `dashboard_path` defined in the config.
 
 ## Translations
 
