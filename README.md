@@ -31,7 +31,7 @@ There's currently six dashboards deployed with this project, you can visit them 
 - `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
-- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `allcampaigns`.
+- `INCLUDE_ALLCAMPAIGNS=` Optional - Allow displaying dashboard of all data merged together at `allcampaigns`.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
@@ -237,7 +237,8 @@ Legacy campaigns are campaigns that were used to run this dashboard originally.
 
 Additional environment variables:
 
-- `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found.
+- `GOOGLE_MAPS_API_KEY=` The Google Maps API key - Used for campaigns `wwwpakistan` and `giz` if new regions are found (
+  occurs when new data is added).
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password.
 
 ## License
