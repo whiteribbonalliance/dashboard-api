@@ -273,6 +273,7 @@ class Translator:
             values=values,
             source_language=source_language,
             target_language=target_language,
+            format_="text"
         )
 
         translations = []
