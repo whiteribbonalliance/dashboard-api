@@ -15,6 +15,9 @@ There's currently six dashboards deployed with this project, you can visit them 
 - https://explore.whiteribbonalliance.org/en/giz
 - https://wypw.1point8b.org/en
 
+The configurations for these dashboards are included in `campaigns-configurations`, by running this API you can view
+their respective dashboards by running the front-end.
+
 ## Environment variables:
 
 - `STAGE=` Required - prod or dev.
@@ -75,8 +78,6 @@ pip install -r requirements.txt
 ```
 
 Configure the environment variables.
-
-Check the section `CSV file` and `How to add a new campaign` before running the API.
 
 ### Run
 
