@@ -41,21 +41,21 @@ There's currently six dashboards deployed with this project, you can visit them 
 
 Google - `CLOUD_SERVICE=google`:
 
-- `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - if `google`, The Google cloud storage bucket to load the CSV file from.
-- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - if `google`, The Google cloud storage bucket to temporarily cache
+- `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - The Google cloud storage bucket to load the CSV file from.
+- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - The Google cloud storage bucket to temporarily cache
   download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
   or `/api/v1/campaigns/{campaign_code}/data/public`.
 
 Azure - `CLOUD_SERVICE=azure`:
 
-- `AZURE_TRANSLATOR_KEY=` Optional - if `azure`, The Azure translator key.
-- `AZURE_STORAGE_ACCOUNT_NAME=` Optional - if `azure`, The Azure storage account name.
-- `AZURE_STORAGE_CONTAINER_FILE=` Optional - if `azure`, The Azure storage container to load the CSV file from.
-- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - if `azure`, The Azure storage container to temporarily cache download
+- `AZURE_TRANSLATOR_KEY=` Optional - The Azure translator key.
+- `AZURE_STORAGE_ACCOUNT_NAME=` Optional - The Azure storage account name.
+- `AZURE_STORAGE_CONTAINER_FILE=` Optional - The Azure storage container to load the CSV file from.
+- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - The Azure storage container to temporarily cache download
   data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
   or `/api/v1/campaigns/{campaign_code}/data/public`.
-- `AZURE_STORAGE_ACCOUNT_KEY=` Optional - if `azure`, The Azure storage account key.
-- `AZURE_STORAGE_CONNECTION_STRING=` Optional - if `azure`, The Azure storage connection string.
+- `AZURE_STORAGE_ACCOUNT_KEY=` Optional - The Azure storage account key.
+- `AZURE_STORAGE_CONNECTION_STRING=` Optional - The Azure storage connection string.
 
 ## System requirements
 
@@ -81,7 +81,7 @@ python main.py
 
 ## Docs
 
-You can view the docs locally at `http://127.0.0.1:8000/docs`.
+You can view the docs locally at e.g. `http://127.0.0.1:8000/docs`.
 
 ## CSV file
 
@@ -106,7 +106,7 @@ columns `q2_response` and `q2_canonical_code`.
 
 ## How to create a new campaign
 
-1. Create a new config folder at `campaigns-configurations/{NEW_CONFIG_FOLDER_NAME}`.
+1. Create a new config folder at `campaigns-configurations/{NEW_CONFIG_FOLDER_NAME}` (can be any name).
 2. Inside the new folder create the file `config.json` (copy `config.json`
    from `campaigns-configurations/example/config.json`).
 3. Fill in the configuration:
@@ -143,13 +143,15 @@ the `dashboard_path` defined in the config.
 ## Translations
 
 To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
-at the root of the project. For `Azure Translator` fill the env variable `AZURE_TRANSLATOR_KEY`.
+at the root of the project. For `Azure Translator` fill in the env variable `AZURE_TRANSLATOR_KEY`.
 
 Set `TRANSLATIONS_ENABLED` to `True`.
 
 ### Back-end
 
-Translations occur automatically on the fly when requesting campaign data with one of the supported languages.
+Translations occur automatically on the fly when requesting campaign data with one of the supported languages. Will
+default to English if an unsupported language code is given. Supported languages are from languages the cloud service
+supports for translation.
 
 ### Front-end
 

@@ -43,9 +43,9 @@ if len(sys.argv) > 1:
     campaign_codes_from_args = sys.argv[1:]
 
 
-def lemmatize_all_responses():
+def lemmatize():
     """
-    Lemmatize all responses.
+    Lemmatize.
     """
 
     if not campaign_codes_from_args:
@@ -94,4 +94,4 @@ def lemmatize_text(text: str) -> str:
         return " ".join(lemmatize_sentence(sentence=text))
 
 
-lemmatize_all_responses()
+lemmatize()
