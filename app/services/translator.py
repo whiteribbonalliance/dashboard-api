@@ -262,8 +262,8 @@ class Translator:
     ) -> list[dict[str, str]]:
         """Get translation with Google"""
 
-        credentials = service_account.Credentials.from_service_account_file(
-            filename=settings.GOOGLE_APPLICATION_CREDENTIALS,
+        credentials = service_account.Credentials.from_service_account_info(
+            info=json.loads(settings.GOOGLE_CREDENTIALS),
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
 

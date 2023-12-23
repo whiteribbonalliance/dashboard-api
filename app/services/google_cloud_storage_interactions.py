@@ -23,6 +23,7 @@ SOFTWARE.
 
 """
 
+import json
 import logging
 from datetime import datetime
 from datetime import timedelta
@@ -45,8 +46,8 @@ EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 def get_storage_client() -> Client:
     """Get storage client"""
 
-    credentials = service_account.Credentials.from_service_account_file(
-        filename=settings.GOOGLE_APPLICATION_CREDENTIALS,
+    credentials = service_account.Credentials.from_service_account_info(
+        info=json.loads(settings.GOOGLE_CREDENTIALS),
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 

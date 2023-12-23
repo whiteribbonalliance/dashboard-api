@@ -41,6 +41,7 @@ jobs:
           OWNER_LINK: ${{ secrets.OWNER_LINK }}
           COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
           COMPANY_LINK: ${{ secrets.COMPANY_LINK }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
         with:
@@ -55,7 +56,6 @@ jobs:
           project_id: ${{ secrets.PROJECT_ID }}
           export_environment_variables: true
           create_credentials_file: true
-          cleanup_credentials: false
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
@@ -64,11 +64,6 @@ jobs:
 
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
-
-      - name: Include credentials
-        run: |
-          touch credentials_prod.json
-          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials_prod.json
 
       - name: 'Configure Docker'
         run: 'gcloud auth configure-docker'
