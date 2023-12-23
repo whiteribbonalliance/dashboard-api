@@ -55,7 +55,6 @@ from app.schemas.response_topic import ResponseTopic
 from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services import google_maps_interactions
-from app.services.translations_cache import TranslationsCache
 from app.services.translator import Translator
 from app.types import TFilterSequence, TCloudService
 
@@ -295,74 +294,72 @@ class CampaignService:
             all_questions.append(Question(code=q_code, question="").dict())
 
         # Translate
-        if settings.TRANSLATIONS_ENABLED:
+        if settings.TRANSLATIONS_ENABLED and self.__language != "en":
             try:
-                if self.__language != "en" and TranslationsCache().is_loaded():
-                    translator = Translator(cloud_service=CLOUD_SERVICE)
-                    translator.set_target_language(target_language=self.__language)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
+                translator.set_target_language(target_language=self.__language)
 
-                    # Extract texts
-                    translator.apply_t_function_campaign(
-                        t=translator.extract_text,
-                        campaign_code=self.__campaign_code,
-                        language=self.__language,
-                        current_question=current_question,
-                        all_questions=all_questions,
-                        responses_sample=responses_sample,
-                        responses_breakdown=responses_breakdown,
-                        living_settings_breakdown=living_settings_breakdown,
-                        top_words_and_phrases=top_words_and_phrases,
-                        histogram=histogram,
-                        genders_breakdown=genders_breakdown,
-                        world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                        filter_1_average_age=filter_1_average_age,
-                        filter_2_average_age=filter_2_average_age,
-                        filter_1_description=filter_1_description,
-                        filter_2_description=filter_2_description,
-                    )
+                # Extract texts
+                translator.apply_t_function_campaign(
+                    t=translator.extract_text,
+                    campaign_code=self.__campaign_code,
+                    language=self.__language,
+                    current_question=current_question,
+                    all_questions=all_questions,
+                    responses_sample=responses_sample,
+                    responses_breakdown=responses_breakdown,
+                    living_settings_breakdown=living_settings_breakdown,
+                    top_words_and_phrases=top_words_and_phrases,
+                    histogram=histogram,
+                    genders_breakdown=genders_breakdown,
+                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+                    filter_1_average_age=filter_1_average_age,
+                    filter_2_average_age=filter_2_average_age,
+                    filter_1_description=filter_1_description,
+                    filter_2_description=filter_2_description,
+                )
 
-                    # Translate extracted texts
-                    translator.translate_extracted_texts()
+                # Translate extracted texts
+                translator.translate_extracted_texts()
 
-                    # Get translations
-                    translations_result = translator.apply_t_function_campaign(
-                        t=translator.translate_text,
-                        campaign_code=self.__campaign_code,
-                        language=self.__language,
-                        current_question=current_question,
-                        all_questions=all_questions,
-                        responses_sample=responses_sample,
-                        responses_breakdown=responses_breakdown,
-                        living_settings_breakdown=living_settings_breakdown,
-                        top_words_and_phrases=top_words_and_phrases,
-                        histogram=histogram,
-                        genders_breakdown=genders_breakdown,
-                        world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-                        filter_1_average_age=filter_1_average_age,
-                        filter_2_average_age=filter_2_average_age,
-                        filter_1_description=filter_1_description,
-                        filter_2_description=filter_2_description,
-                    )
+                # Get translations
+                translations_result = translator.apply_t_function_campaign(
+                    t=translator.translate_text,
+                    campaign_code=self.__campaign_code,
+                    language=self.__language,
+                    current_question=current_question,
+                    all_questions=all_questions,
+                    responses_sample=responses_sample,
+                    responses_breakdown=responses_breakdown,
+                    living_settings_breakdown=living_settings_breakdown,
+                    top_words_and_phrases=top_words_and_phrases,
+                    histogram=histogram,
+                    genders_breakdown=genders_breakdown,
+                    world_bubble_maps_coordinates=world_bubble_maps_coordinates,
+                    filter_1_average_age=filter_1_average_age,
+                    filter_2_average_age=filter_2_average_age,
+                    filter_1_description=filter_1_description,
+                    filter_2_description=filter_2_description,
+                )
 
-                    # Apply translations to texts
-                    current_question = translations_result["current_question"]
-                    all_questions = translations_result["all_questions"]
-                    responses_sample = translations_result["responses_sample"]
-                    responses_breakdown = translations_result["responses_breakdown"]
-                    living_settings_breakdown = translations_result[
-                        "living_settings_breakdown"
-                    ]
-                    top_words_and_phrases = translations_result["top_words_and_phrases"]
-                    histogram = translations_result["histogram"]
-                    genders_breakdown = translations_result["genders_breakdown"]
-                    world_bubble_maps_coordinates = translations_result[
-                        "world_bubble_maps_coordinates"
-                    ]
-                    filter_1_average_age = translations_result["filter_1_average_age"]
-                    filter_2_average_age = translations_result["filter_2_average_age"]
-                    filter_1_description = translations_result["filter_1_description"]
-                    filter_2_description = translations_result["filter_2_description"]
-
+                # Apply translations to texts
+                current_question = translations_result["current_question"]
+                all_questions = translations_result["all_questions"]
+                responses_sample = translations_result["responses_sample"]
+                responses_breakdown = translations_result["responses_breakdown"]
+                living_settings_breakdown = translations_result[
+                    "living_settings_breakdown"
+                ]
+                top_words_and_phrases = translations_result["top_words_and_phrases"]
+                histogram = translations_result["histogram"]
+                genders_breakdown = translations_result["genders_breakdown"]
+                world_bubble_maps_coordinates = translations_result[
+                    "world_bubble_maps_coordinates"
+                ]
+                filter_1_average_age = translations_result["filter_1_average_age"]
+                filter_2_average_age = translations_result["filter_2_average_age"]
+                filter_1_description = translations_result["filter_1_description"]
+                filter_2_description = translations_result["filter_2_description"]
             except (Exception,) as e:
                 logger.warning(
                     f"An error occurred during translation of campaign: {str(e)}"
@@ -525,78 +522,71 @@ class CampaignService:
             gender_options = []
 
         # Translate
-        if settings.TRANSLATIONS_ENABLED:
+        if settings.TRANSLATIONS_ENABLED and self.__language != "en":
             try:
-                if self.__language != "en" and TranslationsCache().is_loaded():
-                    translator = Translator(cloud_service=CLOUD_SERVICE)
-                    translator.set_target_language(target_language=self.__language)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
+                translator.set_target_language(target_language=self.__language)
 
-                    # Extract texts
-                    translator.apply_t_filter_options(
-                        t=translator.extract_text,
-                        country_options=country_options,
-                        country_region_options=country_region_options,
-                        country_province_options=country_province_options,
-                        response_topic_options=response_topic_options,
-                        age_options=age_options,
-                        age_bucket_options=age_bucket_options,
-                        age_bucket_default_options=age_bucket_default_options,
-                        gender_options=gender_options,
-                        living_setting_options=living_setting_options,
-                        profession_options=profession_options,
-                        only_responses_from_categories_options=only_responses_from_categories_options,
-                        only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-                    )
+                # Extract texts
+                translator.apply_t_filter_options(
+                    t=translator.extract_text,
+                    country_options=country_options,
+                    country_region_options=country_region_options,
+                    country_province_options=country_province_options,
+                    response_topic_options=response_topic_options,
+                    age_options=age_options,
+                    age_bucket_options=age_bucket_options,
+                    age_bucket_default_options=age_bucket_default_options,
+                    gender_options=gender_options,
+                    living_setting_options=living_setting_options,
+                    profession_options=profession_options,
+                    only_responses_from_categories_options=only_responses_from_categories_options,
+                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
+                )
 
-                    # Translate extracted texts
-                    translator.translate_extracted_texts()
+                # Translate extracted texts
+                translator.translate_extracted_texts()
 
-                    # Get translations
-                    translations_result = translator.apply_t_filter_options(
-                        t=translator.translate_text,
-                        country_options=country_options,
-                        country_region_options=country_region_options,
-                        country_province_options=country_province_options,
-                        response_topic_options=response_topic_options,
-                        age_options=age_options,
-                        age_bucket_options=age_bucket_options,
-                        age_bucket_default_options=age_bucket_default_options,
-                        gender_options=gender_options,
-                        living_setting_options=living_setting_options,
-                        profession_options=profession_options,
-                        only_responses_from_categories_options=only_responses_from_categories_options,
-                        only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
-                    )
+                # Get translations
+                translations_result = translator.apply_t_filter_options(
+                    t=translator.translate_text,
+                    country_options=country_options,
+                    country_region_options=country_region_options,
+                    country_province_options=country_province_options,
+                    response_topic_options=response_topic_options,
+                    age_options=age_options,
+                    age_bucket_options=age_bucket_options,
+                    age_bucket_default_options=age_bucket_default_options,
+                    gender_options=gender_options,
+                    living_setting_options=living_setting_options,
+                    profession_options=profession_options,
+                    only_responses_from_categories_options=only_responses_from_categories_options,
+                    only_multi_word_phrases_containing_filter_term_options=only_multi_word_phrases_containing_filter_term_options,
+                )
 
-                    # Apply translations to texts
-                    country_options = translations_result["country_options"]
-                    country_region_options = translations_result[
-                        "country_region_options"
+                # Apply translations to texts
+                country_options = translations_result["country_options"]
+                country_region_options = translations_result["country_region_options"]
+                country_province_options = translations_result[
+                    "country_province_options"
+                ]
+                response_topic_options = translations_result["response_topic_options"]
+                age_options = translations_result["age_options"]
+                age_bucket_options = translations_result["age_bucket_options"]
+                age_bucket_default_options = translations_result[
+                    "age_bucket_default_options"
+                ]
+                gender_options = translations_result["gender_options"]
+                living_setting_options = translations_result["living_setting_options"]
+                profession_options = translations_result["profession_options"]
+                only_responses_from_categories_options = translations_result[
+                    "only_responses_from_categories_options"
+                ]
+                only_multi_word_phrases_containing_filter_term_options = (
+                    translations_result[
+                        "only_multi_word_phrases_containing_filter_term_options"
                     ]
-                    country_province_options = translations_result[
-                        "country_province_options"
-                    ]
-                    response_topic_options = translations_result[
-                        "response_topic_options"
-                    ]
-                    age_options = translations_result["age_options"]
-                    age_bucket_options = translations_result["age_bucket_options"]
-                    age_bucket_default_options = translations_result[
-                        "age_bucket_default_options"
-                    ]
-                    gender_options = translations_result["gender_options"]
-                    living_setting_options = translations_result[
-                        "living_setting_options"
-                    ]
-                    profession_options = translations_result["profession_options"]
-                    only_responses_from_categories_options = translations_result[
-                        "only_responses_from_categories_options"
-                    ]
-                    only_multi_word_phrases_containing_filter_term_options = (
-                        translations_result[
-                            "only_multi_word_phrases_containing_filter_term_options"
-                        ]
-                    )
+                )
             except (Exception,) as e:
                 logger.warning(
                     f"An error occurred during translation of filter_options: {str(e)}"
@@ -668,27 +658,26 @@ class CampaignService:
             ]
 
         # Translate
-        if settings.TRANSLATIONS_ENABLED:
+        if settings.TRANSLATIONS_ENABLED and self.__language != "en":
             try:
-                if self.__language != "en" and TranslationsCache().is_loaded():
-                    translator = Translator(cloud_service=CLOUD_SERVICE)
-                    translator.set_target_language(target_language=self.__language)
+                translator = Translator(cloud_service=CLOUD_SERVICE)
+                translator.set_target_language(target_language=self.__language)
 
-                    # Extract texts
-                    translator.apply_t_histogram_options(
-                        translator.extract_text, options=options
-                    )
+                # Extract texts
+                translator.apply_t_histogram_options(
+                    translator.extract_text, options=options
+                )
 
-                    # Translate extracted texts
-                    translator.translate_extracted_texts()
+                # Translate extracted texts
+                translator.translate_extracted_texts()
 
-                    # Get translations
-                    translations_result = translator.apply_t_histogram_options(
-                        translator.translate_text, options=options
-                    )
+                # Get translations
+                translations_result = translator.apply_t_histogram_options(
+                    translator.translate_text, options=options
+                )
 
-                    # Apply translations to texts
-                    options = translations_result["options"]
+                # Apply translations to texts
+                options = translations_result["options"]
             except (Exception,) as e:
                 logger.warning(
                     f"An error occurred during translation of histogram_options: {str(e)}"

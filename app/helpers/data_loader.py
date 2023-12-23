@@ -421,9 +421,9 @@ def load_initial_data():
 
     try:
         # Load data
+        load_translations_cache()
         load_campaigns_data()
         load_region_coordinates()
-        load_translations_cache()
     except (Exception,) as e:
         logger.error(f"An error occurred while loading initial data: {str(e)}")
 

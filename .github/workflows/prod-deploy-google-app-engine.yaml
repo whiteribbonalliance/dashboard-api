@@ -1,4 +1,4 @@
-name: "Prod: Google App Engine, Build and deploy dashboard API"
+name: "Prod: Google App Engine - Build and deploy dashboard API"
 
 
 on:

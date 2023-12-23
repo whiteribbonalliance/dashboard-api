@@ -56,7 +56,7 @@ api_cache = ApiCache()
 def read_campaigns_merged(
     campaign_req: CampaignRequest,
     _request: Request,
-    language: str = Depends(dependencies.language_check),
+    lang: str = Depends(dependencies.language_check),
 ):
     """Read campaigns merged"""
 
@@ -77,7 +77,7 @@ def read_campaigns_merged(
             # Campaign service
             campaign_service = CampaignService(
                 campaign_code=campaign_config.campaign_code,
-                language=language,
+                language=lang,
                 filter_1=filter_1,
                 filter_2=filter_2,
             )
@@ -94,7 +94,7 @@ def read_campaigns_merged(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        language=language,
+        language=lang,
         campaigns_data=campaigns,
         filter_1=filter_1,
         filter_2=filter_2,
@@ -113,7 +113,7 @@ def read_campaigns_merged(
 )
 @api_cache.cache_response
 def read_filter_options(
-    _request: Request, language: str = Depends(dependencies.language_check)
+    _request: Request, lang: str = Depends(dependencies.language_check)
 ):
     """Read filter options for campaigns merged"""
 
@@ -122,7 +122,7 @@ def read_filter_options(
     for campaign_config in CAMPAIGNS_CONFIG.values():
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_config.campaign_code, language=language
+            campaign_code=campaign_config.campaign_code, language=lang
         )
 
         # Filter options
@@ -131,7 +131,7 @@ def read_filter_options(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        language=language, campaigns_filter_options=campaigns_filter_options
+        language=lang, campaigns_filter_options=campaigns_filter_options
     )
 
     # Filter options
@@ -147,7 +147,7 @@ def read_filter_options(
 )
 @api_cache.cache_response
 def histogram_options(
-    _request: Request, language: str = Depends(dependencies.language_check)
+    _request: Request, lang: str = Depends(dependencies.language_check)
 ):
     """Read histogram options for campaign"""
 
@@ -156,7 +156,7 @@ def histogram_options(
     for campaign_config in CAMPAIGNS_CONFIG.values():
         # Campaign service
         campaign_service = CampaignService(
-            campaign_code=campaign_config.campaign_code, language=language
+            campaign_code=campaign_config.campaign_code, language=lang
         )
 
         # Histogram options
@@ -165,7 +165,7 @@ def histogram_options(
 
     # Service
     campaigns_merged_service = CampaignsMergedService(
-        language=language,
+        language=lang,
         campaigns_histogram_options=campaigns_histogram_options,
     )
 

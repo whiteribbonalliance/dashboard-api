@@ -69,7 +69,7 @@ def read_campaign(
     campaign_req: CampaignRequest,
     _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    language: str = Depends(dependencies.language_check),
+    lang: str = Depends(dependencies.language_check),
     q_code: str = Depends(dependencies.q_code_check),
     response_year: str = Depends(dependencies.response_year_check),
 ):
@@ -84,7 +84,7 @@ def read_campaign(
     campaign_service = CampaignService(
         campaign_code=campaign_code,
         response_year=response_year,
-        language=language,
+        language=lang,
         filter_1=filter_1,
         filter_2=filter_2,
     )
@@ -104,14 +104,14 @@ def read_campaign(
 def read_filter_options(
     _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    language: str = Depends(dependencies.language_check),
+    lang: str = Depends(dependencies.language_check),
 ):
     """
     Read filter options for campaign.
     """
 
     # Service
-    campaign_service = CampaignService(campaign_code=campaign_code, language=language)
+    campaign_service = CampaignService(campaign_code=campaign_code, language=lang)
 
     # Filter options
     filter_options = campaign_service.get_filter_options()
@@ -128,14 +128,14 @@ def read_filter_options(
 def read_histogram_options(
     _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    language: str = Depends(dependencies.language_check),
+    lang: str = Depends(dependencies.language_check),
 ):
     """
     Read histogram options for campaign.
     """
 
     # Service
-    campaign_service = CampaignService(campaign_code=campaign_code, language=language)
+    campaign_service = CampaignService(campaign_code=campaign_code, language=lang)
 
     # Histogram options
     histogram_options = campaign_service.get_histogram_options()

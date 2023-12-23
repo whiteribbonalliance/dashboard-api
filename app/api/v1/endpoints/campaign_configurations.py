@@ -53,7 +53,7 @@ init_custom_logger(logger)
 )
 @api_cache.cache_response
 def read_campaigns_configurations(
-    _request: Request, language: str = Depends(dependencies.language_check)
+    _request: Request, lang: str = Depends(dependencies.language_check)
 ):
     """
     Read campaigns configurations.
@@ -82,10 +82,10 @@ def read_campaigns_configurations(
             )
 
         # Translate
-        if settings.TRANSLATIONS_ENABLED:
+        if settings.TRANSLATIONS_ENABLED and lang != "en":
             try:
                 translator = Translator(
-                    target_language=language, cloud_service=settings.CLOUD_SERVICE
+                    target_language=lang, cloud_service=settings.CLOUD_SERVICE
                 )
                 e = translator.extract_text
                 t = translator.translate_text
@@ -94,11 +94,11 @@ def read_campaigns_configurations(
                 for configuration in configurations:
                     configuration.campaign_title = e(configuration.campaign_title)
                     configuration.campaign_subtext = e(configuration.campaign_subtext)
+                    configuration.site_title = e(configuration.site_title)
+                    configuration.site_description = e(configuration.site_description)
                     configuration.respondent_noun_singular = e(
                         configuration.respondent_noun_singular
                     )
-                    configuration.site_title = e(configuration.site_description)
-                    configuration.site_description = e(configuration.site_description)
                     configuration.respondent_noun_plural = e(
                         configuration.respondent_noun_plural
                     )
@@ -109,15 +109,14 @@ def read_campaigns_configurations(
                 for configuration in configurations:
                     configuration.campaign_title = t(configuration.campaign_title)
                     configuration.campaign_subtext = t(configuration.campaign_subtext)
+                    configuration.site_title = t(configuration.site_title)
+                    configuration.site_description = t(configuration.site_description)
                     configuration.respondent_noun_singular = t(
                         configuration.respondent_noun_singular
                     )
-                    configuration.site_title = t(configuration.site_description)
-                    configuration.site_description = t(configuration.site_description)
                     configuration.respondent_noun_plural = t(
                         configuration.respondent_noun_plural
                     )
-
             except (Exception,) as e:
                 logger.warning(
                     f"An error occurred during translation of campaign config: {str(e)}"
@@ -137,7 +136,7 @@ def read_campaigns_configurations(
 def read_campaign_configuration(
     _request: Request,
     campaign_code: str = Depends(dependencies.campaign_code_exists_check),
-    language: str = Depends(dependencies.language_check),
+    lang: str = Depends(dependencies.language_check),
 ):
     """
     Read campaign configuration.
@@ -147,10 +146,10 @@ def read_campaign_configuration(
     if configuration:
         configuration = copy.deepcopy(configuration)
         # Translate
-        if settings.TRANSLATIONS_ENABLED:
+        if settings.TRANSLATIONS_ENABLED and lang != "en":
             try:
                 translator = Translator(
-                    target_language=language, cloud_service=settings.CLOUD_SERVICE
+                    target_language=lang, cloud_service=settings.CLOUD_SERVICE
                 )
                 e = translator.extract_text
                 t = translator.translate_text
@@ -158,11 +157,11 @@ def read_campaign_configuration(
                 # Extract
                 configuration.campaign_title = e(configuration.campaign_title)
                 configuration.campaign_subtext = e(configuration.campaign_subtext)
+                configuration.site_title = e(configuration.site_title)
+                configuration.site_description = e(configuration.site_description)
                 configuration.respondent_noun_singular = e(
                     configuration.respondent_noun_singular
                 )
-                configuration.site_title = e(configuration.site_description)
-                configuration.site_description = e(configuration.site_description)
                 configuration.respondent_noun_plural = e(
                     configuration.respondent_noun_plural
                 )
@@ -172,11 +171,11 @@ def read_campaign_configuration(
                 # Apply translations
                 configuration.campaign_title = t(configuration.campaign_title)
                 configuration.campaign_subtext = t(configuration.campaign_subtext)
+                configuration.site_title = t(configuration.site_title)
+                configuration.site_description = t(configuration.site_description)
                 configuration.respondent_noun_singular = t(
                     configuration.respondent_noun_singular
                 )
-                configuration.site_title = t(configuration.site_description)
-                configuration.site_description = t(configuration.site_description)
                 configuration.respondent_noun_plural = t(
                     configuration.respondent_noun_plural
                 )
