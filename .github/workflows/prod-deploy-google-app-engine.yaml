@@ -47,7 +47,7 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: gcr.io/deft-stratum-290216/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
+          tags: gcr.io/${{ secrets.PROJECT_ID }}/dashboardapi:${{ github.sha }}
 
       - name: Deploy
-        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
+        run: gcloud app deploy --image-url=gcr.io/${{ secrets.PROJECT_ID }}/dashboardapi:${{ github.sha }}
