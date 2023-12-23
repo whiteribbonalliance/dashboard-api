@@ -2,7 +2,7 @@ service: www-dashboard-api
 runtime: custom
 env: flex
 
-# For manual deployment, replace the variables starting with $ to your own values
+# For manual deployment, replace the variables starting with $ with your own values
 env_variables:
   # Required
   STAGE: $STAGE
