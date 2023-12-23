@@ -64,6 +64,11 @@ jobs:
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
 
+      - name: Include credentials
+        run: |
+          touch credentials.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
+
       - name: 'Configure Docker'
         run: 'gcloud auth configure-docker'
 
