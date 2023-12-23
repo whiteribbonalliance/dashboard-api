@@ -201,7 +201,7 @@ For deployment, it is also required to add the following environment variables t
 - `SERVICE_ACCOUNT=` The Google Cloud service account.
 - `PROJECT_ID=` The Google Cloud project id.
 
-Modify resources in `app.yaml` as needed.
+Add/Modify `resources` in `app.yaml` as needed.
 
 The GitHub action at `.github/workflows/prod-deploy-google-app-engine.yaml` will trigger a deployment to Google App
 Engine on push or merge.
