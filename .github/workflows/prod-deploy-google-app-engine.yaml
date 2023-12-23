@@ -67,8 +67,8 @@ jobs:
 
       - name: Include credentials
         run: |
-          touch credentials.json
-          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
+          touch credentials_prod.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials_prod.json
 
       - name: 'Configure Docker'
         run: 'gcloud auth configure-docker'
