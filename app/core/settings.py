@@ -63,6 +63,8 @@ class Settings(BaseSettings):
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
     COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
+    GOOGLE_APPLICATION_CREDENTIALS: str = GOOGLE_APPLICATION_CREDENTIALS
+    API_PREFIX: str = ApiPrefix.v1.value
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
     NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL")
@@ -92,9 +94,6 @@ class Settings(BaseSettings):
 
     # Only for legacy campaigns
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
-
-    GOOGLE_APPLICATION_CREDENTIALS: str = GOOGLE_APPLICATION_CREDENTIALS
-    API_PREFIX: str = ApiPrefix.v1.value
 
 
 class DevSettings(Settings):

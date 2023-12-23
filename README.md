@@ -151,7 +151,8 @@ the `dashboard_path` defined in the config.
 ## Translations
 
 To allow translations with `Google Cloud Translation API` include the Google Cloud service account's `credentials.json`
-at the root of the project. For `Azure Translator` fill in the env variable `AZURE_TRANSLATOR_KEY`.
+at the root of the project (if deploying with one of the workflows, this file will be included from GitHub secrets).
+For `Azure Translator` fill in the env variable `AZURE_TRANSLATOR_KEY`.
 
 Set `TRANSLATIONS_ENABLED` to `True`.
 
