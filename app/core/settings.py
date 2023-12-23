@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
     COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
-    GOOGLE_CREDENTIALS: str = os.getenv("GOOGLE_CREDENTIALS")
+    GOOGLE_CREDENTIALS_JSON: str = os.getenv("GOOGLE_CREDENTIALS_JSON")
     API_PREFIX: str = ApiPrefix.v1.value
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")

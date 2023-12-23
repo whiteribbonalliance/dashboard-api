@@ -41,7 +41,7 @@ jobs:
           OWNER_LINK: ${{ secrets.OWNER_LINK }}
           COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
           COMPANY_LINK: ${{ secrets.COMPANY_LINK }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
         with:
@@ -51,7 +51,7 @@ jobs:
         id: 'auth'
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           project_id: ${{ secrets.PROJECT_ID }}
           export_environment_variables: true

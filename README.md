@@ -50,7 +50,7 @@ their respective dashboards by running the front-end.
 
 Google - `CLOUD_SERVICE=google`:
 
-- `GOOGLE_CREDENTIALS=` Content of credentials.json file.
+- `GOOGLE_CREDENTIALS_JSON=` Content of credentials.json file.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` The Google cloud storage bucket to load the CSV file from.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` The Google cloud storage bucket to temporarily cache
   download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
@@ -151,7 +151,7 @@ the `dashboard_path` defined in the config.
 
 ## Translations
 
-To allow translations with `Google Cloud Translation API` set `GOOGLE_CREDENTIALS`. For `Azure Translator`
+To allow translations with `Google Cloud Translation API` set `GOOGLE_CREDENTIALS_JSON`. For `Azure Translator`
 set `AZURE_TRANSLATOR_KEY`.
 
 Set `TRANSLATIONS_ENABLED` to `True`.
