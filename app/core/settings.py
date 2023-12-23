@@ -51,8 +51,8 @@ ALLOW_ORIGINS = list(filter(None, ALLOW_ORIGINS))
 
 class Settings(BaseSettings):
     STAGE: str = STAGE
-    HOST: str = os.getenv("HOST")
-    PORT: int = int(os.getenv("PORT", 8000))
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
     VERSION: str = "1.0.0"
     OWNER_NAME: str = os.getenv("OWNER_NAME", "")
     OWNER_LINK: str = os.getenv("OWNER_LINK", "")

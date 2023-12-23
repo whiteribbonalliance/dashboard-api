@@ -23,8 +23,6 @@ their respective dashboards by running the front-end.
 ### Required:
 
 - `STAGE=` prod or dev.
-- `HOST=` The host.
-- `PORT=` The port.
 - `ALLOW_ORIGINS=` Allow origins e.g. "https://example1.com https://example2.com"
 
 ### Optional:
@@ -193,6 +191,8 @@ inside `front_translations`. Copy the `languages` folder to the front-end projec
 Fork this repository and add the required environment variables to `Repository secrets` in GitHub. Add optional
 environment variables if needed. These variables will be loaded into `app.yaml`. To add `{CAMPAIGN_CODE}_PASSWORD=` you
 must manually add this to `Repository secrets` with the campaign code and reference it in `app.yaml`.
+
+Inside `app.yaml` change `service` to your service name on App Engine.
 
 For deployment, it is also required to add the following environment variables to `Repository secrets`:
 

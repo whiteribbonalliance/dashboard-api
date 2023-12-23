@@ -5,8 +5,6 @@ env: flex
 env_variables:
   # Required
   STAGE: ${{ secrets.STAGE }}
-  HOST: ${{ secrets.HOST }}
-  PORT: ${{ secrets.PORT }}
   ALLOW_ORIGINS: ${{ secrets.ALLOW_ORIGINS }}
 
   # Optional
