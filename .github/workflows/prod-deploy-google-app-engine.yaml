@@ -21,6 +21,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Include credentials
+        run: |
+          touch credentials.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
+
       - name: Setup Google Cloud CLI
         id: 'auth'
         uses: google-github-actions/auth@v1
