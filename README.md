@@ -206,6 +206,10 @@ Add/Modify `resources` in `app.yaml` as needed.
 The GitHub action at `.github/workflows/prod-deploy-google-app-engine.yaml` will trigger a deployment to Google App
 Engine on push or merge.
 
+There is also a manual Google App Engine deployment file set up in `app.yaml`. You can deploy manually from the command
+line using `gcloud app deploy app.yaml` (you must directly include the env variables in `app.yaml`). You need to install
+Google Cloud CLI (Command Line Interface) and be authenticated on the Google Cloud Platform service account
+
 ## PMNCH - Azure deployment
 
 Because of organization policies, the dashboard at `https://whatyoungpeoplewant.whiteribbonalliance.org` should be
