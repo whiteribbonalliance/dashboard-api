@@ -20,50 +20,53 @@ their respective dashboards by running the front-end.
 
 ## Environment variables:
 
-- `STAGE=` Required - prod or dev.
-- `HOST=` Required - The host.
-- `PORT=` Required - The port.
-- `ALLOW_ORIGINS=` Required - Allow origins e.g. "https://example1.com https://example2.com"
-- `APP_TITLE=` Optional - App title.
-- `APP_DESCRIPTION=` Optional - App description.
-- `ACCESS_TOKEN_SECRET_KEY=` Optional - Secret key for JWT encoding - Used for all protected paths
+### Required:
+
+- `STAGE=` prod or dev.
+- `HOST=` The host.
+- `PORT=` The port.
+- `ALLOW_ORIGINS=` Allow origins e.g. "https://example1.com https://example2.com"
+
+### Optional:
+
+- `ACCESS_TOKEN_SECRET_KEY=` Secret key for JWT encoding - Used for all protected paths
   e.g. `/api/v1/campaigns/{campaign_code}/data/`.
-- `NEWRELIC_API_KEY=` Optional - The New Relic API key.
-- `NEW_RELIC_URL=` Optional - The New Relic URL.
-- `TRANSLATIONS_ENABLED=` Optional - True or False.
-- `CLOUD_SERVICE=` Optional - `google` or `azure`. The cloud service will be used for translations if enabled, loading
+- `NEWRELIC_API_KEY=` The New Relic API key.
+- `NEW_RELIC_URL=` The New Relic URL.
+- `TRANSLATIONS_ENABLED=` True or False.
+- `CLOUD_SERVICE=` `google` or `azure`. The cloud service will be used for translations if enabled, loading
   CSV files if you choose to do so from the cloud, and caching CSV files for downloading. Must be set if using any of
   the functionalities mentioned.
-- `GOOGLE_MAPS_API_KEY=` Optional - Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
+- `GOOGLE_MAPS_API_KEY=` Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
   are found (when new data is added to these campaigns).
-- `INCLUDE_ALLCAMPAIGNS=` Optional - Allow displaying dashboard of all data merged together at `allcampaigns`.
-- `RELOAD_DATA_EVERY_12TH_HOUR=` Optional - True or False. Allows reloading CSV file from source every 12th hour.
-- `{CAMPAIGN_CODE}_PASSWORD=` Optional - A password for accessing protected paths of a campaign
+- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `allcampaigns`.
+- `RELOAD_DATA_EVERY_12TH_HOUR=` True or False. Allows reloading CSV file from source every 12th hour.
+- `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
-- `ADMIN_DASHBOARD_PASSWORD=` Optional - Admin password for accessing protected paths all campaigns when logging in with
+- `ADMIN_DASHBOARD_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
   username `admin`.
-- `OWNER_NAME=` Optional - Owner name - to display in footer.
-- `ONWER_LINK=` Optional - Owner link - to display in footer.
-- `COMPANY_NAME=` Optional - Company name - to display in footer.
-- `COMPANY_LINK=` Optional - Company link - to display in footer.
+- `OWNER_NAME=` Owner name - to display in footer.
+- `OWNER_LINK=` Owner link - to display in footer.
+- `COMPANY_NAME=` Company name - to display in footer.
+- `COMPANY_LINK=` Company link - to display in footer.
 
 Google - `CLOUD_SERVICE=google`:
 
-- `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` Optional - The Google cloud storage bucket to load the CSV file from.
-- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` Optional - The Google cloud storage bucket to temporarily cache
+- `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` The Google cloud storage bucket to load the CSV file from.
+- `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` The Google cloud storage bucket to temporarily cache
   download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
   or `/api/v1/campaigns/{campaign_code}/data/public`.
 
 Azure - `CLOUD_SERVICE=azure`:
 
-- `AZURE_TRANSLATOR_KEY=` Optional - The Azure translator key.
-- `AZURE_STORAGE_ACCOUNT_NAME=` Optional - The Azure storage account name.
-- `AZURE_STORAGE_CONTAINER_FILE=` Optional - The Azure storage container to load the CSV file from.
-- `AZURE_STORAGE_CONTAINER_TMP_DATA=` Optional - The Azure storage container to temporarily cache download
+- `AZURE_TRANSLATOR_KEY=` The Azure translator key.
+- `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
+- `AZURE_STORAGE_CONTAINER_FILE=` The Azure storage container to load the CSV file from.
+- `AZURE_STORAGE_CONTAINER_TMP_DATA=` The Azure storage container to temporarily cache download
   data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
   or `/api/v1/campaigns/{campaign_code}/data/public`.
-- `AZURE_STORAGE_ACCOUNT_KEY=` Optional - The Azure storage account key.
-- `AZURE_STORAGE_CONNECTION_STRING=` Optional - The Azure storage connection string.
+- `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
+- `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
 
 ## System requirements
 
@@ -184,6 +187,22 @@ Once translations have been applied, a new folder called `languages` should have
 inside `front_translations`. Copy the `languages` folder to the front-end project at `src/app/i18n`.
 
 *Note: Only texts that have not been translated yet will be translated and saved to `translations.json`.*
+
+## Deployment to Google App Engine
+
+Fork this repository and add the required environment variables to `Repository secrets` in GitHub. Add optional
+environment variables if needed. These variables will be loaded into `app.yaml`. To add `{CAMPAIGN_CODE}_PASSWORD=` you
+must manually add this to `Repository secrets` with the campaign code and reference it in `app.yaml`.
+
+For deployment, it is also required to add the following environment variables to `Repository secrets`:
+
+- `SERVICE_NAME=` The service name in App Engine.
+- `GOOGLE_CREDENTIALS=` credentials.json file.
+
+Modify resources in `app.yaml` as needed.
+
+The GitHub action at `.github/workflows/prod-deploy-google-app-engine.yaml` will trigger a deployment to Google App
+Engine on push or merge.
 
 ## PMNCH - Azure deployment
 

@@ -12,9 +12,6 @@ on:
       - '**/README.md'
   workflow_dispatch:
 
-env:
-  IMAGE_NAME: wwwdashboardapi
-
 jobs:
 
   build:
@@ -49,7 +46,7 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: gcr.io/deft-stratum-290216/wwwdashboardapi:${{ github.sha }}
+          tags: gcr.io/deft-stratum-290216/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy
-        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/wwwdashboardapi:${{ github.sha }}
+        run: gcloud app deploy --image-url=gcr.io/deft-stratum-290216/${{ secrets.SERVICE_NAME }}:${{ github.sha }}

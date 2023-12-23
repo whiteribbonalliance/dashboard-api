@@ -54,8 +54,6 @@ class Settings(BaseSettings):
     HOST: str = os.getenv("HOST")
     PORT: int = int(os.getenv("PORT", 8000))
     VERSION: str = "1.0.0"
-    APP_TITLE: str = os.getenv("APP_TITLE", "Dashboard")
-    APP_DESCRIPTION: str = os.getenv("APP_DESCRIPTION", "Dashboard")
     OWNER_NAME: str = os.getenv("OWNER_NAME", "")
     OWNER_LINK: str = os.getenv("OWNER_LINK", "")
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")

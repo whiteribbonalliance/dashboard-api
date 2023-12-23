@@ -85,8 +85,8 @@ tags_metadata = [
 ]
 
 app_fastapi = FastAPI(
-    title=settings.APP_TITLE,
-    description=settings.APP_DESCRIPTION,
+    title="Dashboard API",
+    description="This API is used for providing campaign data to display in a dashboard.",
     version=settings.VERSION,
     docs_url="/docs",
     openapi_tags=tags_metadata,

@@ -1,0 +1,43 @@
+service: ${{ secrets.SERVICE_NAME }}
+runtime: custom
+env: flex
+
+env_variables:
+  # Required
+  STAGE: ${{ secrets.STAGE }}
+  HOST: ${{ secrets.HOST }}
+  PORT: ${{ secrets.PORT }}
+  ALLOW_ORIGINS: ${{ secrets.ALLOW_ORIGINS }}
+
+  # Optional
+  ACCESS_TOKEN_SECRET_KEY: ${{ secrets.ACCESS_TOKEN_SECRET_KEY }}
+  NEW_RELIC_URL: ${{ secrets.NEW_RELIC_URL }}
+  NEWRELIC_API_KEY: ${{ secrets.NEWRELIC_API_KEY }}
+  TRANSLATIONS_ENABLED: ${{ secrets.TRANSLATIONS_ENABLED }}
+  CLOUD_SERVICE: google
+  GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+  INCLUDE_ALLCAMPAIGNS: ${{ secrets.INCLUDE_ALLCAMPAIGNS }}
+  RELOAD_DATA_EVERY_12TH_HOUR: ${{ secrets.RELOAD_DATA_EVERY_12TH_HOUR }}
+  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_LINK: ${{ secrets.OWNER_LINK }}
+  COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
+  COMPANY_LINK: ${{ secrets.COMPANY_LINK }}
+  GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
+  GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
+
+manual_scaling:
+  instances: 1
+
+resources:
+  cpu: 4
+  memory_gb: 7.5
+  disk_size_gb: 10
+
+# Force https and redirect http to https
+handlers:
+  - url: /.*
+    secure: always
+    redirect_http_response_code: 301
+    script: auto
+
