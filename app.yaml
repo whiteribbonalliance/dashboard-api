@@ -1,4 +1,4 @@
-service: ${{ secrets.SERVICE_NAME }}
+service: "${{ secrets.SERVICE_NAME }}"
 runtime: custom
 env: flex
 
