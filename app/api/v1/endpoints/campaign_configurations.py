@@ -72,12 +72,12 @@ def read_campaigns_configurations(
                     dashboard_path="allcampaigns",
                     campaign_title="Dashboard of Dashboards",
                     campaign_subtext="",
-                    site_title="Dashboard of Dashboards | White Ribbon Alliance",
+                    site_title="Dashboard of Dashboards",
                     site_description="All campaigns",
                     respondent_noun_singular="respondent",
                     respondent_noun_plural="respondents",
-                    video_link="https://www.youtube.com/watch?v=nBzide5J3Hk",
-                    about_us_link="https://whiteribbonalliance.org/movements/womens-health",
+                    video_link="",
+                    about_us_link="",
                 ),
             )
 
