@@ -35,7 +35,7 @@ STAGE = os.getenv("STAGE")
 if not STAGE:
     raise Exception("Stage should be dev or prod.")
 elif STAGE not in ["dev", "prod"]:
-    raise Exception("Stage should be dev or prod.")
+    raise Exception(f"Stage should be dev or prod, found {STAGE}.")
 
 # Check cloud service
 CLOUD_SERVICE = os.getenv("CLOUD_SERVICE", "").lower()
