@@ -198,6 +198,8 @@ For deployment, it is also required to add the following environment variables t
 
 - `SERVICE_NAME=` The service name in App Engine.
 - `GOOGLE_CREDENTIALS=` credentials.json file.
+- `SERVICE_ACCOUNT=` The service account.
+- `PROJECT_ID=` The project id.
 
 Modify resources in `app.yaml` as needed.
 
