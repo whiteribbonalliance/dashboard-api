@@ -193,7 +193,7 @@ Fork this repository and add the required environment variables to `Repository s
 environment variables if needed. These variables will be loaded into `app.yaml`. To add `{CAMPAIGN_CODE}_PASSWORD=` you
 must manually add this to `Repository secrets` with the campaign code and reference it in `app.yaml`.
 
-Inside `app.yaml` change `service` to your service name on App Engine.
+Optionally inside `app.yaml` change `service` to your service name on App Engine.
 
 For deployment, it is also required to add the following environment variables to `Repository secrets`:
 
