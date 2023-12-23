@@ -53,7 +53,6 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           project_id: ${{ secrets.PROJECT_ID }}
-          export_default_credentials: true
           export_environment_variables: true
           create_credentials_file: true
 
