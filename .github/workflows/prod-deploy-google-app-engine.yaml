@@ -54,6 +54,8 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           project_id: ${{ secrets.PROJECT_ID }}
           export_environment_variables: true
+          create_credentials_file: true
+          cleanup_credentials: false
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
