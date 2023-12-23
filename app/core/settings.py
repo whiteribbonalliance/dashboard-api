@@ -46,12 +46,6 @@ if CLOUD_SERVICE and CLOUD_SERVICE not in ["google", "azure"]:
 ALLOW_ORIGINS = os.getenv("ALLOW_ORIGINS", "").split(" ")
 ALLOW_ORIGINS = list(filter(None, ALLOW_ORIGINS))
 
-# Google credentials
-if STAGE == "prod":
-    GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-else:
-    GOOGLE_APPLICATION_CREDENTIALS = "credentials.json"
-
 
 class Settings(BaseSettings):
     STAGE: str = STAGE
@@ -63,7 +57,7 @@ class Settings(BaseSettings):
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
     COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
-    GOOGLE_APPLICATION_CREDENTIALS: str = GOOGLE_APPLICATION_CREDENTIALS
+    GOOGLE_APPLICATION_CREDENTIALS: str = "credentials.json"
     API_PREFIX: str = ApiPrefix.v1.value
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
