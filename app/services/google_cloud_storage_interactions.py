@@ -46,7 +46,7 @@ def get_storage_client() -> Client:
     """Get storage client"""
 
     credentials = service_account.Credentials.from_service_account_file(
-        filename="credentials.json",
+        filename=settings.GOOGLE_APPLICATION_CREDENTIALS,
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 

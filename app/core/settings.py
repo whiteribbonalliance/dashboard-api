@@ -41,12 +41,16 @@ elif STAGE not in ["dev", "prod"]:
 CLOUD_SERVICE = os.getenv("CLOUD_SERVICE", "").lower()
 if CLOUD_SERVICE and CLOUD_SERVICE not in ["google", "azure"]:
     raise Exception(f"Invalid cloud service: {CLOUD_SERVICE}.")
-if CLOUD_SERVICE == "google":
-    if not os.path.isfile("credentials.json"):
-        raise Exception("Required file credentials.json not found.")
 
+# Allow origins
 ALLOW_ORIGINS = os.getenv("ALLOW_ORIGINS", "").split(" ")
 ALLOW_ORIGINS = list(filter(None, ALLOW_ORIGINS))
+
+# Google credentials
+if STAGE == "prod":
+    GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+else:
+    GOOGLE_APPLICATION_CREDENTIALS = "credentials.json"
 
 
 class Settings(BaseSettings):
@@ -58,7 +62,6 @@ class Settings(BaseSettings):
     OWNER_LINK: str = os.getenv("OWNER_LINK", "")
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
     COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
-    API_PREFIX: str = ApiPrefix.v1.value
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
@@ -89,6 +92,9 @@ class Settings(BaseSettings):
 
     # Only for legacy campaigns
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY")
+
+    GOOGLE_APPLICATION_CREDENTIALS: str = GOOGLE_APPLICATION_CREDENTIALS
+    API_PREFIX: str = ApiPrefix.v1.value
 
 
 class DevSettings(Settings):

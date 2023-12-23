@@ -20,11 +20,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Include credentials
-        run: |
-          touch credentials.json
-          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
-
       - name: Set env variables to app.yaml
         uses: 73h/gae-app-yaml-replace-env-variables@v0.3
         env:
@@ -59,6 +54,7 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           project_id: ${{ secrets.PROJECT_ID }}
           export_default_credentials: true
+          create_credentials_file: true
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
