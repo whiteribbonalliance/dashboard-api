@@ -1020,9 +1020,10 @@ class CampaignService:
                 seen_codes = set()
 
                 for c in parent_category.split("/"):
-                    if c not in seen_codes:
-                        category_counter[c.strip()] += 1
-                    seen_codes.add(c)
+                    if c:
+                        if c not in seen_codes:
+                            category_counter[c.strip()] += 1
+                        seen_codes.add(c)
 
             responses_breakdown_data = category_counter_to_responses_breakdown_data(
                 category_counter
@@ -1058,15 +1059,19 @@ class CampaignService:
             category_counter = Counter()
             for canonical_code in df[canonical_code_col_name]:
                 for c in canonical_code.split("/"):
-                    # Only count sub-categories from only_parent_category
-                    if include_only_sub_categories_from_parent and only_parent_category:
+                    if c:
+                        # Only count sub-categories from only_parent_category
                         if (
-                            mapping_code_to_parent_category.get(c.strip())
-                            == only_parent_category
+                            include_only_sub_categories_from_parent
+                            and only_parent_category
                         ):
+                            if (
+                                mapping_code_to_parent_category.get(c.strip())
+                                == only_parent_category
+                            ):
+                                category_counter[c.strip()] += 1
+                        else:
                             category_counter[c.strip()] += 1
-                    else:
-                        category_counter[c.strip()] += 1
 
             responses_breakdown_data = category_counter_to_responses_breakdown_data(
                 category_counter
