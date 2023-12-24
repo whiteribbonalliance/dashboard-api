@@ -23,6 +23,7 @@ SOFTWARE.
 
 """
 
+import base64
 import json
 import logging
 from html import unescape
@@ -263,7 +264,7 @@ class Translator:
         """Get translation with Google"""
 
         credentials = service_account.Credentials.from_service_account_info(
-            info=json.loads(settings.GOOGLE_CREDENTIALS_JSON),
+            info=json.loads(base64.b64decode(settings.GOOGLE_CREDENTIALS_JSON)),
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
 

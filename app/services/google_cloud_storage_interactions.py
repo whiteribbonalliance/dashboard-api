@@ -23,6 +23,7 @@ SOFTWARE.
 
 """
 
+import base64
 import json
 import logging
 from datetime import datetime
@@ -47,7 +48,7 @@ def get_storage_client() -> Client:
     """Get storage client"""
 
     credentials = service_account.Credentials.from_service_account_info(
-        info=json.loads(settings.GOOGLE_CREDENTIALS_JSON),
+        info=json.loads(base64.b64decode(settings.GOOGLE_CREDENTIALS_JSON)),
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 
