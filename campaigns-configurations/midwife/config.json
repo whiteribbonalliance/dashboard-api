@@ -1,0 +1,52 @@
+{
+  "campaign_code": "midwife",
+  "dashboard_path": "midwivesvoices",
+  "campaign_title": "What Midwives Want",
+  "campaign_subtext": "We asked midwives around the world the question: “What do you want most in your role as a midwife?”",
+  "site_title": "What Midwives Want | White Ribbon Alliance",
+  "site_description": "What Women Want: What Midwives Want, led by White Ribbon Alliance (WRA) in collaboration with the International Confederation of Midwives (ICM), is a key companion to the What Women Want (WWW) campaign, which asked 1.2 million women and girls their top demand for quality reproductive and maternal healthcare.",
+  "file": {
+    "link": "https://wra.blob.core.windows.net/wra/midwife.csv"
+  },
+  "respondent_noun_singular": "respondent",
+  "respondent_noun_plural": "respondents",
+  "video_link": "https://www.youtube.com/watch?v=nBzide5J3Hk",
+  "about_us_link": "https://whiteribbonalliance.org/movements/womens-health",
+  "questions": {},
+  "parent_categories": [
+    {
+      "code": "",
+      "description": "",
+      "sub_categories": [
+        {
+          "code": "BETTERFACILITIESANDSUPPLIES",
+          "description": "Supplies and functional facilities"
+        },
+        {
+          "code": "DIGNITY",
+          "description": "Respect, dignity, and non-discrimination"
+        },
+        {
+          "code": "POLICY",
+          "description": "Power, autonomy and improved gender norms and policies"
+        },
+        {
+          "code": "HEALTHANDSERVICES",
+          "description": "General health and health services"
+        },
+        {
+          "code": "OTHER",
+          "description": "All other requests"
+        },
+        {
+          "code": "PROFDEV",
+          "description": "Professional development and leadership"
+        },
+        {
+          "code": "STAFFINGANDREMUNERATION",
+          "description": "More and better supported personnel"
+        }
+      ]
+    }
+  ]
+}
