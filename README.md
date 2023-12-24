@@ -50,7 +50,7 @@ their respective dashboards by running the front-end.
 
 Google - `CLOUD_SERVICE=google`:
 
-- `GOOGLE_CREDENTIALS_JSON=` Content of credentials.json file.
+- `GOOGLE_CREDENTIALS_JSON_B64=` Content of credentials.json file in `Base64` format.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` The Google cloud storage bucket to load the CSV file from.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` The Google cloud storage bucket to temporarily cache
   download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
@@ -151,8 +151,8 @@ the `dashboard_path` defined in the config.
 
 ## Translations
 
-To allow translations with `Google Cloud Translation API` set `GOOGLE_CREDENTIALS_JSON`. For `Azure Translator`
-set `AZURE_TRANSLATOR_KEY`.
+To allow translations with `Google Cloud Translation API` set `GOOGLE_CREDENTIALS_JSON_B64` (in `Base64` format).
+For `Azure Translator` set `AZURE_TRANSLATOR_KEY`.
 
 Set `TRANSLATIONS_ENABLED` to `True`.
 
@@ -198,7 +198,7 @@ Optionally inside `app.yaml` change `service` to your service name on App Engine
 
 For deployment, it is also required to add the following environment variables to `Repository secrets`:
 
-- `GOOGLE_CREDENTIALS_JSON=` Content of credentials.json file.
+- `GOOGLE_CREDENTIALS_JSON_B64=` Content of credentials.json file in `Base64` format.
 - `SERVICE_NAME=` The service name in App Engine.
 - `SERVICE_ACCOUNT=` The Google Cloud service account.
 - `PROJECT_ID=` The Google Cloud project id.
