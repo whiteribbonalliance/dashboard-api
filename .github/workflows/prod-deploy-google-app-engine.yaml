@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set env variables to app.yaml
-        uses: golang-enthusiast/app-yaml-env-compiler@v1.0
+        uses: 73h/gae-app-yaml-replace-env-variables@v0.3
         env:
           # Required
           STAGE: prod
@@ -44,6 +44,8 @@ jobs:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
+        with:
+          app_yaml_path: "app.yaml"
 
       - name: Setup Google Cloud CLI
         id: 'auth'
