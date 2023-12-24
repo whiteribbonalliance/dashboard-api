@@ -41,7 +41,7 @@ jobs:
           OWNER_LINK: ${{ secrets.OWNER_LINK }}
           COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
           COMPANY_LINK: ${{ secrets.COMPANY_LINK }}
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_CREDENTIALS_JSON: '${{ secrets.GOOGLE_CREDENTIALS_JSON }}'
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
         with:

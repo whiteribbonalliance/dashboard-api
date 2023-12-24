@@ -198,6 +198,7 @@ Optionally inside `app.yaml` change `service` to your service name on App Engine
 
 For deployment, it is also required to add the following environment variables to `Repository secrets`:
 
+- `GOOGLE_CREDENTIALS_JSON=` Content of credentials.json file.
 - `SERVICE_NAME=` The service name in App Engine.
 - `SERVICE_ACCOUNT=` The Google Cloud service account.
 - `PROJECT_ID=` The Google Cloud project id.
