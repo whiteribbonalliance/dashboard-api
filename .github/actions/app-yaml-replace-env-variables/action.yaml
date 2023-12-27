@@ -1,0 +1,14 @@
+name: "Replace secrets in Googles App Engine Deployment File"
+description: "Replace protectable environment variables in app.yaml file when deploying an application to Google's App Engine."
+author: "Heiko Schmidt"
+branding:
+  icon: "cloud"
+  color: "orange"
+inputs:
+  app_yaml_path:
+    description: "Path to app.yaml file."
+    required: false
+    default: "app.yaml"
+runs:
+  using: "docker"
+  image: "Dockerfile"

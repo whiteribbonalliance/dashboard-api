@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set env variables to app.yaml
-        uses: 73h/gae-app-yaml-replace-env-variables@v0.3
+        uses: ./.github/actions/app-yaml-replace-env-variables
         env:
           # Required
           STAGE: prod
