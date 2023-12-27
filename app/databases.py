@@ -138,7 +138,7 @@ def create_databases(campaign_codes: list[str]):
         databases_dict[campaign_code] = Database(
             user=UserInternal(
                 username=campaign_code,
-                password=os.getenv(f"{campaign_code}_PASSWORD", "").upper(),
+                password=os.getenv(f"{campaign_code.upper()}_PASSWORD", ""),
                 campaign_access=[campaign_code],
                 is_admin=False,
             ),
