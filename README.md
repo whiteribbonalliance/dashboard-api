@@ -46,9 +46,9 @@ their respective dashboards by running the front-end.
 - `ADMIN_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
   username `admin`.
 - `OWNER_NAME=` Owner name - To display in footer.
-- `OWNER_LINK=` Owner link - To display in footer.
+- `OWNER_URL=` Owner URL - To display in footer.
 - `COMPANY_NAME=` Company name - To display in footer.
-- `COMPANY_LINK=` Company link - To display in footer.
+- `COMPANY_URL=` Company URL - To display in footer.
 
 Google - `CLOUD_SERVICE=google`:
 
@@ -125,16 +125,16 @@ columns `q2_response` and `q2_canonical_code`.
     4. `campaign_subtext` Required - The campaign subtext.
     5. `site_title` Required - Title of the dashboard.
     6. `site_description` Required - A description of the dashboard.
-    7. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
-       defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
+    7. `file` Required - This can either be a local file in the config folder, a URL to the file, or from the cloud
+       service defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
        or `"file" : {"url" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
        in the CSV have to be lemmatized, read step 5. If you are using `cloud`, it is necessary to set `CLOUD_SERVICE`
        and fill in the env variables for `Google` or `Azure`. Upload the CSV file at `GOOGLE_CLOUD_STORAGE_BUCKET_FILE`
        or `AZURE_STORAGE_CONTAINER_FILE`.
     8. `respondent_noun_singular`: Optional - Respondent noun singular.
     9. `respondent_noun_plural`: Optional - Respondent noun plural.
-    10. `video_link` - Optional - A Link to a video related to the dashboard.
-    11. `about_us_link` - Optional - Link to a page about the campaign.
+    10. `video_url` - Optional - A url to a video related to the dashboard.
+    11. `about_us_url` - Optional - url to a page about the campaign.
     12. `questions` Optional - If there's more than one response included in the data, add the question that relates to
         it inside `config.json` at `questions` e.g. `"questions": {"q1": "Question 1", "q2" : "Question 2"}`, the user
         will be able to see the questions in the front-end and switch between responses.

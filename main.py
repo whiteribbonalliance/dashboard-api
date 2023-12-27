@@ -92,7 +92,7 @@ app_fastapi = FastAPI(
     openapi_tags=tags_metadata,
     contact={
         "name": settings.OWNER_NAME,
-        "url": settings.OWNER_LINK,
+        "url": settings.OWNER_URL,
     },
 )
 

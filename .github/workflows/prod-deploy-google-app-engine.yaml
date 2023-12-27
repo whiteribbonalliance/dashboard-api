@@ -38,9 +38,9 @@ jobs:
           RELOAD_DATA_EVERY_12TH_HOUR: ${{ secrets.RELOAD_DATA_EVERY_12TH_HOUR }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           OWNER_NAME: ${{ secrets.OWNER_NAME }}
-          OWNER_LINK: ${{ secrets.OWNER_LINK }}
+          OWNER_URL: ${{ secrets.OWNER_URL }}
           COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
-          COMPANY_LINK: ${{ secrets.COMPANY_LINK }}
+          COMPANY_URL: ${{ secrets.COMPANY_URL }}
           GOOGLE_CREDENTIALS_JSON_B64: ${{ secrets.GOOGLE_CREDENTIALS_JSON_B64 }}
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}

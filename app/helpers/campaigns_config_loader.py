@@ -76,7 +76,7 @@ for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
     # Check url
     if config.file.url:
         if not validators.url(config.file.url):
-            raise Exception(f"{config.file.url} is not a valid link.")
+            raise Exception(f"{config.file.url} is not a valid URL.")
 
     # Check CSV file
     if config.file.local:

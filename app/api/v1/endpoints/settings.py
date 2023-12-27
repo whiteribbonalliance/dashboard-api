@@ -39,7 +39,7 @@ def read_settings():
         translations_enabled=settings.TRANSLATIONS_ENABLED,
         cloud_service=settings.CLOUD_SERVICE,
         owner_name=settings.OWNER_NAME,
-        owner_link=settings.OWNER_LINK,
+        owner_url=settings.OWNER_URL,
         company_name=settings.COMPANY_NAME,
-        company_link=settings.COMPANY_LINK,
+        company_url=settings.COMPANY_URL,
     )

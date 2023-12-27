@@ -76,8 +76,8 @@ def read_campaigns_configurations(
                     site_description="All campaigns",
                     respondent_noun_singular="respondent",
                     respondent_noun_plural="respondents",
-                    video_link="",
-                    about_us_link="",
+                    video_url="",
+                    about_us_url="",
                 ),
             )
 

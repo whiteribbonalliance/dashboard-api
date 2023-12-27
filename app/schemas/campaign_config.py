@@ -47,11 +47,11 @@ class CampaignConfigBase(BaseModel):
     respondent_noun_plural: str = Field(
         min_length=1, default="respondents", description="Respondent noun plural."
     )
-    video_link: str = Field(
-        default="", description="A Link to a video related to the dashboard."
+    video_url: str = Field(
+        default="", description="A URL to a video related to the dashboard."
     )
-    about_us_link: str = Field(
-        default="", description="Link to a page about the campaign."
+    about_us_url: str = Field(
+        default="", description="A URL to a page about the campaign."
     )
 
     @validator("dashboard_path", pre=True)

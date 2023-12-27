@@ -55,9 +55,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     VERSION: str = "1.0.0"
     OWNER_NAME: str = os.getenv("OWNER_NAME", "")
-    OWNER_LINK: str = os.getenv("OWNER_LINK", "")
+    OWNER_URL: str = os.getenv("OWNER_URL", "")
     COMPANY_NAME: str = os.getenv("COMPANY_NAME", "")
-    COMPANY_LINK: str = os.getenv("COMPANY_LINK", "")
+    COMPANY_URL: str = os.getenv("COMPANY_URL", "")
     ACCESS_TOKEN_SECRET_KEY: str = os.getenv("ACCESS_TOKEN_SECRET_KEY")
     GOOGLE_CREDENTIALS: dict = json.loads(
         base64.b64decode(os.getenv("GOOGLE_CREDENTIALS_JSON_B64", "e30="))
