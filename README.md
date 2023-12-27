@@ -37,8 +37,8 @@ their respective dashboards by running the front-end.
   the functionalities mentioned.
 - `GOOGLE_MAPS_API_KEY=` Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
   are found (when new data is added to these campaigns).
-- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `/allcampaigns`.
-- `RELOAD_DATA_EVERY_12TH_HOUR=` Allows reloading CSV file from source every 12th hour.
+- `INCLUDE_ALLCAMPAIGNS=` True or False. Allow displaying dashboard of all data merged together at `/allcampaigns`.
+- `RELOAD_DATA_EVERY_12TH_HOUR=` True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
