@@ -64,7 +64,7 @@ class CampaignConfigBase(BaseModel):
 
 class File(BaseModel):
     local: Optional[str] = Field(default=None, description="Local file name.")
-    link: Optional[str] = Field(default=None, description="Direct link to file.")
+    url: Optional[str] = Field(default=None, description="URL to file.")
     cloud: Optional[str] = Field(default=None, description="Blob name.")
 
 

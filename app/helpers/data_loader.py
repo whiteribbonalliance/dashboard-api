@@ -271,9 +271,9 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
                 dtype=dtype,
             )
 
-        # From link
-        elif campaign_config.file.link:
-            response = requests.get(url=campaign_config.file.link)
+        # From url
+        elif campaign_config.file.url:
+            response = requests.get(url=campaign_config.file.url)
             if response.ok:
                 df = pd.read_csv(
                     filepath_or_buffer=StringIO(response.content.decode("utf-8")),

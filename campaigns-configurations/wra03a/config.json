@@ -6,7 +6,7 @@
   "site_title": "What Women Want | White Ribbon Alliance",
   "site_description": "We asked over a million women what they want. Explore our survey responses with our interactive dashboard!",
   "file": {
-    "link": "https://wra.blob.core.windows.net/wra/wra03a.csv"
+    "url": "https://wra.blob.core.windows.net/wra/wra03a.csv"
   },
   "respondent_noun_singular": "woman",
   "respondent_noun_plural": "women",

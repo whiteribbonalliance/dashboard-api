@@ -6,7 +6,7 @@
   "site_title": "Women's Health and Well Being | White Ribbon Alliance",
   "site_description": "We asked women around the world, what they want to improve their health and wellbeing.",
   "file": {
-    "link": "https://wra.blob.core.windows.net/wra/healthwellbeing.csv"
+    "url": "https://wra.blob.core.windows.net/wra/healthwellbeing.csv"
   },
   "questions": {},
   "respondent_noun_singular": "woman",

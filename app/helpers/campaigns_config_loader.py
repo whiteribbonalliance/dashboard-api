@@ -68,15 +68,15 @@ for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
 
     # Only one file location should be provided
     if (
-        sum([bool(config.file.local), bool(config.file.link), bool(config.file.cloud)])
+        sum([bool(config.file.local), bool(config.file.url), bool(config.file.cloud)])
         != 1
     ):
         raise Exception("Provide one file location.")
 
-    # Check link
-    if config.file.link:
-        if not validators.url(config.file.link):
-            raise Exception(f"{config.file.link} is not a valid link.")
+    # Check url
+    if config.file.url:
+        if not validators.url(config.file.url):
+            raise Exception(f"{config.file.url} is not a valid link.")
 
     # Check CSV file
     if config.file.local:

@@ -127,7 +127,7 @@ columns `q2_response` and `q2_canonical_code`.
     6. `site_description` Required - A description of the dashboard.
     7. `file` Required - This can either be a local file in the config folder, a direct link or from the cloud service
        defined in the env variables. e.g. `"file" : {"local" : "file.csv"}`
-       or `"file" : {"link" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
+       or `"file" : {"url" : "https://example.com/file.csv"}` or `"file" : {"cloud" : "blob_name.csv"}`. The responses
        in the CSV have to be lemmatized, read step 5. If you are using `cloud`, it is necessary to set `CLOUD_SERVICE`
        and fill in the env variables for `Google` or `Azure`. Upload the CSV file at `GOOGLE_CLOUD_STORAGE_BUCKET_FILE`
        or `AZURE_STORAGE_CONTAINER_FILE`.

@@ -6,7 +6,7 @@
   "site_title": "What Women Want Pakistan | White Ribbon Alliance",
   "site_description": "We asked 345,409 women in Pakistan, what they want to improve their health and wellbeing.",
   "file": {
-    "link": "https://wra.blob.core.windows.net/wra/wwwpakistan.csv"
+    "url": "https://wra.blob.core.windows.net/wra/wwwpakistan.csv"
   },
   "respondent_noun_singular": "woman",
   "respondent_noun_plural": "women",

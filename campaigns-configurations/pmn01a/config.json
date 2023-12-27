@@ -6,7 +6,7 @@
   "site_title": "Results Dashboard | PMNCH",
   "site_description": "What Young People Want Interactive Dashboard",
   "file": {
-    "link": "https://wra.blob.core.windows.net/wra/pmn01a.csv"
+    "url": "https://wra.blob.core.windows.net/wra/pmn01a.csv"
   },
   "respondent_noun_singular": "respondent",
   "respondent_noun_plural": "respondents",
