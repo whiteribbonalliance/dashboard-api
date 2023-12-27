@@ -78,6 +78,7 @@ def read_campaigns_configurations(
                     respondent_noun_plural="respondents",
                     video_url="",
                     about_us_url="",
+                    dashboard_url="",
                 ),
             )
 

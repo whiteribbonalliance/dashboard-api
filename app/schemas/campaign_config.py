@@ -53,6 +53,7 @@ class CampaignConfigBase(BaseModel):
     about_us_url: str = Field(
         default="", description="A URL to a page about the campaign."
     )
+    dashboard_url: str = Field(default="", description="A URL to this dashboard.")
 
     @validator("dashboard_path", pre=True)
     def dashboard_path_check(cls, v: str):
