@@ -99,18 +99,7 @@ class DevSettings(Settings):
     RELOAD: bool = True
     CORS: dict = {
         "allow_origins": ["*"],
-        "allow_credentials": True,
-        "allow_methods": ["*"],
-        "allow_headers": ["*"],
-    }
-
-
-class ProdSettings(Settings):
-    DEBUG: bool = False
-    RELOAD: bool = False
-    CORS: dict = {
-        "allow_origins": ALLOW_ORIGINS,
-        "allow_credentials": True,
+        "allow_credentials": False,
         "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
         "allow_headers": [
             "Access-Control-Allow-Headers",
@@ -120,7 +109,25 @@ class ProdSettings(Settings):
             "Access-Control-Max-Age",
             "Authorization",
             "Content-Type",
-            "Set-Cookie",
+        ],
+    }
+
+
+class ProdSettings(Settings):
+    DEBUG: bool = False
+    RELOAD: bool = False
+    CORS: dict = {
+        "allow_origins": ALLOW_ORIGINS,
+        "allow_credentials": False,
+        "allow_methods": ["GET", "POST", "OPTIONS", "HEAD"],
+        "allow_headers": [
+            "Access-Control-Allow-Headers",
+            "Access-Control-Allow-Methods",
+            "Access-Control-Allow-Credentials",
+            "Access-Control-Allow-Origin",
+            "Access-Control-Max-Age",
+            "Authorization",
+            "Content-Type",
         ],
     }
 
