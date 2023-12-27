@@ -2,9 +2,11 @@
 
 ## What does this API do?
 
-This API is used for providing campaign data to display in the front-end dashboard. Follow the steps at
-section `How to create a new campaign`. Once a new campaign configuration was added, the data will become available
-through the endpoints. For more information, continue reading the documentation below.
+This API is used for providing campaign data to display in the front-end dashboard. You can find the front-end repo
+at https://github.com/whiteribbonalliance/dashboard-front.
+
+Follow the steps at section `How to create a new campaign`. Once a new campaign configuration was added, the data will
+become available through the endpoints. For more information, continue reading the documentation below.
 
 There's currently six dashboards deployed with this project, you can visit them at:
 
