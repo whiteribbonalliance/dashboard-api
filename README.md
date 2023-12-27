@@ -190,7 +190,7 @@ inside `front_translations`. Copy the `languages` folder to the front-end projec
 
 ## Deployment to Google App Engine
 
-Fork this repository and add the required environment variables to `Repository secrets` in GitHub. Add optional
+Add the required environment variables to `Repository secrets` in GitHub. Add optional
 environment variables if needed. These variables will be loaded into `app.yaml`. To add `{CAMPAIGN_CODE}_PASSWORD=` you
 must manually add this to `Repository secrets` with the campaign code and reference it
 in `.github/workflows/prod-deploy-google-app-engine.yaml` and `app.yaml`.
@@ -215,7 +215,7 @@ authenticated on the Google Cloud Platform service account.
 
 ## Deployment to Azure Web Apps
 
-Fork this repository and add the required environment variables to `Application settings` in the Azure web app. Add
+Add the required environment variables to `Application settings` in the Azure web app. Add
 optional environment variables if needed.
 
 For deployment, it is also required to add the following environment variables to `Repository secrets` in GitHub:
