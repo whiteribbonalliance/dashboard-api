@@ -42,13 +42,13 @@ their respective dashboards by running the front-end.
 - `INCLUDE_ALLCAMPAIGNS=` True or False. Allow displaying dashboard of all data merged together at `/allcampaigns`.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
-  e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
+  e.g. `MY_CAMPAIGN_PASSWORD=123QWE,./` for accessing the campaign with code `MY_CAMPAIGN` (must be capitalized).
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
   username `admin`.
-- `OWNER_NAME=` Owner name - to display in footer.
-- `OWNER_LINK=` Owner link - to display in footer.
-- `COMPANY_NAME=` Company name - to display in footer.
-- `COMPANY_LINK=` Company link - to display in footer.
+- `OWNER_NAME=` Owner name - To display in footer.
+- `OWNER_LINK=` Owner link - To display in footer.
+- `COMPANY_NAME=` Company name - To display in footer.
+- `COMPANY_LINK=` Company link - To display in footer.
 
 Google - `CLOUD_SERVICE=google`:
 

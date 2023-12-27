@@ -44,6 +44,13 @@ jobs:
           GOOGLE_CREDENTIALS_JSON_B64: ${{ secrets.GOOGLE_CREDENTIALS_JSON_B64 }}
           GOOGLE_CLOUD_STORAGE_BUCKET_FILE: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_FILE }}
           GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA }}
+
+          WRA03A_PASSWORD: ${{ secrets.WRA03A_PASSWORD }}
+          WWWPAKISTAN_PASSWORD: ${{ secrets.WWWPAKISTAN_PASSWORD }}
+          PMN01A_PASSWORD: ${{ secrets.PMN01A_PASSWORD }}
+          MIDWIFE_PASSWORD: ${{ secrets.MIDWIFE_PASSWORD }}
+          HEALTHWELLBEING_PASSWORD: ${{ secrets.HEALTHWELLBEING_PASSWORD }}
+          GIZ_PASSWORD: ${{ secrets.GIZ_PASSWORD }}
         with:
           app_yaml_path: "app.yaml"
 
