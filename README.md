@@ -212,15 +212,15 @@ authenticated on the Google Cloud Platform service account.
 
 ## Deployment to Azure Web Apps
 
-Fork this repository and add the required environment variables to `Application settings` in the web app. Add optional
-environment variables if needed.
+Fork this repository and add the required environment variables to `Application settings` in the Azure web app. Add
+optional environment variables if needed.
 
 For deployment, it is also required to add the following environment variables to `Repository secrets` in GitHub:
 
 - `AZURE_WEBAPP_PUBLISH_PROFILE=` The publish profile of your web app.
 - `AZURE_WEBAPP_NAME=` The web app name.
 
-The GitHub action at `.github/workflows/prod-pmnch-deploy-azure-webapps.yaml` will trigger a deployment to Azure Web
+The GitHub action at `.github/workflows/prod-deploy-azure-webapps.yaml` will trigger a deployment to Azure Web
 App on push or merge.
 
 #### Workflows
