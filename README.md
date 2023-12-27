@@ -223,7 +223,7 @@ For deployment, it is also required to add the following environment variables t
 The GitHub action at `.github/workflows/prod-deploy-azure-webapps.yaml` will trigger a deployment to Azure Web
 App on push or merge.
 
-#### Workflows
+## Workflows
 
 In each repository there's two workflows (To deploy to `Google` or `Azure`), make sure to only enable the correct
 workflow in the repository
