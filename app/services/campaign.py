@@ -898,15 +898,13 @@ class CampaignService:
             q_code=q_code
         )
 
-        # Get unique parent categories from response_topics (filter_1 & filter_2)
+        # Get parent category if there is only one in the list
         unique_parent_categories = (
             self.__get_unique_parent_categories_from_response_topics()
         )
-
-        # Get only parent category if there is only one
-        only_parent_category = ""
+        only_parent_category_found = ""
         if len(unique_parent_categories) == 1:
-            only_parent_category = unique_parent_categories[0]
+            only_parent_category_found = unique_parent_categories[0]
 
         def responses_breakdown_to_list(
             all_codes: set[str],
@@ -1042,10 +1040,10 @@ class CampaignService:
             """
 
             # Only keep parent category from only_parent_category
-            if include_only_sub_categories_from_parent and only_parent_category:
+            if include_only_sub_categories_from_parent and only_parent_category_found:
                 df = df[
                     df[parent_category_col_name].str.contains(
-                        r"\b" + only_parent_category + r"\b", regex=True
+                        r"\b" + only_parent_category_found + r"\b", regex=True
                     )
                 ]
 
@@ -1063,11 +1061,11 @@ class CampaignService:
                         # Only count sub-categories from only_parent_category
                         if (
                             include_only_sub_categories_from_parent
-                            and only_parent_category
+                            and only_parent_category_found
                         ):
                             if (
                                 mapping_code_to_parent_category.get(c.strip())
-                                == only_parent_category
+                                == only_parent_category_found
                             ):
                                 category_counter[c.strip()] += 1
                         else:
@@ -1079,12 +1077,36 @@ class CampaignService:
 
             return responses_breakdown_data
 
-        # Responses breakdown (parent categories & sub-categories)
-        responses_breakdown_parent_1 = []
-        responses_breakdown_parent_2 = []
-        responses_breakdown_sub_1 = []
-        responses_breakdown_sub_2 = []
-        if self.__campaign_code != LegacyCampaignCode.wwwpakistan.value:
+        # Responses breakdown
+        if self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
+            # If there is one unique parent category, then get its sub-categories breakdown
+            if only_parent_category_found:
+                responses_breakdown_parent_1 = []
+                responses_breakdown_parent_2 = []
+                responses_breakdown_sub_1 = get_df_responses_breakdown_sub_categories(
+                    df=self.__get_df_1_copy(),
+                    include_only_sub_categories_from_parent=True,
+                )
+                responses_breakdown_sub_2 = get_df_responses_breakdown_sub_categories(
+                    df=self.__get_df_2_copy(),
+                    include_only_sub_categories_from_parent=True,
+                )
+
+            # Else get the parent categories breakdown
+            else:
+                responses_breakdown_parent_1 = (
+                    get_df_responses_breakdown_parent_categories(
+                        df=self.__get_df_1_copy()
+                    )
+                )
+                responses_breakdown_parent_2 = (
+                    get_df_responses_breakdown_parent_categories(
+                        df=self.__get_df_2_copy()
+                    )
+                )
+                responses_breakdown_sub_1 = []
+                responses_breakdown_sub_2 = []
+        else:
             responses_breakdown_parent_1 = get_df_responses_breakdown_parent_categories(
                 df=self.__get_df_1_copy()
             )
@@ -1098,38 +1120,6 @@ class CampaignService:
                 df=self.__get_df_2_copy()
             )
 
-        # Responses breakdown (parent categories or sub-categories)
-        responses_breakdown_parent_or_sub_1 = []
-        responses_breakdown_parent_or_sub_2 = []
-        if self.__campaign_code == LegacyCampaignCode.wwwpakistan.value:
-            # If there is one unique parent category, then get its sub-categories breakdown
-            if only_parent_category:
-                responses_breakdown_parent_or_sub_1 = (
-                    get_df_responses_breakdown_sub_categories(
-                        df=self.__get_df_1_copy(),
-                        include_only_sub_categories_from_parent=True,
-                    )
-                )
-                responses_breakdown_parent_or_sub_2 = (
-                    get_df_responses_breakdown_sub_categories(
-                        df=self.__get_df_2_copy(),
-                        include_only_sub_categories_from_parent=True,
-                    )
-                )
-
-            # Else get the parent categories breakdown
-            else:
-                responses_breakdown_parent_or_sub_1 = (
-                    get_df_responses_breakdown_parent_categories(
-                        df=self.__get_df_1_copy()
-                    )
-                )
-                responses_breakdown_parent_or_sub_2 = (
-                    get_df_responses_breakdown_parent_categories(
-                        df=self.__get_df_2_copy()
-                    )
-                )
-
         # Get all unique codes from responses breakdown parent
         parent_codes_1 = [x[code_col_name] for x in responses_breakdown_parent_1]
         parent_codes_2 = [x[code_col_name] for x in responses_breakdown_parent_2]
@@ -1140,22 +1130,8 @@ class CampaignService:
         sub_codes_2 = [x[code_col_name] for x in responses_breakdown_sub_2]
         all_sub_codes = set(sub_codes_1 + sub_codes_2)
 
-        # Get all unique codes from responses breakdown parent or sub
-        parent_or_sub_codes_1 = [
-            x[code_col_name] for x in responses_breakdown_parent_or_sub_1
-        ]
-        parent_or_sub_codes_2 = [
-            x[code_col_name] for x in responses_breakdown_parent_or_sub_2
-        ]
-        all_parent_or_sub_codes = set(parent_or_sub_codes_1 + parent_or_sub_codes_2)
-
         # Responses breakdown
         responses_breakdown = {
-            "parent_or_sub_categories": responses_breakdown_to_list(
-                all_codes=all_parent_or_sub_codes,
-                responses_breakdown_1=responses_breakdown_parent_or_sub_1,
-                responses_breakdown_2=responses_breakdown_parent_or_sub_2,
-            ),
             "parent_categories": responses_breakdown_to_list(
                 all_codes=all_parent_codes,
                 responses_breakdown_1=responses_breakdown_parent_1,
@@ -1178,13 +1154,6 @@ class CampaignService:
         # Sort responses breakdown sub
         responses_breakdown["sub_categories"] = sorted(
             responses_breakdown["sub_categories"],
-            key=lambda x: x["count_1"],
-            reverse=True,
-        )
-
-        # Sort responses breakdown parent or sub
-        responses_breakdown["parent_or_sub_categories"] = sorted(
-            responses_breakdown["parent_or_sub_categories"],
             key=lambda x: x["count_1"],
             reverse=True,
         )
