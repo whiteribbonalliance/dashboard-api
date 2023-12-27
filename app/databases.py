@@ -176,10 +176,10 @@ def get_users_from_databases() -> dict[str, UserInternal]:
         if db.user:
             users[db.user.username] = db.user
 
-    if os.getenv("ADMIN_DASHBOARD_PASSWORD"):
+    if os.getenv("ADMIN_PASSWORD"):
         admin = UserInternal(
             username="admin",
-            password=os.getenv("ADMIN_DASHBOARD_PASSWORD", ""),
+            password=os.getenv("ADMIN_PASSWORD", ""),
             campaign_access=[x.campaign_code for x in CAMPAIGNS_CONFIG.values()],
             is_admin=True,
         )

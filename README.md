@@ -43,7 +43,7 @@ their respective dashboards by running the front-end.
 - `RELOAD_DATA_EVERY_12TH_HOUR=` True or False. Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
   e.g. `MY_CAMPAIGN_PASSWORD=123QWE,./` for accessing the campaign with code `MY_CAMPAIGN` (must be capitalized).
-- `ADMIN_DASHBOARD_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
+- `ADMIN_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
   username `admin`.
 - `OWNER_NAME=` Owner name - To display in footer.
 - `OWNER_LINK=` Owner link - To display in footer.
