@@ -222,6 +222,8 @@ For deployment, it is also required to add the following environment variables t
 - `AZURE_WEBAPP_PUBLISH_PROFILE=` The publish profile of your web app.
 - `AZURE_WEBAPP_NAME=` The web app name.
 
+At `Configurations` -> `General settings` -> `Startup command` add `python main.py`, and set `Always on` to `On`.
+
 The GitHub action at `.github/workflows/prod-deploy-azure-webapps.yaml` will trigger a deployment to Azure Web
 App on push or merge.
 
