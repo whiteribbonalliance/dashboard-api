@@ -37,8 +37,8 @@ their respective dashboards by running the front-end.
   the functionalities mentioned.
 - `GOOGLE_MAPS_API_KEY=` Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
   are found (when new data is added to these campaigns).
-- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `allcampaigns`.
-- `RELOAD_DATA_EVERY_12TH_HOUR=` True or False. Allows reloading CSV file from source every 12th hour.
+- `INCLUDE_ALLCAMPAIGNS=` Allow displaying dashboard of all data merged together at `/allcampaigns`.
+- `RELOAD_DATA_EVERY_12TH_HOUR=` Allows reloading CSV file from source every 12th hour.
 - `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
   e.g. `my_campaign_PASSWORD=123QWE,./` for accessing the campaign with code `my_campaign`.
 - `ADMIN_DASHBOARD_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with
@@ -53,19 +53,17 @@ Google - `CLOUD_SERVICE=google`:
 - `GOOGLE_CREDENTIALS_JSON_B64=` Content of credentials.json file in `Base64` format.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_FILE=` The Google cloud storage bucket to load the CSV file from.
 - `GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA=` The Google cloud storage bucket to temporarily cache
-  download data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
-  or `/api/v1/campaigns/{campaign_code}/data/public`.
+  download data. These are CSV files when making a request at e.g. `/api/v1/campaigns/{campaign_code}/data/`.
 
 Azure - `CLOUD_SERVICE=azure`:
 
 - `AZURE_TRANSLATOR_KEY=` The Azure translator key.
 - `AZURE_STORAGE_ACCOUNT_NAME=` The Azure storage account name.
-- `AZURE_STORAGE_CONTAINER_FILE=` The Azure storage container to load the CSV file from.
-- `AZURE_STORAGE_CONTAINER_TMP_DATA=` The Azure storage container to temporarily cache download
-  data. These are CSV files when making a request at `/api/v1/campaigns/{campaign_code}/data/`
-  or `/api/v1/campaigns/{campaign_code}/data/public`.
 - `AZURE_STORAGE_ACCOUNT_KEY=` The Azure storage account key.
 - `AZURE_STORAGE_CONNECTION_STRING=` The Azure storage connection string.
+- `AZURE_STORAGE_CONTAINER_FILE=` The Azure storage container to load the CSV file from.
+- `AZURE_STORAGE_CONTAINER_TMP_DATA=` The Azure storage container to temporarily cache download
+  data. These are CSV files when making a request at e.g. `/api/v1/campaigns/{campaign_code}/data/`.
 
 ## System requirements
 
