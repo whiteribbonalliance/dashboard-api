@@ -59,20 +59,11 @@ async def do_once_load_initial_data(session=Session()):
 
 
 @app.task(cron("0 */12 * * *"))
-async def do_every_12th_hour_reload_data(session=Session()):
+async def do_every_12th_hour_reload_data():
     """
     Reload data.
     Runs at minute 0 past every 12th hour.
     """
-
-    if not settings.RELOAD_DATA_EVERY_12TH_HOUR:
-        # Get task
-        task = session["do_every_12th_hour_reload_data"]
-
-        # Disable task
-        task.disabled = True
-
-        return
 
     await concurrency.run_in_threadpool(data_loader.reload_data, True, True, True)
 
