@@ -395,7 +395,7 @@ class CampaignsMergedService:
             ),
         }
 
-        # sort countries
+        # Sort countries
         histogram["canonical_countries"] = sorted(
             histogram["canonical_countries"],
             key=lambda x: x.get("count_1"),

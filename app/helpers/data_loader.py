@@ -31,7 +31,7 @@ from io import StringIO
 import pandas as pd
 import requests
 
-from app import constants, databases
+from app import constants, databases, utils
 from app import crud
 from app import global_variables
 from app.core.settings import get_settings
@@ -75,72 +75,83 @@ def load_campaign_data(campaign_code: str):
     if df_responses is None:
         raise Exception(f"Could not load dataframe for campaign {campaign_code}.")
 
-    # Columns
-    columns = df_responses.columns.tolist()
+    # Q codes
+    campaign_q_codes = q_codes_finder.find_in_df(df=df_responses)
+
+    # Check if all required columns are present
+    required_columns = utils.get_required_columns(q_codes=campaign_q_codes)
+    for required_column in required_columns:
+        if required_column not in df_responses.columns.tolist():
+            if required_column.endswith("_lemmatized"):
+                raise Exception(
+                    f"""Required column {required_column} not found in campaign {campaign_code}. \nPlease run: python lemmatize_responses.py {campaign_code}"""
+                )
+            else:
+                raise Exception(
+                    f"Required column {required_column} not found in campaign {campaign_code}."
+                )
+
+    # Make sure these optional columns are created with empty values if they are not present
+    columns_to_check_if_present = [
+        "region",
+        "province",
+        "gender",
+        "ingestion_time",
+        "data_source",
+        "profession",
+        "setting",
+        "response_year",
+    ]
+    for column_to_check_if_present in columns_to_check_if_present:
+        if column_to_check_if_present not in df_responses.columns.tolist():
+            df_responses[column_to_check_if_present] = ""
 
     # Set q codes
-    campaign_q_codes = q_codes_finder.find_in_df(df=df_responses)
     campaign_crud.set_q_codes(q_codes=campaign_q_codes)
 
+    def strip_value(x: str):
+        return x.strip() if x else x
+
+    def title_value(x: str):
+        return x.title() if x else x
+
+    def capitalize_value(x: str):
+        return x.capitalize() if x else x
+
+    def strip_and_upper_value(x: str):
+        return x.strip().upper() if x else x
+
+    def title_prefer_not_to_say(x: str):
+        return x.title() if x and x.lower() == "prefer not to say" else x
+
     # Value 'prefer not to say' should always start with a capital letter
-    if "setting" in columns:
-        df_responses["setting"] = df_responses["setting"].apply(
-            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-        )
-    if "gender" in columns:
-        df_responses["gender"] = df_responses["gender"].apply(
-            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-        )
-    if "age" in columns:
-        df_responses["age"] = df_responses["age"].apply(
-            lambda x: x.title() if x and x.lower() == "prefer not to say" else x
-        )
+    df_responses["setting"] = df_responses["setting"].apply(title_prefer_not_to_say)
+    df_responses["gender"] = df_responses["gender"].apply(title_prefer_not_to_say)
+    df_responses["age"] = df_responses["age"].apply(title_prefer_not_to_say)
 
     # Apply title
-    if "setting" in columns:
-        df_responses["setting"] = df_responses["setting"].apply(
-            lambda x: x.title() if x else x
-        )
-    if "profession" in columns:
-        df_responses["profession"] = df_responses["profession"].apply(
-            lambda x: x.title() if x else x
-        )
+    df_responses["setting"] = df_responses["setting"].apply(title_value)
+    df_responses["profession"] = df_responses["profession"].apply(title_value)
 
     # Apply strip and upper
-    if "alpha2country" in columns:
-        df_responses["alpha2country"] = df_responses["alpha2country"].apply(
-            lambda x: x.strip().upper() if x else x
-        )
+    df_responses["alpha2country"] = df_responses["alpha2country"].apply(
+        strip_and_upper_value
+    )
 
     # Apply strip
-    if "setting" in columns:
-        df_responses["setting"] = df_responses["setting"].apply(
-            lambda x: x.strip() if x else x
-        )
-    if "profession" in columns:
-        df_responses["profession"] = df_responses["profession"].apply(
-            lambda x: x.strip() if x else x
-        )
-    if "region" in columns:
-        df_responses["region"] = df_responses["region"].apply(
-            lambda x: x.strip() if x else x
-        )
-    if "province" in columns:
-        df_responses["province"] = df_responses["province"].apply(
-            lambda x: x.strip() if x else x
-        )
-    if "age" in columns:
-        df_responses["age"] = df_responses["age"].apply(lambda x: x.strip() if x else x)
-    if "response_year" in columns:
-        df_responses["response_year"] = df_responses["response_year"].apply(
-            lambda x: x.strip() if x else x
-        )
+    df_responses["setting"] = df_responses["setting"].apply(strip_value)
+    df_responses["profession"] = df_responses["profession"].apply(strip_value)
+    df_responses["region"] = df_responses["region"].apply(strip_value)
+    df_responses["province"] = df_responses["province"].apply(strip_value)
+    df_responses["age"] = df_responses["age"].apply(strip_value)
+    df_responses["gender"] = df_responses["gender"].apply(strip_value)
+    df_responses["response_year"] = df_responses["response_year"].apply(strip_value)
 
     # Capitalize responses
     for q_code in campaign_q_codes:
         df_responses[q_col_names.get_response_col_name(q_code=q_code)] = df_responses[
             q_col_names.get_response_col_name(q_code=q_code)
-        ].apply(lambda x: x.capitalize() if x else x)
+        ].apply(capitalize_value)
 
     # Add canonical_country column
     df_responses["canonical_country"] = df_responses["alpha2country"].map(
@@ -173,21 +184,18 @@ def load_campaign_data(campaign_code: str):
 
     # Set age buckets
     age_buckets = df_responses["age_bucket"].unique().tolist()
-    age_buckets = [age_bucket for age_bucket in age_buckets if age_bucket is not None]
+    age_buckets = [x for x in age_buckets if x]
     campaign_crud.set_age_buckets(age_buckets=age_buckets)
 
     # Set age buckets default
     age_buckets_default = df_responses["age_bucket_default"].unique().tolist()
-    age_buckets_default = [x for x in age_buckets_default if x is not None]
+    age_buckets_default = [x for x in age_buckets_default if x]
     campaign_crud.set_age_buckets_default(age_buckets_default=age_buckets_default)
 
     # Set response years
-    if "response_year" in columns:
-        response_years = df_responses["response_year"].unique().tolist()
-        response_years = [x for x in response_years if x]
-        campaign_crud.set_response_years(response_years=response_years)
-    else:
-        df_responses["response_year"] = ""
+    response_years = df_responses["response_year"].unique().tolist()
+    response_years = [x for x in response_years if x]
+    campaign_crud.set_response_years(response_years=response_years)
 
     # Create countries
     countries: dict[str, Country] = {}
@@ -223,9 +231,6 @@ def load_campaign_data(campaign_code: str):
 
     # Set genders
     genders = []
-    df_responses["gender"] = df_responses["gender"].apply(
-        lambda x: x.strip() if x else x
-    )
     for gender in df_responses["gender"].value_counts().index:
         if gender:
             genders.append(gender)
@@ -310,23 +315,6 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
         # To datetime
         if "ingestion_time" in df.columns.tolist():
             df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
-
-        # Required columns
-        required_columns = ["alpha2country", "age"]
-        q_codes = q_codes_finder.find_in_df(df=df)
-        for q_code in q_codes:
-            required_columns.append(q_col_names.get_response_col_name(q_code=q_code))
-            required_columns.append(
-                q_col_names.get_canonical_code_col_name(q_code=q_code)
-            )
-
-        # Check if all required columns are present
-        df_columns = df.columns.tolist()
-        for required_column in required_columns:
-            if required_column not in df_columns:
-                raise Exception(
-                    f"Required column {required_column} not found in campaign {campaign_code}."
-                )
 
         return df
     else:

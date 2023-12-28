@@ -33,6 +33,7 @@ import re
 from hashlib import sha256
 
 from app import constants
+from app.helpers import q_col_names
 
 
 def contains_letters(text: str):
@@ -294,3 +295,17 @@ def create_tmp_dir_if_not_exists():
     tmp_dir_path = "/tmp"
     if not os.path.isdir(tmp_dir_path):
         os.mkdir(tmp_dir_path)
+
+
+def get_required_columns(q_codes: list[str]) -> list[str]:
+    """
+    Get required columns.
+    """
+
+    columns = ["alpha2country", "age"]
+    for q_code in q_codes:
+        columns.append(q_col_names.get_response_col_name(q_code=q_code))
+        columns.append(q_col_names.get_canonical_code_col_name(q_code=q_code))
+        columns.append(q_col_names.get_lemmatized_col_name(q_code=q_code))
+
+    return columns

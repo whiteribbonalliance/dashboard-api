@@ -98,7 +98,7 @@ The CSV file might contain the following columns:
 - `q1_response`: Required - The response from the respondent.
 - `q1_canonical_code`: Required - The category of the response.
 - `alpha2country`: Required - alpha-2 code of the respondent's country.
-- `age`: Optional - The respondent's age.
+- `age`: Required - The respondent's age.
 - `region`: Optional - The respondent's region.
 - `province`: Optional - The respondent's province.
 - `gender`: Optional - The respondent's gender.

@@ -29,10 +29,7 @@ import os
 import validators
 from pydantic import ValidationError
 
-from app.core.settings import get_settings
 from app.schemas.campaign_config import CampaignConfigInternal
-
-settings = get_settings()
 
 CAMPAIGNS_CONFIG: dict[str, CampaignConfigInternal] = {}
 
@@ -63,7 +60,7 @@ for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
                 )
 
     # allcampaigns path is reserved
-    if settings.INCLUDE_ALLCAMPAIGNS and config.dashboard_path == "allcampaigns":
+    if config.dashboard_path == "allcampaigns":
         raise Exception("The path allcampaigns is reserved.")
 
     # Only one file location should be provided
