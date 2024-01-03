@@ -441,7 +441,7 @@ def reload_data(
             ApiCache().clear_cache()
 
         # Clear bucket as the data cached might be out of date
-        if clear_google_cloud_storage_bucket and not settings.CLOUD_SERVICE == "google":
+        if clear_google_cloud_storage_bucket and settings.CLOUD_SERVICE == "google":
             google_cloud_storage_interactions.clear_bucket(
                 bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA
             )
