@@ -2142,12 +2142,17 @@ class CampaignService:
 
         # Filter by date
         if from_date and to_date:
-            df = df[
-                (df["ingestion_time"].dt.date >= from_date)
-                & (df["ingestion_time"].dt.date <= to_date)
-            ]
-            csv_filename_without_ext = csv_filename.replace(".csv", "")
-            csv_filename = f"{csv_filename_without_ext}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
+            try:
+                df = df[
+                    (df["ingestion_time"].dt.date >= from_date)
+                    & (df["ingestion_time"].dt.date <= to_date)
+                ]
+            except AttributeError:
+                # If there is no date values in ingestion_time
+                df = df[0:0]
+            finally:
+                csv_filename_without_ext = csv_filename.replace(".csv", "")
+                csv_filename = f"{csv_filename_without_ext}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
         # Convert date to string
         df["ingestion_time"] = df["ingestion_time"].apply(
