@@ -24,11 +24,9 @@ SOFTWARE.
 """
 
 import logging
-from datetime import datetime
 from datetime import timedelta
 from typing import Iterator
 
-from google.cloud import storage
 from google.cloud.storage import Client, Blob, Bucket
 from google.oauth2 import service_account
 
@@ -39,8 +37,6 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
 
-EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
-
 
 def get_storage_client() -> Client:
     """Get storage client"""
@@ -50,7 +46,7 @@ def get_storage_client() -> Client:
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 
-    return storage.Client(credentials=credentials)
+    return Client(credentials=credentials)
 
 
 def upload_file(bucket_name: str, source_filename: str, destination_filename: str):
@@ -63,12 +59,12 @@ def upload_file(bucket_name: str, source_filename: str, destination_filename: st
     blob.upload_from_filename(source_filename, timeout=3600)
 
 
-def get_blob_url(bucket_name: str, blob_ame: str, expire_in: str = EXPIRE_IN) -> str:
+def get_blob_url(bucket_name: str, blob_name: str) -> str:
     """Get blob url"""
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(bucket_name)
-    url = bucket.blob(blob_ame).generate_signed_url(expiration=expire_in)
+    url = bucket.blob(blob_name).generate_signed_url(expiration=timedelta(hours=1))
 
     return url
 

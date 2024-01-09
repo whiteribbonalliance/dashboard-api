@@ -2215,7 +2215,7 @@ class CampaignService:
                 # Get url
                 url = google_cloud_storage_interactions.get_blob_url(
                     bucket_name=bucket_name,
-                    blob_ame=storage_csv_filepath,
+                    blob_name=storage_csv_filepath,
                 )
 
                 # Remove unique filename code
@@ -2255,7 +2255,7 @@ class CampaignService:
                 # Get url
                 url = google_cloud_storage_interactions.get_blob_url(
                     bucket_name=bucket_name,
-                    blob_ame=storage_csv_filepath,
+                    blob_name=storage_csv_filepath,
                 )
 
                 # Remove unique filename code
