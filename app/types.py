@@ -25,6 +25,4 @@ SOFTWARE.
 
 from typing import Literal
 
-TFilterSequence = Literal["1", "2"]
-
 TCloudService = Literal["google", "azure"]

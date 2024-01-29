@@ -56,7 +56,7 @@ from app.services import azure_blob_storage_interactions
 from app.services import google_cloud_storage_interactions
 from app.services import google_maps_interactions
 from app.services.translator import Translator
-from app.types import TFilterSequence, TCloudService
+from app.types import TCloudService
 
 logger = logging.getLogger(__name__)
 init_custom_logger(logger)
@@ -83,6 +83,7 @@ class CampaignService:
         # Campaign code
         self.__campaign_code = campaign_code
 
+        # Config
         self.__campaign_config = CAMPAIGNS_CONFIG.get(self.__campaign_code)
 
         # CRUD
@@ -235,8 +236,8 @@ class CampaignService:
 
         # List of ages
         if include_list_of_ages and q_code == "q1":
-            list_of_ages_1 = self.__get_list_of_ages(filter_seq="1")
-            list_of_ages_2 = self.__get_list_of_ages(filter_seq="2")
+            list_of_ages_1 = self.__get_list_of_ages(df=self.__df_1)
+            list_of_ages_2 = self.__get_list_of_ages(df=self.__df_2)
         else:
             list_of_ages_1 = []
             list_of_ages_2 = []
@@ -244,32 +245,32 @@ class CampaignService:
         # List of age buckets
         if include_list_of_age_buckets_default and q_code == "q1":
             list_of_age_buckets_1 = self.__get_list_of_age_buckets_default(
-                filter_seq="1"
+                df=self.__df_1
             )
             list_of_age_buckets_2 = self.__get_list_of_age_buckets_default(
-                filter_seq="2"
+                df=self.__df_2
             )
         else:
             list_of_age_buckets_1 = []
             list_of_age_buckets_2 = []
 
         # Respondents count
-        filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
-        filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
+        filter_1_respondents_count = self.__get_filter_respondents_count(df=self.__df_1)
+        filter_2_respondents_count = self.__get_filter_respondents_count(df=self.__df_2)
 
         # Average age
-        filter_1_average_age = self.__get_filter_average_age(filter_seq="1")
-        filter_2_average_age = self.__get_filter_average_age(filter_seq="2")
+        filter_1_average_age = self.__get_filter_average_age(df=self.__df_1)
+        filter_2_average_age = self.__get_filter_average_age(df=self.__df_2)
         filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
-            filter_seq="1"
+            df=self.__df_1
         )
         filter_2_average_age_bucket = self.__get_filter_average_age_bucket(
-            filter_seq="2"
+            df=self.__df_2
         )
 
         # Filters Description
-        filter_1_description = self.__get_filter_description(filter_seq="1")
-        filter_2_description = self.__get_filter_description(filter_seq="2")
+        filter_1_description = self.__filter_1_description
+        filter_2_description = self.__filter_2_description
 
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
@@ -1436,16 +1437,6 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __get_filter_description(self, filter_seq: TFilterSequence) -> str:
-        """Get filter description"""
-
-        if filter_seq == "1":
-            return self.__filter_1_description
-        elif filter_seq == "2":
-            return self.__filter_2_description
-        else:
-            return ""
-
     def __get_df_filter_description(self, df_len: int, _filter: Filter) -> str:
         """Get df filter description"""
 
@@ -1453,37 +1444,34 @@ class CampaignService:
             # Use an empty filter to generate description
             _filter = filters.get_default_filter()
 
+        # Response topics mentioned
+        mapping_to_description = category_hierarchy.get_mapping_code_to_description(
+            campaign_code=self.__campaign_code
+        )
+        response_topics_mentioned = [
+            mapping_to_description.get(response_topic, response_topic)
+            for response_topic in _filter.response_topics
+        ]
         description = filters.generate_description_of_filter(
-            campaign_code=self.__campaign_code,
             _filter=_filter,
             num_results=df_len,
             respondent_noun_singular=self.__crud.get_respondent_noun_singular(),
             respondent_noun_plural=self.__crud.get_respondent_noun_plural(),
+            response_topics_as_descriptions=response_topics_mentioned,
         )
 
         return description
 
-    def __get_filter_respondents_count(self, filter_seq: TFilterSequence) -> int:
+    def __get_filter_respondents_count(self, df: pd.DataFrame) -> int:
         """Get filter respondents count"""
 
-        if filter_seq == "1":
-            return len(self.__df_1.index)
-        elif filter_seq == "2":
-            return len(self.__df_2.index)
-        else:
-            return 0
+        return len(df.index)
 
-    def __get_filter_average_age(self, filter_seq: TFilterSequence) -> str:
+    def __get_filter_average_age(self, df: pd.DataFrame) -> str:
         """Get filter average age"""
 
         average_age = "N/A"
-
-        if filter_seq == "1":
-            df_copy = self.__get_df_1_copy()
-        elif filter_seq == "2":
-            df_copy = self.__get_df_2_copy()
-        else:
-            return average_age
+        df_copy = df.copy()
 
         # Only keep age column
         df_copy = df_copy[["age"]]
@@ -1501,17 +1489,11 @@ class CampaignService:
 
         return str(average_age)
 
-    def __get_filter_average_age_bucket(self, filter_seq: TFilterSequence) -> str:
+    def __get_filter_average_age_bucket(self, df: pd.DataFrame) -> str:
         """Get filter average age bucket"""
 
         average_age_bucket = "N/A"
-
-        if filter_seq == "1":
-            df_copy = self.__get_df_1_copy()
-        elif filter_seq == "2":
-            df_copy = self.__get_df_2_copy()
-        else:
-            return average_age_bucket
+        df_copy = df.copy()
 
         # Only keep age_bucket column
         df_copy = df_copy[["age_bucket"]]
@@ -2071,15 +2053,10 @@ class CampaignService:
 
         return only_multi_word_phrases_containing_filter_term_options
 
-    def __get_list_of_ages(self, filter_seq: TFilterSequence) -> list[str]:
+    def __get_list_of_ages(self, df: pd.DataFrame) -> list[str]:
         """Get list of ages"""
 
-        if filter_seq == "1":
-            df_copy = self.__get_df_1_copy()
-        elif filter_seq == "2":
-            df_copy = self.__get_df_2_copy()
-        else:
-            return []
+        df_copy = df.copy()
 
         # Only keep age column
         df_copy = df_copy[["age"]]
@@ -2088,17 +2065,10 @@ class CampaignService:
 
         return df_copy.tolist()
 
-    def __get_list_of_age_buckets_default(
-        self, filter_seq: TFilterSequence
-    ) -> list[str]:
+    def __get_list_of_age_buckets_default(self, df: pd.DataFrame) -> list[str]:
         """Get list of age buckets"""
 
-        if filter_seq == "1":
-            df_copy = self.__get_df_1_copy()
-        elif filter_seq == "2":
-            df_copy = self.__get_df_2_copy()
-        else:
-            return []
+        df_copy = df.copy()
 
         # Only keep age_bucket_default column
         df_copy = df_copy[["age_bucket_default"]]

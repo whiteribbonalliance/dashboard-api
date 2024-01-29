@@ -28,13 +28,13 @@ import pandas as pd
 from app import utils, constants
 from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
-from app.helpers import filters
+from app.helpers import filters, category_hierarchy
 from app.schemas.campaign import Campaign
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.q_code import Question
 from app.services.translator import Translator
-from app.types import TFilterSequence, TCloudService
+from app.types import TCloudService
 
 settings = get_settings()
 
@@ -89,6 +89,10 @@ class CampaignsMergedService:
             filter_1=filter_1, filter_2=filter_2
         )
 
+        # Filters
+        self.__filter_1 = filter_1
+        self.__filter_2 = filter_2
+
     def get_campaign(self):
         """Get campaign"""
 
@@ -108,8 +112,16 @@ class CampaignsMergedService:
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
         # Filter respondents count
-        filter_1_respondents_count = self.__get_filter_respondents_count(filter_seq="1")
-        filter_2_respondents_count = self.__get_filter_respondents_count(filter_seq="2")
+        filter_1_respondents_count = self.__get_filter_respondents_count(
+            filter_respondents_count_list=[
+                x.filter_1_respondents_count for x in self.__campaigns_data_q1
+            ]
+        )
+        filter_2_respondents_count = self.__get_filter_respondents_count(
+            filter_respondents_count_list=[
+                x.filter_2_respondents_count for x in self.__campaigns_data_q1
+            ]
+        )
 
         # Average age
         filter_1_average_age = (
@@ -118,16 +130,27 @@ class CampaignsMergedService:
         filter_2_average_age = (
             "N/A"  # Not all campaigns contain ages, only use age buckets below
         )
+
+        # Average age bucket
+        list_of_age_buckets_1: list[str] = []
+        list_of_age_buckets_2: list[str] = []
+        for campaign_data in self.__campaigns_data_q1:
+            list_of_age_buckets_1.extend(campaign_data.list_of_age_buckets_1)
+            list_of_age_buckets_2.extend(campaign_data.list_of_age_buckets_2)
         filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
-            filter_seq="1"
+            list_of_age_buckets=list_of_age_buckets_1
         )
         filter_2_average_age_bucket = self.__get_filter_average_age_bucket(
-            filter_seq="2"
+            list_of_age_buckets=list_of_age_buckets_2
         )
 
         # Filter description
-        filter_1_description = self.__get_filter_description(filter_seq="1")
-        filter_2_description = self.__get_filter_description(filter_seq="2")
+        filter_1_description = self.__get_filter_description(
+            df_len=filter_1_respondents_count, _filter=self.__filter_2
+        )
+        filter_2_description = self.__get_filter_description(
+            df_len=filter_2_respondents_count, _filter=self.__filter_1
+        )
 
         # Filters are identical
         filters_are_identical = self.__get_filters_are_identical()
@@ -474,70 +497,21 @@ class CampaignsMergedService:
 
         return world_bubble_maps_coordinates
 
-    def __get_filter_respondents_count(self, filter_seq: TFilterSequence) -> int:
+    def __get_filter_respondents_count(
+        self, filter_respondents_count_list: list[int]
+    ) -> int:
         """Get filter respondents count"""
 
-        if filter_seq == "1":
-            filter_respondents_counts: list[int] = [
-                x.filter_1_respondents_count for x in self.__campaigns_data_q1
-            ]
-        elif filter_seq == "2":
-            filter_respondents_counts: list[int] = [
-                x.filter_2_respondents_count for x in self.__campaigns_data_q1
-            ]
-        else:
-            filter_respondents_counts = []
+        if not filter_respondents_count_list:
+            return 0
 
-        if not filter_respondents_counts:
-            filter_respondents_counts = [0]
+        return sum(filter_respondents_count_list)
 
-        return sum(filter_respondents_counts)
-
-    def __get_filter_average_age(self, filter_seq: TFilterSequence) -> str:
-        """Get filter average age"""
-
-        average_age = "N/A"
-
-        # Create a list containing all ages
-        list_of_all_ages: list[int] = []
-        for campaign_data in self.__campaigns_data_q1:
-            if filter_seq == "1":
-                campaign_data_list_of_ages = [
-                    int(x) for x in campaign_data.list_of_ages_1 if x.isnumeric()
-                ]
-            elif filter_seq == "2":
-                campaign_data_list_of_ages = [
-                    int(x) for x in campaign_data.list_of_ages_2 if x.isnumeric()
-                ]
-            else:
-                campaign_data_list_of_ages = []
-
-            list_of_all_ages.extend(campaign_data_list_of_ages)
-
-        # Calculate average
-        if len(list_of_all_ages) > 0:
-            df = pd.DataFrame(data=list_of_all_ages, columns=["age"])
-            average_age = int(round(df["age"].mean(numeric_only=True)))
-
-        return str(average_age)
-
-    def __get_filter_average_age_bucket(self, filter_seq: TFilterSequence) -> str:
+    def __get_filter_average_age_bucket(self, list_of_age_buckets: list[str]) -> str:
         """Get filter average age bucket"""
 
-        # Create a list containing all age buckets
-        list_of_all_age_buckets: list[str] = []
-        for campaign_data in self.__campaigns_data_q1:
-            if filter_seq == "1":
-                campaign_data_list_of_age_buckets = campaign_data.list_of_age_buckets_1
-            elif filter_seq == "2":
-                campaign_data_list_of_age_buckets = campaign_data.list_of_age_buckets_2
-            else:
-                campaign_data_list_of_age_buckets = []
-
-            list_of_all_age_buckets.extend(campaign_data_list_of_age_buckets)
-
         # Calculate average age bucket
-        df = pd.DataFrame(list_of_all_age_buckets, columns=["age_bucket"])
+        df = pd.DataFrame(list_of_age_buckets, columns=["age_bucket"])
         average_age = "N/A"
         if len(df.index) > 0:
             average_age = " ".join(df["age_bucket"].mode())
@@ -549,21 +523,38 @@ class CampaignsMergedService:
 
         return self.__filters_are_identical
 
-    def __get_filter_description(self, filter_seq: TFilterSequence) -> str:
+    def __get_filter_description(self, df_len: int, _filter: Filter) -> str:
         """
         Get filter description.
 
         Use filter description from 'what_young_people_want' as this campaign uses respondent_noun as respondent.
         """
 
-        for campaign in self.__campaigns_data_q1:
-            if campaign.campaign_code == LegacyCampaignCode.pmn01a.value:
-                if filter_seq == "1":
-                    return campaign.filter_1_description
-                if filter_seq == "2":
-                    return campaign.filter_2_description
+        if not _filter:
+            # Use an empty filter to generate description
+            _filter = filters.get_default_filter()
 
-        return ""
+        # Response topics
+        response_topics_as_descriptions = []
+        for x in self.__campaigns_data_q1:
+            mapping_to_description = category_hierarchy.get_mapping_code_to_description(
+                campaign_code=x.campaign_code
+            )
+            response_topics_as_descriptions.extend(
+                [
+                    mapping_to_description.get(response_topic, response_topic)
+                    for response_topic in _filter.response_topics
+                ]
+            )
+        description = filters.generate_description_of_filter(
+            _filter=_filter,
+            num_results=df_len,
+            respondent_noun_singular="respondent",
+            respondent_noun_plural="respondents",
+            response_topics_as_descriptions=response_topics_as_descriptions,
+        )
+
+        return description
 
     def __get_country_options(self) -> list[dict]:
         """Get country options"""

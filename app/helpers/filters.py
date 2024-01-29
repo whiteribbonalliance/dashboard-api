@@ -31,7 +31,6 @@ from pandas import DataFrame
 
 from app import constants
 from app.crud.campaign import Campaign
-from app.helpers import category_hierarchy
 from app.helpers import q_col_names
 from app.schemas.filter import Filter
 
@@ -200,16 +199,15 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
 
 
 def generate_description_of_filter(
-    campaign_code: str,
     _filter: Filter,
     num_results: int,
     respondent_noun_singular: str,
     respondent_noun_plural: str,
+    response_topics_as_descriptions: list[str],
 ):
     countries = _filter.countries
     regions = _filter.regions
     provinces = _filter.provinces
-    response_topics = _filter.response_topics
     genders = _filter.genders
     professions = _filter.professions
     keyword_filter = _filter.keyword_filter
@@ -270,29 +268,19 @@ def generate_description_of_filter(
     if ages is not None and len(ages) > 0:
         description += generate_age_description(ages=ages)
 
-    # Response topics
-    mapping_to_description = category_hierarchy.get_mapping_code_to_description(
-        campaign_code=campaign_code
-    )
-    response_topics_mentioned = list(
-        [
-            mapping_to_description.get(response_topic, response_topic)
-            for response_topic in response_topics
-        ]
-    )
-    if len(response_topics_mentioned) > 0:
+    if len(response_topics_as_descriptions) > 0:
         if only_responses_from_categories:
             description += " who mentioned " + join_list_comma_and(
-                response_topics_mentioned, lower_words=True
+                response_topics_as_descriptions, lower_words=True
             )
         else:
             description += " who mentioned " + join_list_comma_or(
-                response_topics_mentioned, lower_words=True
+                response_topics_as_descriptions, lower_words=True
             )
 
     # Keywords
     if len(keyword_filter) > 0:
-        if len(response_topics_mentioned) == 0:
+        if len(response_topics_as_descriptions) == 0:
             description += " who mentioned "
         else:
             description += " and "
@@ -300,7 +288,7 @@ def generate_description_of_filter(
 
     # Keywords exclude
     if len(keyword_exclude) > 0:
-        if len(response_topics_mentioned) > 0:
+        if len(response_topics_as_descriptions) > 0:
             description += ' but not "' + str(keyword_exclude) + '"'
         else:
             description += ' who did not mention "' + str(keyword_exclude) + '"'
