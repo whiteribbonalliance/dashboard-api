@@ -32,3 +32,5 @@ class LegacyCampaignCode(Enum):
     giz: str = "giz"
     wwwpakistan: str = "wwwpakistan"
     healthwellbeing: str = "healthwellbeing"
+    allcampaigns: str = "allcampaigns"
+    dataexchange: str = "dataexchange"

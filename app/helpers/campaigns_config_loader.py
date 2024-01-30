@@ -38,12 +38,8 @@ campaigns_configurations_folder = "campaigns-configurations"
 print("INFO:\t  Loading configurations...")
 
 for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
-    # Check if it is a folder
+    # Check if path is a folder
     if not os.path.isdir(os.path.join(campaigns_configurations_folder, config_folder)):
-        continue
-
-    # Skip example
-    if config_folder == "example":
         continue
 
     # Load config
@@ -59,33 +55,22 @@ for config_folder in os.listdir(os.path.join(campaigns_configurations_folder)):
                     f"Could not validate configuration found in config folder {config_folder}. Error: {str(e)}"
                 )
 
-    # allcampaigns path is reserved
-    if config.dashboard_path == "allcampaigns":
-        raise Exception("The path allcampaigns is reserved.")
-
-    # Only one file location should be provided
-    if (
-        sum([bool(config.file.local), bool(config.file.url), bool(config.file.cloud)])
-        != 1
-    ):
-        raise Exception("Provide one file location.")
-
-    # Check url
+    # Validate URL
     if config.file.url:
         if not validators.url(config.file.url):
             raise Exception(f"{config.file.url} is not a valid URL.")
 
-    # Check CSV file
+    # Validate local file name
     if config.file.local:
         csv_file = os.path.join(
             campaigns_configurations_folder, config_folder, config.file.local
         )
-        if not config.file.local.endswith(".csv"):
-            raise Exception("Invalid CSV file name.")
         if not os.path.isfile(csv_file):
             raise Exception(
                 f"File {config.file} was not found in config folder {config_folder}."
             )
+        if not config.file.local.endswith(".csv"):
+            raise Exception("Invalid CSV file name.")
         config.filepath = csv_file
 
     # Check for duplicate dashboard path

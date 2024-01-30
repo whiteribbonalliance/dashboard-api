@@ -259,9 +259,11 @@ def load_campaign_data(campaign_code: str):
 def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
     """
     Load campaign dataframe.
+
+    Will first check if a local file was provided, then if URL was provided, then from the cloud.
     """
 
-    df = None
+    df: pd.DataFrame | None = None
     dtype = {"age": str, "response_year": str}
 
     # Load data for campaign
@@ -276,7 +278,7 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
                 dtype=dtype,
             )
 
-        # From url
+        # From URL
         elif campaign_config.file.url:
             response = requests.get(url=campaign_config.file.url)
             if response.ok:
@@ -311,10 +313,25 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
                     dtype=dtype,
                 )
 
+        # From all other campaigns
+        elif campaign_config.file.from_others:
+            df_list = []
+            for campaign_config in CAMPAIGNS_CONFIG.values():
+                campaign_code = campaign_config.campaign_code
+                if campaign_config.file.from_others:
+                    continue
+                db_campaign = databases.get_campaign_db(campaign_code=campaign_code)
+                if db_campaign:
+                    df_list.append(db_campaign.dataframe)
+
+            df = pd.concat(df_list)
+
     if df is not None:
-        # To datetime
+        # ingestion_time to datetime
         if "ingestion_time" in df.columns.tolist():
             df["ingestion_time"] = pd.to_datetime(df["ingestion_time"])
+
+        df = df.fillna("")
 
         return df
     else:
@@ -460,7 +477,12 @@ def reload_data(
 def load_campaigns_data():
     """Load campaigns data"""
 
-    for campaign_config in CAMPAIGNS_CONFIG.values():
+    # Campaigns that depend on data from other campaigns should be added at last
+    campaigns_configs = [x for x in CAMPAIGNS_CONFIG.values() if not x.file.from_others]
+    campaigns_configs.extend(
+        [x for x in CAMPAIGNS_CONFIG.values() if x.file.from_others]
+    )
+    for campaign_config in campaigns_configs:
         print(f"INFO:\t  Loading data for campaign {campaign_config.campaign_code}...")
 
         try:

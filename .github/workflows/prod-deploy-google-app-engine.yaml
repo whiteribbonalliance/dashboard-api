@@ -34,7 +34,6 @@ jobs:
           TRANSLATIONS_ENABLED: ${{ secrets.TRANSLATIONS_ENABLED }}
           CLOUD_SERVICE: google
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          INCLUDE_ALLCAMPAIGNS: ${{ secrets.INCLUDE_ALLCAMPAIGNS }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           OWNER_NAME: ${{ secrets.OWNER_NAME }}
           OWNER_URL: ${{ secrets.OWNER_URL }}

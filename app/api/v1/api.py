@@ -30,7 +30,6 @@ from app.api.v1.endpoints.campaign_configurations import (
     router as campaign_configurations_router,
 )
 from app.api.v1.endpoints.campaigns import router as campaigns_router
-from app.api.v1.endpoints.campaigns_merged import router as campaigns_merged_router
 from app.api.v1.endpoints.data import router as data_router
 from app.api.v1.endpoints.geo_json_world import router as geo_json_world_router
 from app.api.v1.endpoints.health_check import router as health_check_router
@@ -43,7 +42,6 @@ api_router.include_router(
     campaign_configurations_router, tags=["Campaigns Configurations"]
 )
 api_router.include_router(campaigns_router, tags=["Campaigns"])
-api_router.include_router(campaigns_merged_router, tags=["Campaigns Merged"])
 api_router.include_router(auth_router, tags=["Authentication"])
 api_router.include_router(data_router, tags=["Data"])
 api_router.include_router(geo_json_world_router, tags=["GeoJSON World"])

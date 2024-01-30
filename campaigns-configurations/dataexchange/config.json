@@ -1,0 +1,24 @@
+{
+  "campaign_code": "dataexchange",
+  "dashboard_path": "dataexchange",
+  "dashboard_url": "https://worldwewantproject.com/dataexchange",
+  "campaign_title": "World We Want Data Exchange",
+  "campaign_subtext": "Communities around the world raised their voices to tell us what they want most.",
+  "site_title": "World We Want Data Exchange",
+  "site_description": "World We Want Data Exchange",
+  "file": {
+    "from_others": true
+  },
+  "questions": {},
+  "respondent_noun_singular": "respondent",
+  "respondent_noun_plural": "respondents",
+  "video_url": "",
+  "about_us_url": "https://example.com",
+  "parent_categories": [
+    {
+      "code": "",
+      "description": "",
+      "sub_categories": []
+    }
+  ]
+}

@@ -200,7 +200,7 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
 
 def generate_description_of_filter(
     _filter: Filter,
-    num_results: int,
+    respondents_count: int,
     respondent_noun_singular: str,
     respondent_noun_plural: str,
     response_topics_as_descriptions: list[str],
@@ -217,12 +217,12 @@ def generate_description_of_filter(
 
     # Professions
     if len(professions) == 0:
-        if num_results == 1:
+        if respondents_count == 1:
             respondent = respondent_noun_singular
         else:
             respondent = respondent_noun_plural
     else:
-        if num_results == 1:
+        if respondents_count == 1:
             respondent = join_list_comma_and(professions, lower_words=True)
         else:
             respondent = join_list_comma_and(

@@ -39,7 +39,6 @@ their respective dashboards by running the front-end.
   the functionalities mentioned.
 - `GOOGLE_MAPS_API_KEY=` Google Maps API key used only for campaigns `wwwpakistan` and `giz` if new regions
   are found (when new data is added to these campaigns).
-- `INCLUDE_ALLCAMPAIGNS=` True or False. Allow displaying dashboard of all data merged together at `/allcampaigns`.
 - `{CAMPAIGN_CODE}_PASSWORD=` A password for accessing protected paths of a campaign
   e.g. `MY_CAMPAIGN_PASSWORD=123QWE,./` for accessing the campaign with code `MY_CAMPAIGN` (must be capitalized).
 - `ADMIN_PASSWORD=` Admin password for accessing protected paths all campaigns when logging in with

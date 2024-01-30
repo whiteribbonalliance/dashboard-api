@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-from typing import Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -64,9 +63,12 @@ class CampaignConfigBase(BaseModel):
 
 
 class File(BaseModel):
-    local: Optional[str] = Field(default=None, description="Local file name.")
-    url: Optional[str] = Field(default=None, description="URL to file.")
-    cloud: Optional[str] = Field(default=None, description="Blob name.")
+    local: str | None = Field(default=None, description="Local file name.")
+    url: str | None = Field(default=None, description="URL to file.")
+    cloud: str | None = Field(default=None, description="Blob name.")
+    from_others: bool = Field(
+        default=False, description="Use data from all other campaigns."
+    )
 
 
 class CampaignConfigInternal(CampaignConfigBase):

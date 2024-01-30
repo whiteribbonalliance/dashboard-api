@@ -7,6 +7,7 @@
   "site_title": "What Midwives Want | White Ribbon Alliance",
   "site_description": "What Women Want: What Midwives Want, led by White Ribbon Alliance (WRA) in collaboration with the International Confederation of Midwives (ICM), is a key companion to the What Women Want (WWW) campaign, which asked 1.2 million women and girls their top demand for quality reproductive and maternal healthcare.",
   "file": {
+    "local": "midwife.csv",
     "url": "https://wra.blob.core.windows.net/wra/midwife.csv"
   },
   "respondent_noun_singular": "respondent",

@@ -119,31 +119,31 @@ class CampaignService:
         # Apply filter 1
         if self.__filter_1:
             self.__df_1 = filters.apply_filter_to_df(
-                df=df.copy(),
+                df=df,
                 _filter=self.__filter_1,
                 crud=self.__crud,
             )
         else:
-            self.__df_1 = df.copy()
+            self.__df_1 = df
 
         # Apply filter 2
         if self.__filter_2:
             self.__df_2 = filters.apply_filter_to_df(
-                df=df.copy(),
+                df=df,
                 _filter=self.__filter_2,
                 crud=self.__crud,
             )
         else:
-            self.__df_2 = df.copy()
+            self.__df_2 = df
 
         # Filter 1 description
         self.__filter_1_description = self.__get_df_filter_description(
-            df_len=len(self.__df_1), _filter=self.__filter_1
+            respondents_count=len(self.__df_1.index), _filter=self.__filter_1
         )
 
         # Filter 2 description
         self.__filter_2_description = self.__get_df_filter_description(
-            df_len=len(self.__df_2), _filter=self.__filter_2
+            respondents_count=len(self.__df_2.index), _filter=self.__filter_2
         )
 
         # If filter 1 was requested, then do not use the cached ngrams
@@ -189,12 +189,7 @@ class CampaignService:
             filter_1=filter_1, filter_2=filter_2
         )
 
-    def get_campaign(
-        self,
-        q_code: str,
-        include_list_of_ages: bool = False,
-        include_list_of_age_buckets_default: bool = False,
-    ) -> Campaign:
+    def get_campaign(self, q_code: str) -> Campaign:
         """Get campaign"""
 
         # Included response years
@@ -234,26 +229,6 @@ class CampaignService:
         # World bubble maps coordinates
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
-        # List of ages
-        if include_list_of_ages and q_code == "q1":
-            list_of_ages_1 = self.__get_list_of_ages(df=self.__df_1)
-            list_of_ages_2 = self.__get_list_of_ages(df=self.__df_2)
-        else:
-            list_of_ages_1 = []
-            list_of_ages_2 = []
-
-        # List of age buckets
-        if include_list_of_age_buckets_default and q_code == "q1":
-            list_of_age_buckets_1 = self.__get_list_of_age_buckets_default(
-                df=self.__df_1
-            )
-            list_of_age_buckets_2 = self.__get_list_of_age_buckets_default(
-                df=self.__df_2
-            )
-        else:
-            list_of_age_buckets_1 = []
-            list_of_age_buckets_2 = []
-
         # Respondents count
         filter_1_respondents_count = self.__get_filter_respondents_count(df=self.__df_1)
         filter_2_respondents_count = self.__get_filter_respondents_count(df=self.__df_2)
@@ -282,8 +257,8 @@ class CampaignService:
         ).dict()
 
         # All questions
-        campaign_q_codes = [x for x in self.__crud.get_q_codes()]
         all_questions = []
+        campaign_q_codes = [x for x in self.__crud.get_q_codes()]
         for campaign_q_code in campaign_q_codes:
             if config_question := self.__campaign_config.questions.get(campaign_q_code):
                 all_questions.append(
@@ -379,10 +354,6 @@ class CampaignService:
             histogram=histogram,
             genders_breakdown=genders_breakdown,
             world_bubble_maps_coordinates=world_bubble_maps_coordinates,
-            list_of_ages_1=list_of_ages_1,
-            list_of_ages_2=list_of_ages_2,
-            list_of_age_buckets_1=list_of_age_buckets_1,
-            list_of_age_buckets_2=list_of_age_buckets_2,
             filter_1_respondents_count=filter_1_respondents_count,
             filter_2_respondents_count=filter_2_respondents_count,
             filter_1_average_age=filter_1_average_age,
@@ -1437,7 +1408,9 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __get_df_filter_description(self, df_len: int, _filter: Filter) -> str:
+    def __get_df_filter_description(
+        self, respondents_count: int, _filter: Filter
+    ) -> str:
         """Get df filter description"""
 
         if not _filter:
@@ -1454,7 +1427,7 @@ class CampaignService:
         ]
         description = filters.generate_description_of_filter(
             _filter=_filter,
-            num_results=df_len,
+            respondents_count=respondents_count,
             respondent_noun_singular=self.__crud.get_respondent_noun_singular(),
             respondent_noun_plural=self.__crud.get_respondent_noun_plural(),
             response_topics_as_descriptions=response_topics_mentioned,
@@ -2052,30 +2025,6 @@ class CampaignService:
         ]
 
         return only_multi_word_phrases_containing_filter_term_options
-
-    def __get_list_of_ages(self, df: pd.DataFrame) -> list[str]:
-        """Get list of ages"""
-
-        df_copy = df.copy()
-
-        # Only keep age column
-        df_copy = df_copy[["age"]]
-
-        df_copy = df_copy["age"].dropna()
-
-        return df_copy.tolist()
-
-    def __get_list_of_age_buckets_default(self, df: pd.DataFrame) -> list[str]:
-        """Get list of age buckets"""
-
-        df_copy = df.copy()
-
-        # Only keep age_bucket_default column
-        df_copy = df_copy[["age_bucket_default"]]
-
-        df_copy = df_copy["age_bucket_default"].dropna()
-
-        return df_copy.tolist()
 
     def __get_response_years(self) -> list[str]:
         """Get response years"""

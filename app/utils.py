@@ -26,9 +26,7 @@ SOFTWARE.
 import glob
 import hashlib
 import json
-import math
 import os
-import random
 import re
 from hashlib import sha256
 
@@ -100,134 +98,6 @@ def clear_tmp_dir():
             os.remove(filename)
         except OSError:
             pass
-
-
-def get_distributed_list_of_dictionaries(
-    data_lists: list[list[dict]],
-    sort_by_key: str = None,
-    n_items: int = None,
-    remove_duplicates: bool = False,
-) -> list[dict]:
-    """
-    Given a list containing a list of dictionaries, distribute the list items to a single list of dictionaries.
-
-    :param data_lists: A list containing lists of dictionaries.
-    :param sort_by_key: Optional, sort by dictionary key (desc) and pick top items.
-    :param n_items: Optional, n items to pick from each list.
-    :param remove_duplicates: Optional, remove duplicates from list.
-    """
-
-    distributed_data_list = []
-
-    # Get items count of list with most items
-    items_counts_list = [len(data_list) for data_list in data_lists]
-    if len(items_counts_list) > 0:
-        max_items_count = max(items_counts_list)
-    else:
-        max_items_count = 0
-
-    # Get items from each list
-    for data_list in data_lists:
-        if data_list:
-            # Set n items
-            if not n_items:
-                n_items = math.ceil(max_items_count / len(data_lists))
-            if n_items > len(data_list):
-                n_items = len(data_list)
-
-            # Sort list by dict key and pick the top n results
-            if sort_by_key:
-                data_list_sorted = sorted(
-                    data_list, key=lambda d: d.get(sort_by_key), reverse=True
-                )
-                distributed_data_list.extend(data_list_sorted[:n_items])
-
-            # Pick random n sample
-            else:
-                distributed_data_list.extend(
-                    random.sample(population=data_list, k=n_items)
-                )
-
-    # Remove duplicates
-    if remove_duplicates:
-        distributed_data_list = [
-            x
-            for index, x in enumerate(distributed_data_list)
-            if x not in distributed_data_list[:index]
-        ]
-
-    # Shuffle
-    random.shuffle(distributed_data_list)
-
-    # Keep the list the size of max_items_count
-    if len(distributed_data_list) > max_items_count:
-        distributed_data_list = distributed_data_list[:max_items_count]
-
-    return distributed_data_list
-
-
-def get_unique_flattened_list_of_dictionaries(
-    data_lists: list[list[dict]],
-) -> list[dict]:
-    """
-    Given a list containing a list of dictionaries, flatten the list and remove duplicates.
-
-    :param data_lists: A list containing lists of dictionaries.
-    """
-
-    # Flatten the list
-    data_lists_flattened: list[dict] = []
-    for data_list in data_lists:
-        data_lists_flattened.extend([x for x in data_list if x])
-
-    # Remove duplicate dictionaries from list
-    data_lists_flattened = [
-        x
-        for index, x in enumerate(data_lists_flattened)
-        if x not in data_lists_flattened[:index]
-    ]
-
-    return data_lists_flattened
-
-
-def get_merged_flattened_list_of_dictionaries(
-    data_lists: list[list[dict]], unique_key: str, keys_to_merge: list[str]
-) -> list[dict]:
-    """
-    Given a list containing a list of dictionaries, find duplicates by a specific dictionary key and merge them to a single list.
-
-    :param data_lists: A list containing lists of dictionaries.
-    :param unique_key: Key to use for checking duplicates.
-    :param keys_to_merge: Only applicable if the value of the key is an int. Will do an addition with all values with the same key in the flattened list of dictionaries result.
-    """
-
-    # Flatten the list
-    data_lists_flattened: list[dict] = []
-    for data_lists in data_lists:
-        data_lists_flattened.extend([x for x in data_lists if x])
-
-    tmp_merged: dict[str, dict] = {}
-    for data in data_lists_flattened:
-        # If key is not found, continue
-        data_key_value = data.get(unique_key)
-        if not data_key_value:
-            continue
-
-        # Add new data to dict
-        if data_key_value not in tmp_merged.keys():
-            tmp_merged[data_key_value] = data
-
-        # Merge data to existing dict in list
-        else:
-            for key_to_merge in keys_to_merge:
-                if isinstance(
-                    tmp_merged.get(data_key_value, {}).get(key_to_merge), int
-                ) and isinstance(data.get(key_to_merge, {}), int):
-                    tmp_merged[data_key_value][key_to_merge] += data[key_to_merge]
-
-    merged_list = [v for v in tmp_merged.values()]
-
-    return merged_list
 
 
 def extract_first_occurring_numbers(

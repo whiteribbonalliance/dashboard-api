@@ -59,10 +59,6 @@ tags_metadata = [
         "description": "Read campaigns configurations.",
     },
     {
-        "name": "Campaigns Merged",
-        "description": "Read data of all campaigns merged together as one campaign.",
-    },
-    {
         "name": "Authentication",
         "description": "Login and receive a token. This token can be used to access protected routes that allow downloading campaigns data.",
     },

@@ -67,7 +67,6 @@ class Settings(BaseSettings):
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
     NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL")
     CLOUD_SERVICE: str = CLOUD_SERVICE
-    INCLUDE_ALLCAMPAIGNS: bool = os.getenv("INCLUDE_ALLCAMPAIGNS", "") == "true"
 
     # Google
     GOOGLE_CLOUD_STORAGE_BUCKET_FILE: str = os.getenv(

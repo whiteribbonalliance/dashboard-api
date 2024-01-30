@@ -161,8 +161,11 @@ def download_campaign_public_data(
     filter_1 = campaign_req.filter_1
     filter_2 = campaign_req.filter_2
 
-    # Only allow legacy campaign healthwellbeing
-    if campaign_code != LegacyCampaignCode.healthwellbeing.value:
+    # Only allow legacy campaign healthwellbeing and dataexchange
+    if (
+        campaign_code != LegacyCampaignCode.healthwellbeing.value
+        and campaign_code != LegacyCampaignCode.dataexchange.value
+    ):
         raise http_exceptions.UnauthorizedHTTPException(
             "Reading campaign data not allowed."
         )

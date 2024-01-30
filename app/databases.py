@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
+
 import os
 
 from pandas import DataFrame
@@ -36,19 +37,6 @@ from app.schemas.response_column import ResponseSampleColumn
 from app.schemas.user import UserInternal
 
 settings = get_settings()
-
-# Responses sample columns
-response_res_col = ResponseSampleColumn(name="Response", id="response", type="text")
-topic_res_col = ResponseSampleColumn(name="Topic(s)", id="description", type="text")
-country_res_col = ResponseSampleColumn(
-    name="Country", id="canonical_country", type="text"
-)
-region_res_col = ResponseSampleColumn(name="Region", id="region", type="text")
-gender_res_col = ResponseSampleColumn(name="Gender", id="gender", type="text")
-age_res_col = ResponseSampleColumn(name="Age", id="age", type="text")
-profession_res_col = ResponseSampleColumn(
-    name="Professional Title", id="profession", type="text"
-)
 
 
 class Database(BaseModel):
@@ -90,7 +78,7 @@ class Database(BaseModel):
     responses_sample_columns: list[ResponseSampleColumn]
     parent_categories: list[ParentCategory]
     ngrams_unfiltered: dict[str, dict[str, dict[str, int]]] = {}
-    user: UserInternal = None
+    user: UserInternal | None = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -104,35 +92,59 @@ def create_databases(campaign_codes: list[str]):
     Create databases.
     """
 
+    # Responses sample columns
+    response_col = ResponseSampleColumn(name="Response", id="response", type="text")
+    topic_col = ResponseSampleColumn(name="Topic(s)", id="description", type="text")
+    country_col = ResponseSampleColumn(
+        name="Country", id="canonical_country", type="text"
+    )
+    region_col = ResponseSampleColumn(name="Region", id="region", type="text")
+    gender_col = ResponseSampleColumn(name="Gender", id="gender", type="text")
+    age_col = ResponseSampleColumn(name="Age", id="age", type="text")
+    profession_col = ResponseSampleColumn(
+        name="Professional Title", id="profession", type="text"
+    )
+    year_col = ResponseSampleColumn(name="Year", id="year", type="text")
+
     for campaign_code in campaign_codes:
         campaign_config = CAMPAIGNS_CONFIG.get(campaign_code)
 
         # Responses sample columns
         if campaign_code == LegacyCampaignCode.pmn01a.value:
             responses_sample_columns = [
-                response_res_col,
-                topic_res_col,
-                country_res_col,
-                region_res_col,
-                gender_res_col,
-                age_res_col,
+                response_col,
+                topic_col,
+                country_col,
+                region_col,
+                gender_col,
+                age_col,
             ]
         elif campaign_code == LegacyCampaignCode.midwife.value:
             responses_sample_columns = [
-                response_res_col,
-                topic_res_col,
-                country_res_col,
-                region_res_col,
-                gender_res_col,
-                profession_res_col,
-                age_res_col,
+                response_col,
+                topic_col,
+                country_col,
+                region_col,
+                gender_col,
+                profession_col,
+                age_col,
+            ]
+        elif campaign_code == LegacyCampaignCode.dataexchange.value:
+            topic_col_modified = topic_col.copy()
+            topic_col_modified.name = "Topic"
+            responses_sample_columns = [
+                response_col,
+                topic_col_modified,
+                country_col,
+                age_col,
+                # year_col,
             ]
         else:
             responses_sample_columns = [
-                response_res_col,
-                topic_res_col,
-                country_res_col,
-                age_res_col,
+                response_col,
+                topic_col,
+                country_col,
+                age_col,
             ]
 
         databases_dict[campaign_code] = Database(

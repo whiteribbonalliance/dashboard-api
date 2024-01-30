@@ -15,7 +15,6 @@ env_variables:
   TRANSLATIONS_ENABLED: $TRANSLATIONS_ENABLED
   CLOUD_SERVICE: google
   GOOGLE_MAPS_API_KEY: $GOOGLE_MAPS_API_KEY
-  INCLUDE_ALLCAMPAIGNS: $INCLUDE_ALLCAMPAIGNS
   ADMIN_PASSWORD: $ADMIN_PASSWORD
   OWNER_NAME: $OWNER_NAME
   OWNER_URL: $OWNER_URL
@@ -37,7 +36,7 @@ manual_scaling:
 
 resources:
   cpu: 4
-  memory_gb: 7.5
+  memory_gb: 8
   disk_size_gb: 10
 
 # Force https and redirect http to https

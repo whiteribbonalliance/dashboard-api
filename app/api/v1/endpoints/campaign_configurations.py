@@ -64,23 +64,6 @@ def read_campaigns_configurations(
     ]
     if configurations:
         configurations = copy.deepcopy(configurations)
-        if settings.INCLUDE_ALLCAMPAIGNS:
-            configurations.insert(
-                0,
-                CampaignConfigResponse(
-                    campaign_code="allcampaigns",
-                    dashboard_path="allcampaigns",
-                    campaign_title="Dashboard of Dashboards",
-                    campaign_subtext="",
-                    site_title="Dashboard of Dashboards",
-                    site_description="All campaigns",
-                    respondent_noun_singular="respondent",
-                    respondent_noun_plural="respondents",
-                    video_url="",
-                    about_us_url="",
-                    dashboard_url="",
-                ),
-            )
 
         # Translate
         if settings.TRANSLATIONS_ENABLED and lang != "en":
