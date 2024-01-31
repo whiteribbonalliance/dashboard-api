@@ -313,18 +313,30 @@ def load_campaign_df(campaign_code: str) -> pd.DataFrame | None:
                     dtype=dtype,
                 )
 
-        # From all other campaigns
-        elif campaign_config.file.from_others:
-            df_list = []
-            for campaign_config in CAMPAIGNS_CONFIG.values():
-                campaign_code = campaign_config.campaign_code
-                if campaign_config.file.from_others:
+        # From other campaigns
+        elif campaign_config.file.use_campaigns:
+            df_list: list[pd.DataFrame] = []
+            for other_campaign_config in CAMPAIGNS_CONFIG.values():
+                # Skip on these conditions
+                if other_campaign_config.file.use_campaigns:
                     continue
-                db_campaign = databases.get_campaign_db(campaign_code=campaign_code)
+                if (
+                    other_campaign_config.campaign_code
+                    not in campaign_config.file.use_campaigns
+                ):
+                    continue
+
+                # Get campaign db
+                db_campaign = databases.get_campaign_db(
+                    campaign_code=other_campaign_config.campaign_code
+                )
+
+                # Add campaign df to df_list
                 if db_campaign:
                     df_list.append(db_campaign.dataframe)
 
-            df = pd.concat(df_list)
+            if df_list:
+                df = pd.concat(df_list)
 
     if df is not None:
         # ingestion_time to datetime
@@ -478,9 +490,11 @@ def load_campaigns_data():
     """Load campaigns data"""
 
     # Campaigns that depend on data from other campaigns should be added at last
-    campaigns_configs = [x for x in CAMPAIGNS_CONFIG.values() if not x.file.from_others]
+    campaigns_configs = [
+        x for x in CAMPAIGNS_CONFIG.values() if not x.file.use_campaigns
+    ]
     campaigns_configs.extend(
-        [x for x in CAMPAIGNS_CONFIG.values() if x.file.from_others]
+        [x for x in CAMPAIGNS_CONFIG.values() if x.file.use_campaigns]
     )
     for campaign_config in campaigns_configs:
         print(f"INFO:\t  Loading data for campaign {campaign_config.campaign_code}...")

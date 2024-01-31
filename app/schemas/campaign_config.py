@@ -66,8 +66,8 @@ class File(BaseModel):
     local: str | None = Field(default=None, description="Local file name.")
     url: str | None = Field(default=None, description="URL to file.")
     cloud: str | None = Field(default=None, description="Blob name.")
-    from_others: bool = Field(
-        default=False, description="Use data from all other campaigns."
+    use_campaigns: list[str] = Field(
+        default=[], description="Use data from other campaigns."
     )
 
 

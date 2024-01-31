@@ -7,7 +7,14 @@
   "site_title": "World We Want Data Exchange",
   "site_description": "World We Want Data Exchange",
   "file": {
-    "from_others": true
+    "use_campaigns": [
+      "giz",
+      "healthwellbeing",
+      "midwife",
+      "pmn01a",
+      "wra03a",
+      "wwwpakistan"
+    ]
   },
   "questions": {},
   "respondent_noun_singular": "respondent",
