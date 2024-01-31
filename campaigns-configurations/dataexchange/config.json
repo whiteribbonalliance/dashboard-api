@@ -25,7 +25,36 @@
     {
       "code": "",
       "description": "",
-      "sub_categories": []
+      "sub_categories": [
+        {
+          "code": "Education",
+          "description": "Education"
+        },
+        {
+          "code": "Economy",
+          "description": "Economy"
+        },
+        {
+          "code": "Safety & Security",
+          "description": "Safety & Security"
+        },
+        {
+          "code": "Health",
+          "description": "Health"
+        },
+        {
+          "code": "Mental, Emotional & Social Wellbeing",
+          "description": "Mental, Emotional & Social Wellbeing"
+        },
+        {
+          "code": "Equality & Rights",
+          "description": "Equality & Rights"
+        },
+        {
+          "code": "All other topics",
+          "description": "All other topics"
+        }
+      ]
     }
   ]
 }

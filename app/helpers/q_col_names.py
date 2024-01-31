@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 
 
 def get_response_col_name(q_code: str) -> str:
@@ -30,10 +31,13 @@ def get_response_col_name(q_code: str) -> str:
     return f"{q_code}_response"
 
 
-def get_canonical_code_col_name(q_code: str) -> str:
+def get_canonical_code_col_name(q_code: str, campaign_code: str | None = None) -> str:
     """Get canonical code column name"""
 
-    return f"{q_code}_canonical_code"
+    if campaign_code == LegacyCampaignCode.dataexchange.value:
+        return "canonical_code_data_exchange"
+    else:
+        return f"{q_code}_canonical_code"
 
 
 def get_lemmatized_col_name(q_code: str) -> str:
@@ -66,7 +70,10 @@ def get_code_col_name(q_code: str) -> str:
     return f"{q_code}_code"
 
 
-def get_description_col_name(q_code: str) -> str:
+def get_description_col_name(q_code: str, campaign_code: str | None = None) -> str:
     """Get description column name"""
 
-    return f"{q_code}_description"
+    if campaign_code == LegacyCampaignCode.dataexchange.value:
+        return "description_data_exchange"
+    else:
+        return f"{q_code}_description"
