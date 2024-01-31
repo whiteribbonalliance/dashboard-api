@@ -70,10 +70,7 @@ def get_code_col_name(q_code: str) -> str:
     return f"{q_code}_code"
 
 
-def get_description_col_name(q_code: str, campaign_code: str | None = None) -> str:
+def get_description_col_name(q_code: str) -> str:
     """Get description column name"""
 
-    if campaign_code == LegacyCampaignCode.dataexchange.value:
-        return "description_data_exchange"
-    else:
-        return f"{q_code}_description"
+    return f"{q_code}_description"

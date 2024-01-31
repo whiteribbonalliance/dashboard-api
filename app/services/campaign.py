@@ -815,9 +815,7 @@ class CampaignService:
         """Get df responses sample"""
 
         # Set column names based on question code
-        description_col_name = q_col_names.get_description_col_name(
-            campaign_code=self.__campaign_code, q_code=q_code
-        )
+        description_col_name = q_col_names.get_description_col_name(q_code=q_code)
         canonical_code_col_name = q_col_names.get_canonical_code_col_name(
             q_code=q_code, campaign_code=self.__campaign_code
         )
@@ -868,9 +866,7 @@ class CampaignService:
         canonical_code_col_name = q_col_names.get_canonical_code_col_name(
             q_code=q_code, campaign_code=self.__campaign_code
         )
-        description_col_name = q_col_names.get_description_col_name(
-            q_code=q_code, campaign_code=self.__campaign_code
-        )
+        description_col_name = q_col_names.get_description_col_name(q_code=q_code)
         parent_category_col_name = q_col_names.get_parent_category_col_name(
             q_code=q_code
         )
