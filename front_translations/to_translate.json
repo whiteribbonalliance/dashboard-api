@@ -51,6 +51,7 @@
   "click-bubble-country-information": "Click legend to toggle bubbles, click bubbles to view country information.",
   "each-bubble-sized-number-people": "Each bubble is sized according to the number of people",
   "wra03a-click-view-topic-responses": "Click on a topic to view responses. Some women mentioned more than one topic. Hover over a bar to see the numbers and category name.",
+  "dataexchange-click-view-topic-responses": "Click on a topic to view responses. Hover over a bar to see the numbers and category name.",
   "click-view-topic-responses": "Click on a topic to view responses. Some respondents mentioned more than one topic. Hover over a bar to see the numbers and category name.",
   "number-ages-respondents": "Number and ages of respondents.",
   "countries-respondents-located-in": "Countries respondents are located in.",
@@ -78,8 +79,8 @@
   "healthwellbeing-learn-more-about-categories": "Are you interested in learning more about the categories used in this Dashboard? Review the Women’s Health and Wellbeing campaign codebook",
   "dataexchange-learn-more-about-categories": "Are you interested in learning more about the categories used in the World We Want Data Exchange? Review the World We Want codebook",
   "healthwellbeing-ai-constantly-improved": "Our AI is constantly being improved. If you see any errors on the Dashboard, please let us know",
-  "data-exchange-explore-initiatives": "Explore the individual initiatives included in the Data Exchange and download specific project datasets",
-  "data-exchange-contact": "Interested in adding to the World We Want Data Exchange? Contact us",
+  "dataexchange-explore-initiatives": "Explore the individual initiatives included in the Data Exchange and download specific project datasets",
+  "dataexchange-contact": "Interested in adding to the World We Want Data Exchange? Contact us",
   "here-capitalized": "HERE",
   "apply": "Apply"
 }
