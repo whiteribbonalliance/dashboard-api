@@ -24,7 +24,6 @@ SOFTWARE.
 """
 
 import logging
-import math
 import operator
 import os
 import random
@@ -45,7 +44,6 @@ from app.helpers import q_col_names
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
 from app.schemas.campaign import Campaign
-from app.schemas.country import Country
 from app.schemas.filter import Filter
 from app.schemas.filter_options import FilterOptions
 from app.schemas.option_bool import OptionBool
@@ -94,7 +92,7 @@ class CampaignService:
         self.__language = language
 
         # All response years
-        self.__all_response_years = self.__get_response_years()
+        self.__all_response_years = self.__crud.get_response_years()
 
         # Response year
         self.__response_year = response_year
@@ -366,7 +364,7 @@ class CampaignService:
         """Get filter options"""
 
         # Country options
-        countries = self.__get_countries_list()
+        countries = self.__crud.get_countries_list()
         country_options = [
             OptionStr(value=country.alpha2_code, label=country.name).dict()
             for country in countries
@@ -427,28 +425,34 @@ class CampaignService:
         age_options = [OptionStr(value=age, label=age).dict() for age in ages]
 
         # Age bucket options
-        age_buckets = self.__get_age_buckets()
+        age_buckets = self.__crud.get_age_buckets()
+        age_buckets = [x for x in age_buckets if x.lower() != "n/a"]
         age_bucket_options = [
             OptionStr(value=age_bucket, label=age_bucket).dict()
             for age_bucket in age_buckets
         ]
 
         # Age buckets default options
-        age_buckets_default = self.__get_age_buckets_default()
+        age_buckets_default = self.__crud.get_age_buckets_default()
+        age_buckets_default = [x for x in age_buckets_default if x.lower() != "n/a"]
         age_bucket_default_options = [
             OptionStr(value=age_bucket_default, label=age_bucket_default).dict()
             for age_bucket_default in age_buckets_default
         ]
 
+        # Year options
+        years = self.__crud.get_response_years()
+        year_options = [OptionStr(value=year, label=year).dict() for year in years]
+
         # Gender options
-        genders = self.__get_genders()
+        genders = self.__crud.get_genders()
         gender_options = [
             OptionStr(value=gender, label=gender).dict() for gender in genders
         ]
 
         # Living setting options
         living_setting_options = []
-        living_settings = self.__get_living_settings()
+        living_settings = self.__crud.get_living_settings()
         for index, setting in enumerate(living_settings):
             # Value & label
             value = setting
@@ -462,7 +466,7 @@ class CampaignService:
             living_setting_options.append(OptionStr(value=value, label=label).dict())
 
         # Profession options
-        professions = self.__get_professions()
+        professions = self.__crud.get_professions()
         profession_options = [
             OptionStr(value=profession, label=profession).dict()
             for profession in professions
@@ -570,6 +574,7 @@ class CampaignService:
             age_buckets=age_bucket_options,
             age_buckets_default=age_bucket_default_options,
             genders=gender_options,
+            years=year_options,
             living_settings=living_setting_options,
             professions=profession_options,
             only_responses_from_categories=only_responses_from_categories_options,
@@ -746,18 +751,16 @@ class CampaignService:
         """Get responses sample"""
 
         # Get copy to not modify original
-        df_1_copy = self.__get_df_1_copy()
+        df_1 = self.__get_df_1_copy()
 
-        response_sample_1 = self.__get_df_responses_sample(df=df_1_copy, q_code=q_code)
+        response_sample_1 = self.__get_df_responses_sample(df=df_1, q_code=q_code)
 
         # Only set responses_sample_2 if filter 2 was applied
         if self.__filter_2:
             # Get copy to not modify original
-            df_2_copy = self.__get_df_2_copy()
+            df_2 = self.__get_df_2_copy()
 
-            response_sample_2 = self.__get_df_responses_sample(
-                df=df_2_copy, q_code=q_code
-            )
+            response_sample_2 = self.__get_df_responses_sample(df=df_2, q_code=q_code)
         else:
             response_sample_2 = []
 
@@ -1136,12 +1139,12 @@ class CampaignService:
     def __get_living_settings_breakdown(self) -> list[dict[str, int]]:
         """Get living setting settings breakdown"""
 
-        df_1_copy = self.__get_df_1_copy()
-        df_2_copy = self.__get_df_2_copy()
+        df_1 = self.__get_df_1_copy()
+        df_2 = self.__get_df_2_copy()
 
         # Get row count
-        grouped_by_column_1 = df_1_copy.groupby("setting")["setting"].count()
-        grouped_by_column_2 = df_2_copy.groupby("setting")["setting"].count()
+        grouped_by_column_1 = df_1.groupby("setting")["setting"].count()
+        grouped_by_column_2 = df_2.groupby("setting")["setting"].count()
 
         # Add count
         names = list(
@@ -1750,9 +1753,9 @@ class CampaignService:
     def __get_genders_breakdown(self) -> list[dict]:
         """Get genders breakdown"""
 
-        df_1_copy = self.__get_df_1_copy()
+        df_1 = self.__get_df_1_copy()
 
-        gender_counts = df_1_copy["gender"].value_counts(ascending=True).to_dict()
+        gender_counts = df_1["gender"].value_counts(ascending=True).to_dict()
 
         genders_breakdown = []
         for key, value in gender_counts.items():
@@ -1922,97 +1925,6 @@ class CampaignService:
 
         return self.__filters_are_identical
 
-    def __get_countries_list(self) -> list[Country]:
-        """Get countries list"""
-
-        countries = self.__crud.get_countries_list()
-
-        # Sort countries
-        countries = sorted(countries, key=lambda x: x.name)
-
-        return countries
-
-    def __get_ages(self) -> list[str]:
-        """Get ages"""
-
-        ages = self.__crud.get_ages()
-
-        # Sort
-        ages = sorted(
-            ages,
-            key=lambda x: utils.extract_first_occurring_numbers(
-                value=x, first_less_than_symbol_to_0=True
-            ),
-        )
-
-        return ages
-
-    def __get_age_buckets(self) -> list[str]:
-        """Get age buckets"""
-
-        age_buckets = self.__crud.get_age_buckets()
-
-        # Remove n/a
-        age_buckets = [x for x in age_buckets if x.lower() != "n/a"]
-
-        # Sort
-        age_buckets = sorted(
-            age_buckets,
-            key=lambda x: utils.extract_first_occurring_numbers(
-                value=x, first_less_than_symbol_to_0=True
-            ),
-        )
-
-        return age_buckets
-
-    def __get_age_buckets_default(self) -> list[str]:
-        """Get age buckets default"""
-
-        age_buckets_default = self.__crud.get_age_buckets_default()
-
-        # Remove n/a
-        age_buckets_default = [x for x in age_buckets_default if x.lower() != "n/a"]
-
-        # Sort
-        age_buckets_default = sorted(
-            age_buckets_default,
-            key=lambda x: utils.extract_first_occurring_numbers(
-                value=x, first_less_than_symbol_to_0=True
-            ),
-        )
-
-        return age_buckets_default
-
-    def __get_genders(self) -> list[str]:
-        """Get genders"""
-
-        genders = self.__crud.get_genders()
-
-        # Sort
-        genders = sorted(genders, key=lambda x: x)
-
-        return genders
-
-    def __get_living_settings(self) -> list[str]:
-        """Get living settings"""
-
-        living_settings = self.__crud.get_living_settings()
-
-        # Sort
-        living_settings = sorted(living_settings, key=lambda x: x)
-
-        return living_settings
-
-    def __get_professions(self) -> list[str]:
-        """Get professions"""
-
-        professions = self.__crud.get_professions()
-
-        # Sort
-        professions = sorted(professions, key=lambda x: x)
-
-        return professions
-
     def __get_only_responses_from_categories_options(self) -> list[OptionBool]:
         """Get only responses from categories options"""
 
@@ -2043,13 +1955,6 @@ class CampaignService:
 
         return only_multi_word_phrases_containing_filter_term_options
 
-    def __get_response_years(self) -> list[str]:
-        """Get response years"""
-
-        response_years = self.__crud.get_response_years()
-
-        return response_years
-
     def __get_campaign_df_export_and_filename(
         self,
         date_format: str,
@@ -2060,10 +1965,10 @@ class CampaignService:
         """Get campaign dataframe for exporting and filename"""
 
         # Dataframe
-        df = self.__get_df_1_copy()
+        df_1 = self.__get_df_1_copy()
 
         # Drop columns
-        df = df.drop(
+        df_1 = df_1.drop(
             columns=[
                 "age_bucket_default",
                 "data_source",
@@ -2079,23 +1984,23 @@ class CampaignService:
         # Filter by date
         if from_date and to_date:
             try:
-                df = df[
-                    (df["ingestion_time"].dt.date >= from_date)
-                    & (df["ingestion_time"].dt.date <= to_date)
+                df_1 = df_1[
+                    (df_1["ingestion_time"].dt.date >= from_date)
+                    & (df_1["ingestion_time"].dt.date <= to_date)
                 ]
             except AttributeError:
                 # If there is no date values in ingestion_time
-                df = df[0:0]
+                df_1 = df_1[0:0]
             finally:
                 csv_filename_without_ext = csv_filename.replace(".csv", "")
                 csv_filename = f"{csv_filename_without_ext}_{from_date.strftime(date_format)}_to_{to_date.strftime(date_format)}.csv"
 
         # Convert date to string
-        df["ingestion_time"] = df["ingestion_time"].apply(
+        df_1["ingestion_time"] = df_1["ingestion_time"].apply(
             lambda x: x.strftime(date_format) if x and not isinstance(x, str) else ""
         )
 
-        return df, csv_filename
+        return df_1, csv_filename
 
     def get_campaign_data_url_and_filename(
         self,

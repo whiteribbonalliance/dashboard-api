@@ -28,7 +28,7 @@ import copy
 import inflect
 from pandas import DataFrame
 
-from app import databases
+from app import databases, utils
 from app.databases import Database
 from app.schemas.category import ParentCategory
 from app.schemas.country import Country
@@ -58,7 +58,10 @@ class Campaign:
 
         countries = self.__db.countries
         if countries:
-            return [x.copy(deep=True) for x in list(countries.values()) if x]
+            countries = [x.copy(deep=True) for x in list(countries.values()) if x]
+            countries = sorted(countries, key=lambda x: x.name)
+
+            return countries
 
         return []
 
@@ -92,6 +95,7 @@ class Campaign:
         """Get response years"""
 
         response_years = copy.copy(self.__db.response_years)
+        response_years = sorted(response_years, key=lambda x: x)
 
         return response_years
 
@@ -100,7 +104,15 @@ class Campaign:
 
         ages = self.__db.ages
         if ages:
-            return [x for x in ages if x]
+            ages = [x for x in ages if x]
+            ages = sorted(
+                ages,
+                key=lambda x: utils.extract_first_occurring_numbers(
+                    value=x, first_less_than_symbol_to_0=True
+                ),
+            )
+
+            return ages
 
         return []
 
@@ -109,7 +121,15 @@ class Campaign:
 
         age_buckets = self.__db.age_buckets
         if age_buckets:
-            return [x for x in age_buckets if x]
+            age_buckets = [x for x in age_buckets if x]
+            age_buckets = sorted(
+                age_buckets,
+                key=lambda x: utils.extract_first_occurring_numbers(
+                    value=x, first_less_than_symbol_to_0=True
+                ),
+            )
+
+            return age_buckets
 
         return []
 
@@ -118,7 +138,15 @@ class Campaign:
 
         age_buckets_default = self.__db.age_buckets_default
         if age_buckets_default:
-            return [x for x in age_buckets_default if x]
+            age_buckets_default = [x for x in age_buckets_default if x]
+            age_buckets_default = sorted(
+                age_buckets_default,
+                key=lambda x: utils.extract_first_occurring_numbers(
+                    value=x, first_less_than_symbol_to_0=True
+                ),
+            )
+
+            return age_buckets_default
 
         return []
 
@@ -127,7 +155,10 @@ class Campaign:
 
         genders = self.__db.genders
         if genders:
-            return [x for x in genders if x]
+            genders = [x for x in genders if x]
+            genders = sorted(genders, key=lambda x: x)
+
+            return genders
 
         return []
 
@@ -136,7 +167,10 @@ class Campaign:
 
         living_settings = self.__db.living_settings
         if living_settings:
-            return [x for x in living_settings if x]
+            living_settings = [x for x in living_settings if x]
+            living_settings = sorted(living_settings, key=lambda x: x)
+
+            return living_settings
 
         return []
 
@@ -145,7 +179,10 @@ class Campaign:
 
         professions = self.__db.professions
         if professions:
-            return [x for x in professions if x]
+            professions = [x for x in professions if x]
+            professions = sorted(professions, key=lambda x: x)
+
+            return professions
 
         return []
 
