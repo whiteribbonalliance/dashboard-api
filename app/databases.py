@@ -135,7 +135,7 @@ def create_databases(campaign_codes: list[str]):
                 profession_col,
                 age_bucket_col,
             ]
-        elif campaign_code == LegacyCampaignCode.wra03a:
+        elif campaign_code == LegacyCampaignCode.wra03a.value:
             responses_sample_columns = [
                 response_col,
                 topic_col,
