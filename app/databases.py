@@ -89,25 +89,28 @@ databases_dict: dict[str, Database] = {}
 
 def create_databases(campaign_codes: list[str]):
     """
-    Create databases.
+    Create in-memory databases.
     """
 
     # Responses sample columns
-    response_col = ResponseSampleColumn(name="Response", id="response", type="text")
-    topic_col = ResponseSampleColumn(name="Topic(s)", id="description", type="text")
+    response_col = ResponseSampleColumn(name="Response", id="response")
+    topic_col = ResponseSampleColumn(name="Topic(s)", id="description")
     country_col = ResponseSampleColumn(
-        name="Country", id="canonical_country", type="text"
+        name="Country",
+        id="canonical_country",
     )
-    region_col = ResponseSampleColumn(name="Region", id="region", type="text")
-    gender_col = ResponseSampleColumn(name="Gender", id="gender", type="text")
-    age_col = ResponseSampleColumn(name="Age", id="age", type="text")
-    age_bucket_col = ResponseSampleColumn(
-        name="Age", id="age_bucket_default", type="text"
+    region_col = ResponseSampleColumn(name="Region", id="region")
+    gender_col = ResponseSampleColumn(
+        name="Gender",
+        id="gender",
     )
-    profession_col = ResponseSampleColumn(
-        name="Professional Title", id="profession", type="text"
+    age_col = ResponseSampleColumn(
+        name="Age",
+        id="age",
     )
-    year_col = ResponseSampleColumn(name="Year", id="year", type="text")
+    age_bucket_col = ResponseSampleColumn(name="Age", id="age_bucket")
+    profession_col = ResponseSampleColumn(name="Professional Title", id="profession")
+    year_col = ResponseSampleColumn(name="Year", id="response_year")
 
     for campaign_code in campaign_codes:
         campaign_config = CAMPAIGNS_CONFIG.get(campaign_code)
@@ -130,17 +133,26 @@ def create_databases(campaign_codes: list[str]):
                 region_col,
                 gender_col,
                 profession_col,
-                age_col,
+                age_bucket_col,
             ]
-        elif campaign_code == LegacyCampaignCode.dataexchange.value:
-            topic_col_modified = topic_col.copy()
-            topic_col_modified.name = "Topic"
+        elif campaign_code == LegacyCampaignCode.wra03a:
             responses_sample_columns = [
                 response_col,
-                topic_col_modified,
+                topic_col,
                 country_col,
                 age_bucket_col,
-                # year_col,
+            ]
+        elif campaign_code == LegacyCampaignCode.dataexchange.value:
+            # Rename
+            topic_col_modified = topic_col.copy()
+            topic_col_modified.name = "Topic"
+
+            responses_sample_columns = [
+                response_col,
+                year_col,
+                topic_col_modified,
+                country_col,
+                age_col,
             ]
         else:
             responses_sample_columns = [

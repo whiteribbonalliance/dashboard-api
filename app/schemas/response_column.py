@@ -27,6 +27,5 @@ from pydantic import BaseModel, Field
 
 
 class ResponseSampleColumn(BaseModel):
-    name: str = Field(description="The name")
-    id: str = Field(description="The id")
-    type: str = Field(description="The type")
+    name: str = Field(description="The name.")
+    id: str = Field(description="The id (should be the name of a column).")

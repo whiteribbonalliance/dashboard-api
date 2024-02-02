@@ -207,9 +207,7 @@ class CampaignService:
 
         # Responses sample
         responses_sample = {
-            "columns": [
-                x.dict() for x in self.__get_responses_sample_columns(q_code=q_code)
-            ],
+            "columns": [x.dict() for x in self.__get_responses_sample_columns()],
             "data": self.__get_responses_sample(q_code=q_code),
         }
 
@@ -731,19 +729,10 @@ class CampaignService:
 
         return list(parent_categories)
 
-    def __get_responses_sample_columns(self, q_code: str) -> list[ResponseSampleColumn]:
+    def __get_responses_sample_columns(self) -> list[ResponseSampleColumn]:
         """Get responses sample columns"""
 
         responses_sample_columns = self.__crud.get_responses_sample_columns()
-
-        # Remove description column
-        if (
-            self.__campaign_code == LegacyCampaignCode.healthwellbeing.value
-            and q_code == "q2"
-        ):
-            responses_sample_columns = [
-                x for x in responses_sample_columns if x.id != "description"
-            ]
 
         return responses_sample_columns
 
@@ -770,46 +759,6 @@ class CampaignService:
         random.shuffle(responses_sample)
 
         return responses_sample
-
-    def __get_responses_sample_column_ids(self, q_code: str = None) -> list[str]:
-        """Get responses sample column ids"""
-
-        columns = self.__crud.get_responses_sample_columns()
-
-        if not q_code:
-            return [col.id for col in columns]
-
-        # Rename column e.g. response -> q1_response
-        for column in columns:
-            if column.id == "response":
-                column.id = f"{q_code}_response"
-            if column.id == "description":
-                column.id = f"{q_code}_description"
-
-        return [col.id for col in columns]
-
-    def __get_code_descriptions(self, code: str) -> str:
-        """Get code descriptions"""
-
-        mapping_to_description = category_hierarchy.get_mapping_code_to_description(
-            campaign_code=self.__campaign_code
-        )
-
-        descriptions = mapping_to_description.get(
-            code,
-            " / ".join(
-                sorted(
-                    set(
-                        [
-                            mapping_to_description.get(x.strip(), x.strip())
-                            for x in code.split("/")
-                        ]
-                    )
-                )
-            ),
-        )
-
-        return descriptions
 
     def __get_df_responses_sample(self, df: pd.DataFrame, q_code: str) -> list[dict]:
         """Get df responses sample"""
@@ -843,11 +792,19 @@ class CampaignService:
         else:
             return []
 
-        column_ids = self.__get_responses_sample_column_ids(q_code=q_code)
-
         df[description_col_name] = df[canonical_code_col_name].apply(
             lambda x: self.__get_code_descriptions(x)
         )
+
+        # Column ids
+        column_ids = self.__get_responses_sample_column_ids(q_code=q_code)
+
+        # For these campaigns use age if the value is available, else use age bucket
+        if (
+            self.__campaign_code == LegacyCampaignCode.dataexchange.value
+            or self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+        ) and "age" in column_ids:
+            df["age"] = np.where(df["age"] == "", df["age_bucket_default"], df["age"])
 
         # Rename columns e.g. q1_response -> response
         columns_to_rename = {x: x.replace(f"{q_code}_", "") for x in column_ids}
@@ -858,6 +815,43 @@ class CampaignService:
         )
 
         return responses_sample_data
+
+    def __get_responses_sample_column_ids(self, q_code: str) -> list[str]:
+        """Get responses sample column ids"""
+
+        columns = self.__crud.get_responses_sample_columns()
+
+        # Rename column e.g. response -> q1_response
+        for column in columns:
+            if column.id == "response":
+                column.id = f"{q_code}_response"
+            if column.id == "description":
+                column.id = f"{q_code}_description"
+
+        return [col.id for col in columns]
+
+    def __get_code_descriptions(self, code: str) -> str:
+        """Get code descriptions"""
+
+        mapping_to_description = category_hierarchy.get_mapping_code_to_description(
+            campaign_code=self.__campaign_code
+        )
+
+        descriptions = mapping_to_description.get(
+            code,
+            " / ".join(
+                sorted(
+                    set(
+                        [
+                            mapping_to_description.get(x.strip(), x.strip())
+                            for x in code.split("/")
+                        ]
+                    )
+                )
+            ),
+        )
+
+        return descriptions
 
     def __get_responses_breakdown(self, q_code: str) -> dict[str, list]:
         """Get responses breakdown"""
