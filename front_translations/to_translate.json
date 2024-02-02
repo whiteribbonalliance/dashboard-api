@@ -30,6 +30,7 @@
   "filter-by-age-range": "Filter by age range (or select age range in histogram)",
   "filter-by-gender": "Filter by gender",
   "filter-by-living-setting": "Filter by living setting",
+  "filter-by-year": "Filter by year",
   "select-profession": "Select profession",
   "select-response-topics": "Select response topics",
   "select-response-domains": "Select response domains",

@@ -215,15 +215,6 @@ class Campaign:
 
         return ""
 
-    # def get_category_hierarchy(self) -> dict[str, dict]:
-    #     """Get category hierarchy"""
-    #
-    #     category_hierarchy = self.__db.category_hierarchy
-    #     if category_hierarchy:
-    #         return copy.deepcopy(category_hierarchy)
-    #
-    #     return {}
-
     def get_dataframe(self) -> DataFrame:
         """Get dataframe"""
 
