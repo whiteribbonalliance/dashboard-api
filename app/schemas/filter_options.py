@@ -39,16 +39,15 @@ class FilterOptions(BaseModel):
     response_topics: list[dict] = Field(
         default=[], description="Options for respondents response topics"
     )
-    ages: list[dict] = Field(
-        default=[], description="Options for unique respondents ages"
-    )
+    ages: list[dict] = Field(default=[], description="Options for ages")
+    years: list[dict] = Field(default=[], description="Options for years")
     age_buckets: list[dict] = Field(
         default=[],
-        description="Options for unique respondents age buckets (might differ from campaign to campaign)",
+        description="Options for age buckets (might differ from campaign to campaign)",
     )
     age_buckets_default: list[dict] = Field(
         default=[],
-        description="Options for unique respondents age buckets (is same for all campaigns)",
+        description="Options for age buckets (same for all campaigns)",
     )
     genders: list[dict] = Field(
         default=[], description="Options for respondents genders"
@@ -57,7 +56,7 @@ class FilterOptions(BaseModel):
         default=[], description="Options for respondents living settings"
     )
     professions: list[dict] = Field(
-        default=[], description="Options for unique respondents professions"
+        default=[], description="Options for respondents professions"
     )
     only_responses_from_categories: list[dict] = Field(
         default=[],

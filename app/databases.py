@@ -101,6 +101,9 @@ def create_databases(campaign_codes: list[str]):
     region_col = ResponseSampleColumn(name="Region", id="region", type="text")
     gender_col = ResponseSampleColumn(name="Gender", id="gender", type="text")
     age_col = ResponseSampleColumn(name="Age", id="age", type="text")
+    age_bucket_col = ResponseSampleColumn(
+        name="Age", id="age_bucket_default", type="text"
+    )
     profession_col = ResponseSampleColumn(
         name="Professional Title", id="profession", type="text"
     )
@@ -136,7 +139,7 @@ def create_databases(campaign_codes: list[str]):
                 response_col,
                 topic_col_modified,
                 country_col,
-                age_col,
+                age_bucket_col,
                 # year_col,
             ]
         else:
