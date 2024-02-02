@@ -24,6 +24,7 @@ SOFTWARE.
 """
 
 import logging
+import math
 import operator
 import os
 import random
@@ -137,12 +138,12 @@ class CampaignService:
             self.__df_2 = df
 
         # Filter 1 description
-        self.__filter_1_description = self.__get_df_filter_description(
+        self.__filter_1_description = self.__get_filter_description(
             respondents_count=len(self.__df_1.index), _filter=self.__filter_1
         )
 
         # Filter 2 description
-        self.__filter_2_description = self.__get_df_filter_description(
+        self.__filter_2_description = self.__get_filter_description(
             respondents_count=len(self.__df_2.index), _filter=self.__filter_2
         )
 
@@ -230,18 +231,14 @@ class CampaignService:
         world_bubble_maps_coordinates = self.__get_world_bubble_maps_coordinates()
 
         # Respondents count
-        filter_1_respondents_count = self.__get_filter_respondents_count(df=self.__df_1)
-        filter_2_respondents_count = self.__get_filter_respondents_count(df=self.__df_2)
+        filter_1_respondents_count = self.__get_respondents_count(df=self.__df_1)
+        filter_2_respondents_count = self.__get_respondents_count(df=self.__df_2)
 
         # Average age
-        filter_1_average_age = self.__get_filter_average_age(df=self.__df_1)
-        filter_2_average_age = self.__get_filter_average_age(df=self.__df_2)
-        filter_1_average_age_bucket = self.__get_filter_average_age_bucket(
-            df=self.__df_1
-        )
-        filter_2_average_age_bucket = self.__get_filter_average_age_bucket(
-            df=self.__df_2
-        )
+        filter_1_average_age = self.__get_average_age(df=self.__df_1)
+        filter_2_average_age = self.__get_average_age(df=self.__df_2)
+        filter_1_average_age_bucket = self.__get_average_age_bucket(df=self.__df_1)
+        filter_2_average_age_bucket = self.__get_average_age_bucket(df=self.__df_2)
 
         # Filters Description
         filter_1_description = self.__filter_1_description
@@ -1412,10 +1409,8 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __get_df_filter_description(
-        self, respondents_count: int, _filter: Filter
-    ) -> str:
-        """Get df filter description"""
+    def __get_filter_description(self, respondents_count: int, _filter: Filter) -> str:
+        """Get filter description"""
 
         if not _filter:
             # Use an empty filter to generate description
@@ -1439,49 +1434,58 @@ class CampaignService:
 
         return description
 
-    def __get_filter_respondents_count(self, df: pd.DataFrame) -> int:
-        """Get filter respondents count"""
+    def __get_respondents_count(self, df: pd.DataFrame) -> int:
+        """Get respondents count"""
 
         return len(df.index)
 
-    def __get_filter_average_age(self, df: pd.DataFrame) -> str:
-        """Get filter average age"""
+    def __get_average_age(self, df: pd.DataFrame) -> str:
+        """Get average age"""
 
         average_age = "N/A"
-        df_copy = df.copy()
 
-        # Only keep age column
-        df_copy = df_copy[["age"]]
+        if (
+            self.__campaign_code == LegacyCampaignCode.dataexchange.value
+            or self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+        ):
+            column = "age_midpoint_range"
+        else:
+            column = "age"
+
+        # Only keep columns age and age_midpoint_range
+        df_age = df[[column]].copy()
 
         # Age column to numeric
-        df_copy["age"] = df_copy["age"].apply(
-            lambda x: int(x) if isinstance(x, str) and x.isnumeric() else np.nan
+        df_age[column] = df_age[column].apply(
+            lambda x: int(x) if isinstance(x, str) and x.isnumeric() else np.NaN
         )
-        df_copy = df_copy.dropna()
+        df_age = df_age.dropna()
 
         # Calculate average
-        if len(df_copy.index) > 0:
-            average_age = df_copy["age"].mean()
+        if len(df_age.index) > 0:
+            average_age = df_age[column].mean()
             average_age = int(round(average_age))
 
         return str(average_age)
 
-    def __get_filter_average_age_bucket(self, df: pd.DataFrame) -> str:
-        """Get filter average age bucket"""
+    def __get_average_age_bucket(self, df: pd.DataFrame) -> str:
+        """Get average age bucket"""
 
         average_age_bucket = "N/A"
-        df_copy = df.copy()
+
+        if (
+            self.__campaign_code == LegacyCampaignCode.dataexchange.value
+            or self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+        ):
+            column = "age_bucket_default"
+        else:
+            column = "age_bucket"
 
         # Only keep age_bucket column
-        df_copy = df_copy[["age_bucket"]]
+        df_age_bucket = df[[column]].copy()
 
-        if len(df_copy.index) > 0:
-            average_age_bucket = " ".join(df_copy["age_bucket"].mode())
-            average_age_bucket = (
-                average_age_bucket
-                if utils.contains_letters(average_age_bucket)
-                else average_age_bucket
-            )
+        if len(df_age_bucket.index) > 0:
+            average_age_bucket = " ".join(df_age_bucket[column].mode())
 
         return average_age_bucket
 
@@ -1621,20 +1625,29 @@ class CampaignService:
     def __get_histogram(self) -> dict:
         """Get histogram"""
 
-        df_1_copy = self.__get_df_1_copy()
-        df_2_copy = self.__get_df_2_copy()
+        df_1 = self.__get_df_1_copy()
+        df_2 = self.__get_df_2_copy()
+
+        # Use age_midpoint_range for these two campaigns
+        if (
+            self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+            or self.__campaign_code == LegacyCampaignCode.dataexchange.value
+        ):
+            age_col = "age_midpoint_range"
+        else:
+            age_col = "age"
 
         # Rename columns
         columns_rename = {
-            "age": "ages",
+            age_col: "ages",
             "age_bucket": "age_buckets",
             "age_bucket_default": "age_buckets_default",
             "gender": "genders",
             "profession": "professions",
             "canonical_country": "canonical_countries",
         }
-        df_1_copy = df_1_copy.rename(columns=columns_rename)
-        df_2_copy = df_2_copy.rename(columns=columns_rename)
+        df_1 = df_1.rename(columns=columns_rename)
+        df_2 = df_2.rename(columns=columns_rename)
 
         # Get histogram for the keys used in the dictionary below
         histogram = {
@@ -1648,8 +1661,8 @@ class CampaignService:
 
         for column_name in list(histogram.keys()):
             # For each unique column value, get its row count
-            grouped_by_column_1 = df_1_copy.groupby(column_name)["q1_response"].count()
-            grouped_by_column_2 = df_2_copy.groupby(column_name)["q1_response"].count()
+            grouped_by_column_1 = df_1.groupby(column_name)["q1_response"].count()
+            grouped_by_column_2 = df_2.groupby(column_name)["q1_response"].count()
 
             # Add count for each unique column value
             names = list(
