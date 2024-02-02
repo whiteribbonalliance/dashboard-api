@@ -289,6 +289,7 @@ def load_campaign_data(campaign_code: str):
         # Set tmp db as current db
         databases.set_campaign_db(campaign_code=campaign_code, db=db_tmp)
 
+    # These campaigns use data from other campaigns whose df was already parsed
     if (
         campaign_code != LegacyCampaignCode.allcampaigns.value
         and campaign_code != LegacyCampaignCode.dataexchange.value

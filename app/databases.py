@@ -149,10 +149,10 @@ def create_databases(campaign_codes: list[str]):
 
             responses_sample_columns = [
                 response_col,
-                year_col,
                 topic_col_modified,
                 country_col,
                 age_col,
+                year_col,
             ]
         else:
             responses_sample_columns = [
