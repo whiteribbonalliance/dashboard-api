@@ -119,7 +119,7 @@ class CampaignService:
         if self.__filter_1:
             self.__df_1 = filters.apply_filter_to_df(
                 df=df,
-                _filter=self.__filter_1,
+                data_filter=self.__filter_1,
                 crud=self.__crud,
             )
         else:
@@ -129,7 +129,7 @@ class CampaignService:
         if self.__filter_2:
             self.__df_2 = filters.apply_filter_to_df(
                 df=df,
-                _filter=self.__filter_2,
+                data_filter=self.__filter_2,
                 crud=self.__crud,
             )
         else:
@@ -137,25 +137,25 @@ class CampaignService:
 
         # Filter 1 description
         self.__filter_1_description = self.__get_filter_description(
-            respondents_count=len(self.__df_1.index), _filter=self.__filter_1
+            respondents_count=len(self.__df_1.index), data_filter=self.__filter_1
         )
 
         # Filter 2 description
         self.__filter_2_description = self.__get_filter_description(
-            respondents_count=len(self.__df_2.index), _filter=self.__filter_2
+            respondents_count=len(self.__df_2.index), data_filter=self.__filter_2
         )
 
         # If filter 1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
         if self.__filter_1 and not filters.check_if_filter_is_default(
-            _filter=self.__filter_1
+            data_filter=self.__filter_1
         ):
             self.__filter_1_use_ngrams_unfiltered = False
 
         # If filter 2 was requested, then do not use the cached ngrams
         self.__filter_2_use_ngrams_unfiltered = True
         if self.__filter_2 and not filters.check_if_filter_is_default(
-            _filter=self.__filter_2
+            data_filter=self.__filter_2
         ):
             self.__filter_2_use_ngrams_unfiltered = False
 
@@ -421,7 +421,7 @@ class CampaignService:
         ]
 
         # Age options
-        ages = self.__get_ages()
+        ages = self.__crud.get_ages()
         age_options = [OptionStr(value=age, label=age).dict() for age in ages]
 
         # Age bucket options
@@ -1412,12 +1412,14 @@ class CampaignService:
 
         return self.__df_2.copy()
 
-    def __get_filter_description(self, respondents_count: int, _filter: Filter) -> str:
+    def __get_filter_description(
+        self, respondents_count: int, data_filter: Filter
+    ) -> str:
         """Get filter description"""
 
-        if not _filter:
+        if not data_filter:
             # Use an empty filter to generate description
-            _filter = filters.get_default_filter()
+            data_filter = filters.get_default_filter()
 
         # Response topics mentioned
         mapping_to_description = category_hierarchy.get_mapping_code_to_description(
@@ -1425,10 +1427,10 @@ class CampaignService:
         )
         response_topics_mentioned = [
             mapping_to_description.get(response_topic, response_topic)
-            for response_topic in _filter.response_topics
+            for response_topic in data_filter.response_topics
         ]
         description = filters.generate_description_of_filter(
-            _filter=_filter,
+            data_filter=data_filter,
             respondents_count=respondents_count,
             respondent_noun_singular=self.__crud.get_respondent_noun_singular(),
             respondent_noun_plural=self.__crud.get_respondent_noun_plural(),

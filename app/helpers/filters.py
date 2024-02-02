@@ -47,6 +47,7 @@ def get_default_filter() -> Filter:
         response_topics=[],
         only_responses_from_categories=False,
         genders=[],
+        years=[],
         living_settings=[],
         professions=[],
         ages=[],
@@ -57,67 +58,72 @@ def get_default_filter() -> Filter:
     )
 
 
-def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFrame:
+def apply_filter_to_df(df: DataFrame, data_filter: Filter, crud: Campaign) -> DataFrame:
     """Apply filter to dataframe"""
 
-    countries = _filter.countries
-    regions = _filter.regions
-    provinces = _filter.provinces
-    response_topics = _filter.response_topics
-    genders = _filter.genders
-    living_settings = _filter.living_settings
-    professions = _filter.professions
-    keyword_filter = _filter.keyword_filter
-    keyword_exclude = _filter.keyword_exclude
-    ages = _filter.ages
-    age_buckets = _filter.age_buckets
-    only_responses_from_categories = _filter.only_responses_from_categories
+    countries = data_filter.countries
+    regions = data_filter.regions
+    provinces = data_filter.provinces
+    response_topics = data_filter.response_topics
+    genders = data_filter.genders
+    years = data_filter.years
+    living_settings = data_filter.living_settings
+    professions = data_filter.professions
+    keyword_filter = data_filter.keyword_filter
+    keyword_exclude = data_filter.keyword_exclude
+    ages = data_filter.ages
+    age_buckets = data_filter.age_buckets
+    only_responses_from_categories = data_filter.only_responses_from_categories
 
     df_copy = df.copy()
 
     # Filter countries
-    if len(countries) > 0:
+    if countries:
         df_copy = df_copy[df_copy["alpha2country"].isin(countries)]
 
     # Filter using both regions and provinces
-    if len(regions) > 0 and len(provinces) > 0:
+    if regions and provinces:
         df_copy = df_copy[
             df_copy[["region", "province"]].isin(regions + provinces).any(axis=1)
         ]
     else:
         # Filter only regions
-        if len(regions) > 0:
+        if regions:
             df_copy = df_copy[df_copy["region"].isin(regions)]
 
         # Filter only provinces
-        elif len(provinces) > 0:
+        elif provinces:
             df_copy = df_copy[df_copy["province"].isin(provinces)]
 
     # Filter genders
-    if len(genders) > 0:
+    if genders:
         df_copy = df_copy[df_copy["gender"].isin(genders)]
 
+    # Filter years
+    if years:
+        df_copy = df_copy[df_copy["response_year"].isin(years)]
+
     # Filter living settings
-    if len(living_settings) > 0:
+    if living_settings:
         df_copy = df_copy[df_copy["setting"].isin(living_settings)]
 
     # Filter professions
-    if len(professions) > 0:
+    if professions:
         df_copy = df_copy[df_copy["profession"].isin(professions)]
 
     # Filter ages and age buckets
-    if len(ages) > 0 and len(age_buckets) > 0:
+    if ages and age_buckets:
         # Filter using both ages and age buckets
         df_copy = df_copy[
             df_copy[["age", "age_bucket"]].isin(ages + age_buckets).any(axis=1)
         ]
     else:
         # Filter only ages
-        if len(ages) > 0:
+        if ages:
             df_copy = df_copy[df_copy["age"].isin(ages)]
 
         # Filter only age buckets
-        elif len(age_buckets) > 0:
+        elif age_buckets:
             df_copy = df_copy[df_copy["age_bucket"].isin(age_buckets)]
 
     def filter_by_response_topics(row_topics_str: str, topics: list[str]):
@@ -199,21 +205,21 @@ def apply_filter_to_df(df: DataFrame, _filter: Filter, crud: Campaign) -> DataFr
 
 
 def generate_description_of_filter(
-    _filter: Filter,
+    data_filter: Filter,
     respondents_count: int,
     respondent_noun_singular: str,
     respondent_noun_plural: str,
     response_topics_as_descriptions: list[str],
 ):
-    countries = _filter.countries
-    regions = _filter.regions
-    provinces = _filter.provinces
-    genders = _filter.genders
-    professions = _filter.professions
-    keyword_filter = _filter.keyword_filter
-    keyword_exclude = _filter.keyword_exclude
-    ages = _filter.ages + _filter.age_buckets
-    only_responses_from_categories = _filter.only_responses_from_categories
+    countries = data_filter.countries
+    regions = data_filter.regions
+    provinces = data_filter.provinces
+    genders = data_filter.genders
+    professions = data_filter.professions
+    keyword_filter = data_filter.keyword_filter
+    keyword_exclude = data_filter.keyword_exclude
+    ages = data_filter.ages + data_filter.age_buckets
+    only_responses_from_categories = data_filter.only_responses_from_categories
 
     # Professions
     if len(professions) == 0:
@@ -313,62 +319,62 @@ def check_if_filters_are_identical(
     """
 
     if filter_1:
-        _filter_1 = copy.deepcopy(filter_1)
+        data_filter_1 = copy.deepcopy(filter_1)
     else:
-        _filter_1 = None
+        data_filter_1 = None
 
     if filter_2:
-        _filter_2 = copy.deepcopy(filter_2)
+        data_filter_2 = copy.deepcopy(filter_2)
     else:
-        _filter_2 = None
+        data_filter_2 = None
 
-    if not _filter_1 and not _filter_2:
+    if not data_filter_1 and not data_filter_2:
         return True
-    if _filter_1 and not _filter_2:
+    if data_filter_1 and not data_filter_2:
         return False
-    if _filter_2 and not _filter_1:
+    if data_filter_2 and not data_filter_1:
         return False
 
-    _filter_1.countries = flatten(_filter_1.countries)
-    _filter_2.countries = flatten(_filter_2.countries)
+    data_filter_1.countries = flatten(data_filter_1.countries)
+    data_filter_2.countries = flatten(data_filter_2.countries)
 
-    _filter_1.regions = flatten(_filter_1.regions)
-    _filter_2.regions = flatten(_filter_2.regions)
+    data_filter_1.regions = flatten(data_filter_1.regions)
+    data_filter_2.regions = flatten(data_filter_2.regions)
 
-    _filter_1.provinces = flatten(_filter_1.provinces)
-    _filter_2.provinces = flatten(_filter_2.provinces)
+    data_filter_1.provinces = flatten(data_filter_1.provinces)
+    data_filter_2.provinces = flatten(data_filter_2.provinces)
 
-    _filter_1.response_topics = flatten(_filter_1.response_topics)
-    _filter_2.response_topics = flatten(_filter_2.response_topics)
+    data_filter_1.response_topics = flatten(data_filter_1.response_topics)
+    data_filter_2.response_topics = flatten(data_filter_2.response_topics)
 
-    _filter_1.genders = flatten(_filter_1.genders)
-    _filter_2.genders = flatten(_filter_2.genders)
+    data_filter_1.genders = flatten(data_filter_1.genders)
+    data_filter_2.genders = flatten(data_filter_2.genders)
 
-    _filter_1.professions = flatten(_filter_1.professions)
-    _filter_2.professions = flatten(_filter_2.professions)
+    data_filter_1.professions = flatten(data_filter_1.professions)
+    data_filter_2.professions = flatten(data_filter_2.professions)
 
     return (
-        _filter_1.countries == _filter_2.countries
-        and _filter_1.regions == _filter_2.regions
-        and _filter_1.provinces == _filter_2.provinces
-        and _filter_1.response_topics == _filter_2.response_topics
-        and _filter_1.only_responses_from_categories
-        == _filter_2.only_responses_from_categories
-        and _filter_1.only_multi_word_phrases_containing_filter_term
-        == _filter_2.only_multi_word_phrases_containing_filter_term
-        and _filter_1.ages == _filter_2.ages
-        and _filter_1.genders == _filter_2.genders
-        and _filter_1.professions == _filter_2.professions
-        and _filter_1.keyword_filter == _filter_2.keyword_filter
-        and _filter_1.keyword_exclude == _filter_2.keyword_exclude
+        data_filter_1.countries == data_filter_2.countries
+        and data_filter_1.regions == data_filter_2.regions
+        and data_filter_1.provinces == data_filter_2.provinces
+        and data_filter_1.response_topics == data_filter_2.response_topics
+        and data_filter_1.only_responses_from_categories
+        == data_filter_2.only_responses_from_categories
+        and data_filter_1.only_multi_word_phrases_containing_filter_term
+        == data_filter_2.only_multi_word_phrases_containing_filter_term
+        and data_filter_1.ages == data_filter_2.ages
+        and data_filter_1.genders == data_filter_2.genders
+        and data_filter_1.professions == data_filter_2.professions
+        and data_filter_1.keyword_filter == data_filter_2.keyword_filter
+        and data_filter_1.keyword_exclude == data_filter_2.keyword_exclude
     )
 
 
-def check_if_filter_is_default(_filter: Filter) -> bool:
+def check_if_filter_is_default(data_filter: Filter) -> bool:
     """Check if filter is default"""
 
     return check_if_filters_are_identical(
-        filter_1=_filter, filter_2=get_default_filter()
+        filter_1=data_filter, filter_2=get_default_filter()
     )
 
 
