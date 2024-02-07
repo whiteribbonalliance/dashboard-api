@@ -152,7 +152,6 @@ def apply_filter_to_df(
     campaign_q_codes = campaign_crud.get_q_codes()
     for q_code in campaign_q_codes:
         # Set column names based on question code
-
         canonical_code_column_name = q_col_names.get_canonical_code_col_name(
             q_code=q_code, campaign_code=campaign_code
         )

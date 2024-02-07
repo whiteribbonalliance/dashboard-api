@@ -542,6 +542,10 @@ def load_campaigns_data():
     for campaign_config in campaigns_configs:
         print(f"INFO:\t  Loading data for campaign {campaign_config.campaign_code}...")
 
+        # Will temporarily use db from dataexchange instead
+        if campaign_config.campaign_code == LegacyCampaignCode.allcampaigns.value:
+            continue
+
         try:
             load_campaign_data(campaign_code=campaign_config.campaign_code)
             load_campaign_ngrams_unfiltered(campaign_code=campaign_config.campaign_code)

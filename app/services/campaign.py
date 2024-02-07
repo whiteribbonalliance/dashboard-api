@@ -1088,6 +1088,18 @@ class CampaignService:
                 )
                 responses_breakdown_sub_1 = []
                 responses_breakdown_sub_2 = []
+        elif (
+            self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+            or self.__campaign_code == LegacyCampaignCode.dataexchange.value
+        ):
+            responses_breakdown_parent_1 = []
+            responses_breakdown_parent_2 = []
+            responses_breakdown_sub_1 = get_df_responses_breakdown_sub_categories(
+                df=self.__get_df_1_copy()
+            )
+            responses_breakdown_sub_2 = get_df_responses_breakdown_sub_categories(
+                df=self.__get_df_2_copy()
+            )
         else:
             responses_breakdown_parent_1 = get_df_responses_breakdown_parent_categories(
                 df=self.__get_df_1_copy()

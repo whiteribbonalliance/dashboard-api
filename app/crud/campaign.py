@@ -30,6 +30,8 @@ from pandas import DataFrame
 
 from app import databases, utils
 from app.databases import Database
+from app.enums.legacy_campaign_code import LegacyCampaignCode
+from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.schemas.category import ParentCategory
 from app.schemas.country import Country
 from app.schemas.region import Region
@@ -47,11 +49,17 @@ class Campaign:
         if db:
             self.__db = db
         else:
-            db = databases.get_campaign_db(campaign_code=campaign_code)
-            if not db:
-                raise Exception(f"Could not find db for {campaign_code}.")
+            if campaign_code == LegacyCampaignCode.allcampaigns.value:
+                self.__db = databases.get_campaign_db(
+                    campaign_code=LegacyCampaignCode.dataexchange.value
+                )
+            else:
+                self.__db = databases.get_campaign_db(campaign_code=campaign_code)
 
-            self.__db = databases.get_campaign_db(campaign_code=campaign_code)
+        if not self.__db:
+            raise Exception(f"Could not find db for {campaign_code}.")
+
+        self.__campaign_config = CAMPAIGNS_CONFIG.get(campaign_code)
 
     def get_countries_list(self) -> list[Country]:
         """Get countries list"""
@@ -225,9 +233,17 @@ class Campaign:
     def get_parent_categories(self) -> list[ParentCategory]:
         """Get parent categories"""
 
-        parent_categories_descriptions = self.__db.parent_categories
-        if parent_categories_descriptions:
-            return parent_categories_descriptions.copy()
+        if (
+            self.__campaign_config.campaign_code
+            == LegacyCampaignCode.allcampaigns.value
+        ):
+            # Use parent categories from config file
+            parent_categories = self.__campaign_config.parent_categories
+        else:
+            parent_categories = self.__db.parent_categories
+
+        if parent_categories:
+            return parent_categories.copy()
 
         return []
 

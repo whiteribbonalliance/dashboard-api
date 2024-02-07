@@ -1,0 +1,232 @@
+{
+  "campaign_code": "allcampaigns",
+  "dashboard_path": "allcampaigns",
+  "dashboard_url": "https://worldwewantproject.com/allcampaigns",
+  "campaign_title": "Dashboard of Dashboards",
+  "campaign_subtext": "",
+  "site_title": "Dashboard of Dashboards",
+  "site_description": "Dashboard of Dashboards",
+  "file": {
+    "use_campaigns": [
+      "giz",
+      "healthwellbeing",
+      "midwife",
+      "pmn01a",
+      "wra03a",
+      "wwwpakistan"
+    ]
+  },
+  "questions": {},
+  "respondent_noun_singular": "respondent",
+  "respondent_noun_plural": "respondents",
+  "video_url": "",
+  "about_us_url": "",
+  "parent_categories": [
+    {
+      "code": "",
+      "description": "",
+      "sub_categories": [
+        {
+          "code": "CONDITIONS",
+          "description": "Conditions"
+        },
+        {
+          "code": "EDUCATION",
+          "description": "Education"
+        },
+        {
+          "code": "HEALTH",
+          "description": "Health"
+        },
+        {
+          "code": "OPPORTUNITIES",
+          "description": "Opportunities"
+        },
+        {
+          "code": "PAY",
+          "description": "Pay"
+        },
+        {
+          "code": "PROTECTIONS",
+          "description": "Protections"
+        },
+        {
+          "code": "TRANSPORTATION",
+          "description": "Transportation"
+        },
+        {
+          "code": "BETTERFACILITIESANDSUPPLIES",
+          "description": "Supplies and functional facilities"
+        },
+        {
+          "code": "DIGNITY",
+          "description": "Respect, dignity, and non-discrimination"
+        },
+        {
+          "code": "POLICY",
+          "description": "Power, autonomy and improved gender norms and policies"
+        },
+        {
+          "code": "HEALTHANDSERVICES",
+          "description": "General health and health services"
+        },
+        {
+          "code": "OTHER",
+          "description": "All other requests"
+        },
+        {
+          "code": "PROFDEV",
+          "description": "Professional development and leadership"
+        },
+        {
+          "code": "STAFFINGANDREMUNERATION",
+          "description": "More and better supported personnel"
+        },
+        {
+          "code": "ENVIRONMENT",
+          "description": "Environment"
+        },
+        {
+          "code": "MENTALHEALTH",
+          "description": "Connectedness, positive values and contribution to society"
+        },
+        {
+          "code": "POWER",
+          "description": "Agency and resilience"
+        },
+        {
+          "code": "SAFETY",
+          "description": "Safety and a supportive environment"
+        },
+        {
+          "code": "BETTERFACILITIES",
+          "description": "Increased, fully functional and closer health facilities"
+        },
+        {
+          "code": "FREE",
+          "description": "Free and affordable care"
+        },
+        {
+          "code": "HEALTHPROFESSIONALS",
+          "description": "Increased, competent, and better supported health workers"
+        },
+        {
+          "code": "INFORMATION",
+          "description": "Counseling, information and awareness"
+        },
+        {
+          "code": "OTHERNONDETERMINABLE",
+          "description": "All other requests"
+        },
+        {
+          "code": "RESPECTFULCARE",
+          "description": "Respectful, dignified, non-discriminatory care"
+        },
+        {
+          "code": "SEXUALREPRODUCTIVEHEALTH",
+          "description": "Sexual, reproductive, maternal, labor, postnatal and newborn health services"
+        },
+        {
+          "code": "SUPPLIES",
+          "description": "Medicines and supplies"
+        },
+        {
+          "code": "Cancer",
+          "description": "Cancer"
+        },
+        {
+          "code": "Food and Adequate Nutrition",
+          "description": "Food and Adequate Nutrition"
+        },
+        {
+          "code": "Communicable Diseases",
+          "description": "Communicable Diseases"
+        },
+        {
+          "code": "Non-Communicable Diseases",
+          "description": "Non-Communicable Diseases"
+        },
+        {
+          "code": "Physical Activity and Rest",
+          "description": "Physical Activity and Rest"
+        },
+        {
+          "code": "Sexual and Reproductive Health",
+          "description": "Sexual and Reproductive Health"
+        },
+        {
+          "code": "Maternal, Newborn, Child Health",
+          "description": "Maternal, Newborn, Child Health"
+        },
+        {
+          "code": "Menstrual & Menopausal Cycles",
+          "description": "Menstrual & Menopausal Cycles"
+        },
+        {
+          "code": "Sustainable Energy & Agriculture",
+          "description": "Sustainable Energy & Agriculture"
+        },
+        {
+          "code": "Water, Sanitation & Hygiene",
+          "description": "Water, Sanitation & Hygiene"
+        },
+        {
+          "code": "Transportation and Road Safety",
+          "description": "Transportation and Road Safety"
+        },
+        {
+          "code": "Fully-functional and well-equipped Health Facilities",
+          "description": "Fully-functional and well-equipped Health Facilities"
+        },
+        {
+          "code": "High Quality, Inclusive and Respectful Health Services",
+          "description": "High Quality, Inclusive and Respectful Health Services"
+        },
+        {
+          "code": "Free, Affordable or Insured Healthcare",
+          "description": "Free, Affordable or Insured Healthcare"
+        },
+        {
+          "code": "Health Workers",
+          "description": "Health Workers"
+        },
+        {
+          "code": "Safety",
+          "description": "Safety"
+        },
+        {
+          "code": "No Harmful Practices and GBV",
+          "description": "No Harmful Practices and GBV"
+        },
+        {
+          "code": "Policy and Social Welfare",
+          "description": "Policy and Social Welfare"
+        },
+        {
+          "code": "Autonomy, Equality, and Empowerment",
+          "description": "Autonomy, Equality, and Empowerment"
+        },
+        {
+          "code": "Education and Vocational Skills",
+          "description": "Education and Vocational Skills"
+        },
+        {
+          "code": "Work & Financial Support",
+          "description": "Work & Financial Support"
+        },
+        {
+          "code": "Mental Health",
+          "description": "Mental Health"
+        },
+        {
+          "code": "Interpersonal Relationships and Social Support",
+          "description": "Interpersonal Relationships and Social Support"
+        },
+        {
+          "code": "All other demands",
+          "description": "All other demands"
+        }
+      ]
+    }
+  ]
+}
