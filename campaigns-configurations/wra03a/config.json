@@ -7,7 +7,7 @@
   "site_title": "What Women Want | World We Want",
   "site_description": "We asked over a million women what they want. Explore our survey responses with our interactive dashboard!",
   "file": {
-    "local": "wra03a.csv",
+    "local": "",
     "url": "https://wra.blob.core.windows.net/wra/wra03a.csv"
   },
   "respondent_noun_singular": "woman",
