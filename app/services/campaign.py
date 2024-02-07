@@ -120,7 +120,8 @@ class CampaignService:
             self.__df_1 = filters.apply_filter_to_df(
                 df=df,
                 data_filter=self.__filter_1,
-                crud=self.__crud,
+                campaign_crud=self.__crud,
+                campaign_code=self.__campaign_code,
             )
         else:
             self.__df_1 = df
@@ -130,7 +131,8 @@ class CampaignService:
             self.__df_2 = filters.apply_filter_to_df(
                 df=df,
                 data_filter=self.__filter_2,
-                crud=self.__crud,
+                campaign_crud=self.__crud,
+                campaign_code=self.__campaign_code,
             )
         else:
             self.__df_2 = df

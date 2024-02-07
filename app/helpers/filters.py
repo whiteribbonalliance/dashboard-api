@@ -30,7 +30,7 @@ import inflect
 from pandas import DataFrame
 
 from app import constants
-from app.crud.campaign import Campaign
+from app import crud
 from app.helpers import q_col_names
 from app.schemas.filter import Filter
 
@@ -58,7 +58,9 @@ def get_default_filter() -> Filter:
     )
 
 
-def apply_filter_to_df(df: DataFrame, data_filter: Filter, crud: Campaign) -> DataFrame:
+def apply_filter_to_df(
+    df: DataFrame, data_filter: Filter, campaign_crud: crud.Campaign, campaign_code: str
+) -> DataFrame:
     """Apply filter to dataframe"""
 
     countries = data_filter.countries
@@ -147,12 +149,14 @@ def apply_filter_to_df(df: DataFrame, data_filter: Filter, crud: Campaign) -> Da
         return False
 
     # Apply the filter on specific columns for q1, q2 etc.
-    campaign_q_codes = crud.get_q_codes()
+    campaign_q_codes = campaign_crud.get_q_codes()
     for q_code in campaign_q_codes:
         # Set column names based on question code
+
         canonical_code_column_name = q_col_names.get_canonical_code_col_name(
-            q_code=q_code
+            q_code=q_code, campaign_code=campaign_code
         )
+
         lemmatized_column_name = q_col_names.get_lemmatized_col_name(q_code=q_code)
         parent_category_col_name = q_col_names.get_parent_category_col_name(
             q_code=q_code
