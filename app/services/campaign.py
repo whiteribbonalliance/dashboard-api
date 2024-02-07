@@ -785,6 +785,9 @@ class CampaignService:
         # Remove rows where response is empty
         df = df[df[response_col_name] != ""]
 
+        # Remove rows where canonical_code is empty
+        df = df[df[canonical_code_col_name] != ""]
+
         # Limit the sample for languages that are not English
         if self.__language == "en":
             if self.__filter_2:
