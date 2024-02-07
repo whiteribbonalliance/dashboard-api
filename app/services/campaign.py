@@ -622,6 +622,16 @@ class CampaignService:
                 breakdown_profession_option.dict(),
                 breakdown_country_option.dict(),
             ]
+        elif (
+            self.__campaign_code == LegacyCampaignCode.dataexchange.value
+            or self.__campaign_code == LegacyCampaignCode.allcampaigns.value
+        ):
+            options = [
+                breakdown_age_bucket_option.dict(),
+                breakdown_age_option.dict(),
+                breakdown_gender_option.dict(),
+                breakdown_country_option.dict(),
+            ]
         else:
             options = [
                 breakdown_age_bucket_option.dict(),
