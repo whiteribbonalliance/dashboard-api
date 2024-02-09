@@ -8,8 +8,9 @@ at https://github.com/whiteribbonalliance/dashboard-front.
 Follow the steps at section `How to create a new campaign`. Once a new campaign configuration was added, the data will
 become available through the endpoints. For more information, continue reading the documentation below.
 
-There's currently six dashboards deployed with this project, you can visit them at:
+There's currently seven dashboards deployed with this project, you can visit them at:
 
+- https://exchange.worldwewantproject.org/en
 - https://explore.whiteribbonalliance.org/en/whatwomenwant
 - https://explore.whiteribbonalliance.org/en/midwivesvoices
 - https://explore.whiteribbonalliance.org/en/wwwpakistan
