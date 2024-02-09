@@ -1,7 +1,7 @@
 {
   "campaign_code": "dataexchange",
   "dashboard_path": "dataexchange",
-  "dashboard_url": "https://worldwewantproject.com/dataexchange",
+  "dashboard_url": "https://worldwewantproject.org/dataexchange",
   "campaign_title": "World We Want Data Exchange",
   "campaign_subtext": "Communities around the world raised their voices to tell us what they want most.",
   "site_title": "World We Want Data Exchange",
@@ -20,7 +20,7 @@
   "respondent_noun_singular": "respondent",
   "respondent_noun_plural": "respondents",
   "video_url": "",
-  "about_us_url": "https://worldwewantproject.com",
+  "about_us_url": "https://exchange.worldwewantproject.org",
   "parent_categories": [
     {
       "code": "",
