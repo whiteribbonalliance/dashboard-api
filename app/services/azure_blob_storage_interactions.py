@@ -68,11 +68,16 @@ def cleanup(container_name: str, limit_gb: int = 5):
 
     # Clear bucket
     if size_megabytes >= (limit_gb * 1024):
-        clear_container(container_name=container_name)
+        clear_container(container_name=container_name, skip_blobs=[])
 
 
-def clear_container(container_name: str):
-    """Clear container"""
+def clear_container(container_name: str, skip_blobs: list[str]):
+    """
+    Clear container.
+
+    :param container_name: The bucket name.
+    :param skip_blobs: A list of blob names to skip from deleting.
+    """
 
     # Get container client
     container_client = get_container_client(container_name=container_name)
@@ -82,6 +87,8 @@ def clear_container(container_name: str):
 
     # Delete blobs
     for blob in blob_list:
+        if blob.name in skip_blobs:
+            continue
         container_client.delete_blob(blob.name)
 
 

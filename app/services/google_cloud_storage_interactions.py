@@ -88,13 +88,20 @@ def blob_exists(bucket_name: str, blob_name: str) -> bool:
     return blob.exists()
 
 
-def clear_bucket(bucket_name: str):
-    """Clear bucket"""
+def clear_bucket(bucket_name: str, skip_blobs: list[str]):
+    """
+    Clear bucket.
+
+    :param bucket_name: The bucket name.
+    :param skip_blobs: A list of blob names to skip from deleting.
+    """
 
     storage_client = get_storage_client()
     bucket: Bucket = storage_client.bucket(bucket_name)
     blobs: Iterator[Blob] = bucket.list_blobs()
     for blob in blobs:
+        if blob.name in skip_blobs:
+            continue
         try:
             blob.delete()
         except (Exception,):
@@ -119,4 +126,4 @@ def cleanup(bucket_name: str, limit_gb: int = 5):
 
     # Clear bucket
     if size_megabytes >= (limit_gb * 1024):
-        clear_bucket(bucket_name=bucket_name)
+        clear_bucket(bucket_name=bucket_name, skip_blobs=[])
