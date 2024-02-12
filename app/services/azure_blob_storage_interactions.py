@@ -23,7 +23,7 @@ SOFTWARE.
 
 """
 
-from datetime import datetime, timedelta
+import datetime
 from io import StringIO
 
 import pandas as pd
@@ -38,8 +38,6 @@ from azure.storage.blob import (
 from app.core.settings import get_settings
 
 settings = get_settings()
-
-EXPIRE_IN = datetime.today() + timedelta(3)  # after 3 days
 
 
 def get_container_client(container_name: str) -> ContainerClient:
@@ -150,13 +148,15 @@ def get_blob(container_name: str, blob_name: str) -> StorageStreamDownloader[byt
 def get_blob_url(container_name: str, blob_name: str) -> str:
     """Get blob url"""
 
+    today = datetime.datetime.today()
+
     sas_blob = generate_blob_sas(
         account_name=settings.AZURE_STORAGE_ACCOUNT_NAME,
         container_name=container_name,
         blob_name=blob_name,
         account_key=settings.AZURE_STORAGE_ACCOUNT_KEY,
         permission=BlobSasPermissions(read=True),
-        expiry=EXPIRE_IN,
+        expiry=today + datetime.timedelta(hours=1),
     )
 
     return f"https://{settings.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_blob}"
