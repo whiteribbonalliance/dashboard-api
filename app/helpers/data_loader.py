@@ -217,6 +217,14 @@ def load_campaign_data(campaign_code: str):
         campaign_crud.set_ages(ages=ages)
 
         # Set age buckets
+        if (
+            campaign_code == LegacyCampaignCode.allcampaigns.value
+            or campaign_code == LegacyCampaignCode.dataexchange.value
+        ):
+            # For these campaigns use age_bucket_default as age_bucket
+            # These campaigns contain data from all other campaigns merged together and each campaign might have different age_bucket
+            # age_bucket_default is same across all campaigns
+            df_responses["age_bucket"] = df_responses["age_bucket_default"]
         age_buckets = df_responses["age_bucket"].unique().tolist()
         age_buckets = [x for x in age_buckets if x]
         campaign_crud.set_age_buckets(age_buckets=age_buckets)
