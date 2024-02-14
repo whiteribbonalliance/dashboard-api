@@ -36,7 +36,7 @@ manual_scaling:
 
 resources:
   cpu: 4
-  memory_gb: 8
+  memory_gb: 9
   disk_size_gb: 10
 
 # Force https and redirect http to https
