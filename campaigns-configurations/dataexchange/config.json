@@ -3,9 +3,9 @@
   "dashboard_path": "dataexchange",
   "dashboard_url": "https://exchange.worldwewantproject.org",
   "campaign_title": "World We Want Data Exchange",
-  "campaign_subtext": "Communities around the world raised their voices to tell us what they want most.",
+  "campaign_subtext": "Communities around the world tell us what they want most.",
   "site_title": "Data Exchange | World We Want",
-  "site_description": "World We Want Data Exchange: Communities around the world raised their voices to tell us what they want most.",
+  "site_description": "World We Want Data Exchange: Communities around the world tell us what they want most.",
   "file": {
     "use_campaigns": [
       "giz",
@@ -26,6 +26,10 @@
       "code": "",
       "description": "",
       "sub_categories": [
+        {
+          "code": "Environment",
+          "description": "Environment"
+        },
         {
           "code": "Education",
           "description": "Education"
