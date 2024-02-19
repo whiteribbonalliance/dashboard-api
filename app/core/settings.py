@@ -66,7 +66,6 @@ class Settings(BaseSettings):
     TRANSLATIONS_ENABLED: bool = os.getenv("TRANSLATIONS_ENABLED", "").lower() == "true"
     NEWRELIC_API_KEY: str = os.getenv("NEWRELIC_API_KEY")
     NEW_RELIC_URL: str = os.getenv("NEW_RELIC_URL")
-    BASE_URL: str = os.getenv("BASE_URL")
     CLOUD_SERVICE: str = CLOUD_SERVICE
 
     # Google

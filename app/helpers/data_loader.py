@@ -31,15 +31,18 @@ from io import StringIO
 
 import pandas as pd
 import requests
+from fastapi import Request
 
 from app import constants, databases, utils
 from app import crud
 from app import global_variables
+from app.api.v1.endpoints.campaigns import read_campaign
 from app.core.settings import get_settings
 from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import q_codes_finder, q_col_names
 from app.helpers.campaigns_config_loader import CAMPAIGNS_CONFIG
 from app.logginglib import init_custom_logger
+from app.schemas.campaign_request import CampaignRequest
 from app.schemas.country import Country
 from app.schemas.region import Region
 from app.services import azure_blob_storage_interactions
@@ -672,21 +675,34 @@ def load_region_coordinates():
 
 def load_api_cache_with_unfiltered_campaigns_responses():
     """
-    Load the API cache with unfiltered responses for all campaigns by making a POST request to
-    '/api/v1/campaigns/{campaign_code}' which will cache the response.
+    Load the API cache with unfiltered responses for all campaigns by
+    calling the endpoint function which will cache the response.
     """
 
     print("INFO:\t  Loading initial API cache...")
     for campaign_config in CAMPAIGNS_CONFIG.values():
         campaign_code = campaign_config.campaign_code
+
+        # Build request
+        request = Request(
+            {
+                "type": "http",
+                "http_version": "1.1",
+                "path": f"{settings.API_PREFIX}/campaigns/{campaign_code}",
+                "headers": {},
+                "method": "POST",
+            }
+        )
+
+        # Call endpoint function
         try:
-            requests.post(
-                url=f"{settings.BASE_URL}/campaigns/{campaign_config.campaign_code}?q_code=q1&response_year=&lang=en",
-                json={
-                    "filter_1": None,
-                    "filter_2": None,
-                },
+            read_campaign(
+                campaign_req=CampaignRequest(filter_1=None, filter_2=None),
+                _request=request,
+                campaign_code=campaign_code,
+                lang="en",
+                q_code="q1",
+                response_year="",
             )
-        except requests.exceptions.RequestException:
+        except (Exception,):
             logger.warning(f"Could not load API cache for campaign: {campaign_code}.")
-            continue
