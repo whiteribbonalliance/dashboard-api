@@ -555,6 +555,7 @@ def reload_data(
         # Clear the API cache
         if clear_api_cache:
             ApiCache().clear_cache()
+            load_api_cache_with_unfiltered_campaigns_responses()
 
         print("Data reloading completed.")
     except (Exception,) as e:
