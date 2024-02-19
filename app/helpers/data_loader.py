@@ -499,10 +499,41 @@ def load_initial_data():
     global_variables.initial_loading_data_complete = True
 
 
-def reload_data(
-    clear_api_cache: bool,
+def clear_cloud_tmp_data(
     clear_google_cloud_storage_bucket: bool,
     clear_azure_blob_storage_container,
+):
+    """
+    Clear tmp data that was generated in the bucket/container.
+    """
+
+    try:
+        # A list of blobs to skip from deleting (Only the unfiltered dataset should stay cached).
+        # The filename/blob_name of an unfiltered dataset can look like export_healthwellbeing.csv (Will not be deleted).
+        # The filename/blob_name of a filtered dataset can look like export_healthwellbeing_a53aaf6fe.csv (Will be deleted).
+        skip_blobs = [
+            f"export_{x.campaign_code}.csv" for x in CAMPAIGNS_CONFIG.values()
+        ]
+
+        # Clear bucket
+        if clear_google_cloud_storage_bucket and settings.CLOUD_SERVICE == "google":
+            google_cloud_storage_interactions.clear_bucket(
+                bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA,
+                skip_blobs=skip_blobs,
+            )
+
+        # Clear container
+        elif clear_azure_blob_storage_container and settings.CLOUD_SERVICE == "azure":
+            azure_blob_storage_interactions.clear_container(
+                container_name=settings.AZURE_STORAGE_CONTAINER_TMP_DATA,
+                skip_blobs=skip_blobs,
+            )
+    except (Exception,) as e:
+        logger.error(f"An error occurred while clearing tmp cloud data: {str(e)}")
+
+
+def reload_data(
+    clear_api_cache: bool,
 ):
     """Reload data"""
 
@@ -519,27 +550,6 @@ def reload_data(
         # Clear the API cache
         if clear_api_cache:
             ApiCache().clear_cache()
-
-        # A list of blobs to skip from deleting (Only the unfiltered dataset should stay cached).
-        # The filename/blob_name of an unfiltered dataset can look like export_healthwellbeing.csv (Will not be deleted).
-        # The filename/blob_name of a filtered dataset can look like export_healthwellbeing_a53aaf6fe.csv (Will be deleted).
-        skip_blobs = [
-            f"export_{x.campaign_code}.csv" for x in CAMPAIGNS_CONFIG.values()
-        ]
-
-        # Clear bucket
-        if clear_google_cloud_storage_bucket and settings.CLOUD_SERVICE == "google":
-            google_cloud_storage_interactions.clear_bucket(
-                bucket_name=settings.GOOGLE_CLOUD_STORAGE_BUCKET_TMP_DATA,
-                skip_blobs=skip_blobs,
-            )
-
-        # Clear container as the data cached might be out of date
-        elif clear_azure_blob_storage_container and settings.CLOUD_SERVICE == "azure":
-            azure_blob_storage_interactions.clear_container(
-                container_name=settings.AZURE_STORAGE_CONTAINER_TMP_DATA,
-                skip_blobs=skip_blobs,
-            )
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 

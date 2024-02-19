@@ -58,14 +58,24 @@ async def do_once_load_initial_data(session=Session()):
     task.disabled = True
 
 
+# @app.task(cron("0 */12 * * *"))
+# async def do_every_12th_hour_reload_data():
+#     """
+#     Reload data.
+#     Runs at minute 0 past every 12th hour.
+#     """
+#
+#     await concurrency.run_in_threadpool(data_loader.reload_data, True)
+
+
 @app.task(cron("0 */12 * * *"))
-async def do_every_12th_hour_reload_data():
+async def do_every_12th_hour_clear_cloud_tmp_data():
     """
-    Reload data.
+    Clear cloud tmp data.
     Runs at minute 0 past every 12th hour.
     """
 
-    await concurrency.run_in_threadpool(data_loader.reload_data, True, True, True)
+    await concurrency.run_in_threadpool(data_loader.clear_cloud_tmp_data)
 
 
 @app.task(cron("0 * * * *"))
