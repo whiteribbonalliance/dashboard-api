@@ -31,17 +31,24 @@ from pandas import DataFrame
 
 from app import constants
 from app import crud
+from app.enums.legacy_campaign_code import LegacyCampaignCode
 from app.helpers import q_col_names
 from app.schemas.filter import Filter
 
 inflect_engine = inflect.engine()
 
 
-def get_default_filter() -> Filter:
-    """Get default filter"""
+def get_default_filter(campaign_code: str) -> Filter:
+    """Get default filter object"""
+
+    countries = []
+    if campaign_code == LegacyCampaignCode.wwwpakistan.value:
+        countries = ["PK"]
+    elif campaign_code == LegacyCampaignCode.giz.value:
+        countries = ["MX"]
 
     return Filter(
-        countries=[],
+        countries=countries,
         regions=[],
         provinces=[],
         response_topics=[],
@@ -373,11 +380,11 @@ def check_if_filters_are_identical(
     )
 
 
-def check_if_filter_is_default(data_filter: Filter) -> bool:
+def check_if_filter_is_default(campaign_code: str, data_filter: Filter) -> bool:
     """Check if filter is default"""
 
     return check_if_filters_are_identical(
-        filter_1=data_filter, filter_2=get_default_filter()
+        filter_1=data_filter, filter_2=get_default_filter(campaign_code=campaign_code)
     )
 
 

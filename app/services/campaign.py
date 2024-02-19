@@ -150,14 +150,14 @@ class CampaignService:
         # If filter 1 was requested, then do not use the cached ngrams
         self.__filter_1_use_ngrams_unfiltered = True
         if self.__filter_1 and not filters.check_if_filter_is_default(
-            data_filter=self.__filter_1
+            campaign_code=self.__campaign_code, data_filter=self.__filter_1
         ):
             self.__filter_1_use_ngrams_unfiltered = False
 
         # If filter 2 was requested, then do not use the cached ngrams
         self.__filter_2_use_ngrams_unfiltered = True
         if self.__filter_2 and not filters.check_if_filter_is_default(
-            data_filter=self.__filter_2
+            campaign_code=self.__campaign_code, data_filter=self.__filter_2
         ):
             self.__filter_2_use_ngrams_unfiltered = False
 
@@ -1440,7 +1440,7 @@ class CampaignService:
 
         if not data_filter:
             # Use an empty filter to generate description
-            data_filter = filters.get_default_filter()
+            data_filter = filters.get_default_filter(campaign_code=self.__campaign_code)
 
         # Response topics mentioned
         mapping_to_description = category_hierarchy.get_mapping_code_to_description(

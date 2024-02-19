@@ -492,6 +492,8 @@ def load_initial_data():
         load_translations_cache()
         load_campaigns_data()
         load_region_coordinates()
+        load_api_cache_with_unfiltered_campaigns_responses()
+        print("INFO:\t  Data loading completed.")
     except (Exception,) as e:
         logger.error(f"An error occurred while loading initial data: {str(e)}")
 
@@ -550,6 +552,8 @@ def reload_data(
         # Clear the API cache
         if clear_api_cache:
             ApiCache().clear_cache()
+
+        print("Data reloading completed.")
     except (Exception,) as e:
         logger.error(f"An error occurred while reloading data: {str(e)}")
 
@@ -591,8 +595,6 @@ def load_translations_cache():
     print("INFO:\t  Loading translations cache...")
 
     TranslationsCache().load()
-
-    print("INFO:\t  Loading translations cache completed.")
 
 
 def load_region_coordinates():
@@ -667,4 +669,24 @@ def load_region_coordinates():
 
     global_variables.region_coordinates = coordinates
 
-    print(f"INFO:\t  Loading region coordinates completed.")
+
+def load_api_cache_with_unfiltered_campaigns_responses():
+    """
+    Load the API cache with unfiltered responses for all campaigns by making a POST request to
+    '/api/v1/campaigns/{campaign_code}' which will cache the response.
+    """
+
+    print("INFO:\t  Loading initial API cache...")
+    for campaign_config in CAMPAIGNS_CONFIG.values():
+        campaign_code = campaign_config.campaign_code
+        try:
+            requests.post(
+                url=f"{settings.BASE_URL}/campaigns/{campaign_config.campaign_code}?q_code=q1&response_year=&lang=en",
+                json={
+                    "filter_1": None,
+                    "filter_2": None,
+                },
+            )
+        except requests.exceptions.RequestException:
+            logger.warning(f"Could not load API cache for campaign: {campaign_code}.")
+            continue

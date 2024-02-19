@@ -29,9 +29,9 @@ from app.schemas.filter import Filter
 
 
 class CampaignRequest(BaseModel):
-    filter_1: Filter = Field(
+    filter_1: Filter | None = Field(
         default=None, description="Selected filter options from `Drill down`"
     )
-    filter_2: Filter = Field(
+    filter_2: Filter | None = Field(
         default=None, description="Selected filter options from `Compare to...`"
     )

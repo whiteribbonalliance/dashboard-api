@@ -26,7 +26,8 @@ their respective dashboards by running the front-end.
 ### Required:
 
 - `STAGE=` prod or dev.
-- `ALLOW_ORIGINS=` Allow origins e.g. "https://example1.com https://example2.com"
+- `ALLOW_ORIGINS=` Allow origins e.g. `https://example1.com https://example2.com`.
+- `BASE_URL=` Base URL of the api e.g. `http://localhost:8000/api/v1`.
 
 ### Optional:
 
