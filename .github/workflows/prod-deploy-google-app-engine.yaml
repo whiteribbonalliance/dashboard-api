@@ -5,10 +5,14 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - '**/README.md'
+      - 'front_translations/to_translate.json'
+      - 'translations.json'
   pull_request:
     branches: [ "main" ]
     paths-ignore:
       - '**/README.md'
+      - 'front_translations/to_translate.json'
+      - 'translations.json'
   workflow_dispatch:
 
 jobs:
