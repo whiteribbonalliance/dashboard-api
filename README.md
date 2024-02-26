@@ -214,8 +214,11 @@ authenticated on the Google Cloud Platform service account.
 
 ## Deployment to Azure Web Apps
 
-Add the required environment variables to `Application settings` in the Azure web app. Add
-optional environment variables if needed.
+Add the required environment variables to `Application settings` in the Azure web app. Add optional environment
+variables if needed.
+
+Make sure the Web App contains the env variable `SCM_DO_BUILD_DURING_DEPLOYMENT` set to `True`. This allows the Web App
+to create a build during deployment.
 
 For deployment, it is also required to add the following environment variables to `Repository secrets` in GitHub:
 
